@@ -11,7 +11,7 @@ public static class DependencyInjection
         services.AddScoped<IHealthService, HealthService>();
         // Dev A/B add their feature services here later:
         // services.AddScoped<IAuthService, AuthService>();
-        // services.AddScoped<IBatchService, BatchService>();  etc.
+        services.AddScoped<IBatchService, BatchService>(); 
         return services;
     }
 }

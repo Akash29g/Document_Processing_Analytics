@@ -19,7 +19,6 @@ public static class ApiServiceExtensions
     {
         var settings = cfg.GetSection("Jwt").Get<JwtSettings>()!;
         services.Configure<JwtSettings>(cfg.GetSection("Jwt"));
-        services.AddSingleton<JwtTokenService>();
 
         services.AddAuthentication("Bearer").AddJwtBearer("Bearer", o =>
         {

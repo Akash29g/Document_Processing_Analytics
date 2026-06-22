@@ -326,8 +326,8 @@ Backend is built as vertical feature slices across 5 rounds (two developers in p
 
 ## Team
 
-- **Dev A** — @akash29g
-- **Dev B** — @g9shubh
+- **Dev A** — Akash Goswami
+- **Dev B** — Shubh Gupta
 
 ---
 

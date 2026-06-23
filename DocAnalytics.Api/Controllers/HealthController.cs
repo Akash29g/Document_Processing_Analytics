@@ -1,9 +1,9 @@
 ﻿using DocAnalytics.Api.Common;
-using DocAnalytics.Service.Abstractions;
+using DocAnalytics.Service.Health;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DocAnalytics.Api.Features.Health;
+namespace DocAnalytics.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/health")]

@@ -5,6 +5,9 @@ using DocAnalytics.Data.Seeding;
 using DocAnalytics.Service;
 using DocAnalytics.Service.Batches;
 using DocAnalytics.Service.Health;
+using DocAnalytics.Service.Auth;
+using Microsoft.OpenApi;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +19,31 @@ builder.Services.AddJwtAuth(builder.Configuration);             // Api
 builder.Services.AddSwaggerWithJwt();                           // Api
 builder.Services.AddBatchFeature();
 builder.Services.AddHealthFeature();
+builder.Services.AddAuthFeature();
+builder.Services.AddControllers().AddJsonOptions(o =>
+{
+    o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
+});
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Paste ONLY your JWT (no 'Bearer ' prefix)."
+    });
+
+    options.AddSecurityRequirement(doc => new OpenApiSecurityRequirement
+    {
+        { new OpenApiSecuritySchemeReference("Bearer", doc), new List<string>() }
+    });
+
+});
+
 
 var app = builder.Build();
 

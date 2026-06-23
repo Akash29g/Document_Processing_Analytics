@@ -12,9 +12,9 @@ public class TenantSiteMiddleware
     {
         if (ctx.User.Identity?.IsAuthenticated == true)
         {
-            var userId = ctx.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? ctx.User.FindFirstValue("sub");
-            var tenantId = ctx.User.FindFirstValue("tenant_id");
-            var role = ctx.User.FindFirstValue(ClaimTypes.Role) ?? "Viewer";
+            var userId = ctx.User.FindFirstValue("userId");      // 👈 was NameIdentifier/"sub"
+            var tenantId = ctx.User.FindFirstValue("tenantId");    // 👈 was "tenant_id"
+            var role = ctx.User.FindFirstValue("role") ?? "Viewer";   // 👈 was ClaimTypes.Role
             var siteIdRaw = ctx.Request.Query["site_id"].FirstOrDefault()
                             ?? ctx.Request.Headers["X-Site-Id"].FirstOrDefault();
 

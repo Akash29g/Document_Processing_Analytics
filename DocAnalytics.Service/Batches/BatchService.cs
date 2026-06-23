@@ -82,6 +82,38 @@ public sealed class BatchService : IBatchService
         };
     }
 
+    // ── GET /api/v1/batches/{id} : drill into ONE batch ──
+    public async Task<BatchDetailDto?> GetBatchByIdAsync(
+        Guid id, CancellationToken ct = default)
+    {
+        return await _db.Transactions
+            .AsNoTracking()                    // read-only → EF skips change tracking (faster)
+            .Where(b => b.Id == id)            // tenant_id + site_id filter is AUTO-added on top
+            .Select(b => new BatchDetailDto    // shape entity → drill-down DTO
+            {
+                Id = b.Id,
+                Status = b.State,              // friendly rename
+                Source = b.SourceSystem,       // friendly rename
+                TotalFiles = b.TotalFiles,
+
+                FileStats = new FileStatsDto   // group the 4 PRE-AGGREGATED counters
+                {
+                    Uploaded = b.UploadedCount,
+                    Processing = b.ProcessingCount,
+                    Failed = b.FailedCount,
+                    Completed = b.CompletedCount
+                },
+
+                Times = new BatchTimesDto      // group the 3 timestamps
+                {
+                    SubmittedAt = b.SubmittedAt,
+                    LastUpdatedAt = b.LastUpdatedAt,
+                    CompletedAt = b.CompletedAt
+                }
+            })
+            .FirstOrDefaultAsync(ct);          // the one match, or null = "not found"
+    }
+
     // friendly API word -> the DB's state value
     private static string? MapStatusToState(string status) =>
         status.ToLowerInvariant() switch

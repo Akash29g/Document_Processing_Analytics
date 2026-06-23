@@ -34,4 +34,21 @@ public sealed class BatchesController : ControllerBase
         // 3. wrap in the standard envelope and return
         return Ok(ApiResponse<List<BatchListItemDto>>.OkList(result.Items, meta));
     }
+
+    // GET /api/v1/batches/{id} — drill into ONE batch
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetBatchById(Guid id, CancellationToken ct)
+    {
+        // 1. ask the service (tenant filter is auto-applied inside)
+        var batch = await _batchService.GetBatchByIdAsync(id, ct);
+
+        // 2. null = not found → 404 in the standard envelope
+        if (batch is null)
+            return NotFound(ApiResponse<BatchDetailDto>.Fail(
+                "not_found", $"Batch '{id}' was not found."));
+
+        // 3. found → 200 single-resource envelope ({ data, error }, no meta)
+        return Ok(ApiResponse<BatchDetailDto>.Ok(batch));
+    }
+
 }

@@ -30,3 +30,32 @@ public sealed class BatchListItemDto
     public DateTime LastUpdatedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
 }
+
+// ── GET /api/v1/batches/{id} : the rich "drill-down" view of ONE batch ──
+public class BatchDetailDto
+{
+    public Guid Id { get; set; }
+    public string Status { get; set; } = null!;   // mapped from Transaction.State
+    public string Source { get; set; } = null!;   // mapped from Transaction.SourceSystem
+    public int TotalFiles { get; set; }
+
+    public FileStatsDto FileStats { get; set; } = null!;  // → JSON "file_stats"
+    public BatchTimesDto Times { get; set; } = null!;     // → JSON "times"
+}
+
+// The 4 pre-aggregated counters, grouped into one nested object
+public class FileStatsDto
+{
+    public int Uploaded { get; set; }
+    public int Processing { get; set; }
+    public int Failed { get; set; }
+    public int Completed { get; set; }
+}
+
+// The 3 timestamps, grouped into one nested object
+public class BatchTimesDto
+{
+    public DateTime SubmittedAt { get; set; }
+    public DateTime LastUpdatedAt { get; set; }
+    public DateTime? CompletedAt { get; set; }   // nullable — unfinished batch has no end time
+}

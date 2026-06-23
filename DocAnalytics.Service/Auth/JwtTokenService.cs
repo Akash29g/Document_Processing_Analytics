@@ -18,6 +18,8 @@ public class JwtTokenService : IJwtTokenService
         var keyString = _config["Jwt:Key"]
             ?? throw new InvalidOperationException("Jwt:Key is not configured.");
 
+        var expiryMinutes = int.TryParse(_config["Jwt:ExpiryMinutes"], out var m) ? m : 120;
+
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 

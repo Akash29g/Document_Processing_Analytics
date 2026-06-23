@@ -1,7 +1,6 @@
 ﻿using DocAnalytics.Data;
-using DocAnalytics.Service.Abstractions;
 
-namespace DocAnalytics.Service.Implementations;
+namespace DocAnalytics.Service.Health;
 
 public class HealthService : IHealthService
 {

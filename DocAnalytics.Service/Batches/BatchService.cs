@@ -1,11 +1,10 @@
 ﻿using DocAnalytics.Data;                 // ① AppDbContext lives here
 using DocAnalytics.Domain.Entities;      // ① the Transaction entity
-using DocAnalytics.Service.Abstractions;
 using DocAnalytics.Service.Common;
-using DocAnalytics.Service.Dtos;
 using Microsoft.EntityFrameworkCore;
 
-namespace DocAnalytics.Service.Implementations;
+namespace DocAnalytics.Service.Batches;
+
 
 public sealed class BatchService : IBatchService
 {

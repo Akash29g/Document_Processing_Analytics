@@ -1,7 +1,6 @@
 ﻿using DocAnalytics.Service.Common;
-using DocAnalytics.Service.Dtos;
 
-namespace DocAnalytics.Service.Abstractions;
+namespace DocAnalytics.Service.Batches;
 
 public interface IBatchService
 {

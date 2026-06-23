@@ -1,10 +1,9 @@
 ﻿using DocAnalytics.Api.Common;
-using DocAnalytics.Service.Abstractions;
-using DocAnalytics.Service.Dtos;
+using DocAnalytics.Service.Batches;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DocAnalytics.Api.Features.Batches;
+namespace DocAnalytics.Api.Controllers;
 
 [ApiController]
 [Authorize]

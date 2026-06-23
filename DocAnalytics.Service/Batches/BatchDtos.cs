@@ -1,4 +1,5 @@
-﻿namespace DocAnalytics.Service.Dtos;
+﻿namespace DocAnalytics.Service.Batches;
+
 
 // The filters/options the client sends in the URL (?page=1&status=failed...)
 public sealed class BatchListQuery

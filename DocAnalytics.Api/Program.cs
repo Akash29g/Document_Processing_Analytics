@@ -3,6 +3,8 @@ using DocAnalytics.Api.Middleware;
 using DocAnalytics.Data;
 using DocAnalytics.Data.Seeding;
 using DocAnalytics.Service;
+using DocAnalytics.Service.Batches;
+using DocAnalytics.Service.Health;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,8 @@ builder.Services.AddPersistence(builder.Configuration);         // Data
 builder.Services.AddApplicationServices();                      // Service
 builder.Services.AddJwtAuth(builder.Configuration);             // Api
 builder.Services.AddSwaggerWithJwt();                           // Api
+builder.Services.AddBatchFeature();
+builder.Services.AddHealthFeature();
 
 var app = builder.Build();
 

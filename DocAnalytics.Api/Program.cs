@@ -4,6 +4,7 @@ using DocAnalytics.Api.Swagger;
 using DocAnalytics.Data;
 using DocAnalytics.Data.Seeding;
 using DocAnalytics.Service;
+using DocAnalytics.Service.Dashboard;
 using DocAnalytics.Service.Auth;
 using DocAnalytics.Service.Batches;
 using DocAnalytics.Service.Health;
@@ -22,6 +23,9 @@ builder.Services.AddSwaggerWithJwt();                           // Api
 builder.Services.AddBatchFeature();
 builder.Services.AddHealthFeature();
 builder.Services.AddAuthFeature();
+builder.Services.AddDashboardFeature();
+
+
 builder.Services.AddControllers().AddJsonOptions(o =>
 {
     o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;

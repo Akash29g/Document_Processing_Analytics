@@ -59,3 +59,23 @@ public class BatchTimesDto
     public DateTime LastUpdatedAt { get; set; }
     public DateTime? CompletedAt { get; set; }   // nullable — unfinished batch has no end time
 }
+
+// ── GET /api/v1/batches/{id}/files : one file row inside a batch ──
+public sealed class BatchFileDto
+{
+    public Guid Id { get; set; }
+    public string FileName { get; set; } = null!;
+    public string FileType { get; set; } = null!;
+    public string Status { get; set; } = null!;
+    public string CurrentStep { get; set; } = null!;
+    public long? FileSizeBytes { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime LastUpdatedAt { get; set; }
+}
+
+// query params for the files list — just pagination
+public sealed class BatchFilesQuery
+{
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 20;
+}

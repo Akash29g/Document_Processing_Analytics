@@ -114,6 +114,59 @@ public sealed class BatchService : IBatchService
             .FirstOrDefaultAsync(ct);          // the one match, or null = "not found"
     }
 
+    // ── GET /api/v1/batches/{id}/files : list the files in ONE batch (paged) ──
+    public async Task<PagedResult<BatchFileDto>?> GetBatchFilesAsync(
+        Guid id, BatchFilesQuery query, CancellationToken ct = default)
+    {
+        // 1. Does the batch exist (for this tenant/site)? If not → null → 404
+        var batchExists = await _db.Transactions
+            .AsNoTracking()
+            .AnyAsync(b => b.Id == id, ct);
+
+        if (!batchExists)
+            return null;
+
+        // 2. Normalise paging (never trust raw input) — same rules as the batches list
+        var page = query.Page < 1 ? 1 : query.Page;
+        var pageSize = query.PageSize < 1 ? 20 : Math.Min(query.PageSize, 100);
+
+        // 3. ONE query straight against the files table, filtered to this batch.
+        //    (We do NOT load the Transaction and walk .Files → that's how we avoid N+1.)
+        var q = _db.Files
+            .AsNoTracking()
+            .Where(f => f.TransactionId == id);
+
+        // 4. COUNT before paging → true total for "page X of Y"
+        var totalCount = await q.CountAsync(ct);
+
+        // 5. ORDER (needed for stable paging) → PAGE → SHAPE into DTOs
+        var items = await q
+            .OrderByDescending(f => f.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(f => new BatchFileDto
+            {
+                Id = f.Id,
+                FileName = f.FileName,
+                FileType = f.FileType,
+                Status = f.Status,
+                CurrentStep = f.CurrentStep,
+                FileSizeBytes = f.FileSizeBytes,
+                CreatedAt = f.CreatedAt,
+                LastUpdatedAt = f.LastUpdatedAt
+            })
+            .ToListAsync(ct);
+
+        return new PagedResult<BatchFileDto>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize
+        };
+    }
+
+
     // friendly API word -> the DB's state value
     private static string? MapStatusToState(string status) =>
         status.ToLowerInvariant() switch

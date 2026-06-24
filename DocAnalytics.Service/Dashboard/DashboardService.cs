@@ -72,18 +72,18 @@ public sealed class DashboardService : IDashboardService
 
     // whitelisted sort → no string concat → SQL-injection safe (NFR-3)
     private static IQueryable<RecentFailureDto> ApplySorting(
-        IQueryable<RecentFailureDto> q, string? sortBy, string? sortDir)
+    IQueryable<RecentFailureDto> q, string? sortBy, string? sortDir)
     {
         var desc = !string.Equals(sortDir, "asc", StringComparison.OrdinalIgnoreCase);
 
-        return (sortBy ?? "failed_at").ToLowerInvariant() switch
+        IOrderedQueryable<RecentFailureDto> ordered = (sortBy ?? "failed_at").ToLowerInvariant() switch
         {
-            "file_name" => desc ? q.OrderByDescending(r => r.FileName)
-                                          : q.OrderBy(r => r.FileName),
-            "failed_step" or "step" => desc ? q.OrderByDescending(r => r.FailedStep)
-                                          : q.OrderBy(r => r.FailedStep),
-            _ => desc ? q.OrderByDescending(r => r.FailedAt)
-                                          : q.OrderBy(r => r.FailedAt)
+            "file_name" => desc ? q.OrderByDescending(r => r.FileName) : q.OrderBy(r => r.FileName),
+            "failed_step" or "step" => desc ? q.OrderByDescending(r => r.FailedStep) : q.OrderBy(r => r.FailedStep),
+            _ => desc ? q.OrderByDescending(r => r.FailedAt) : q.OrderBy(r => r.FailedAt)
         };
+
+        return ordered.ThenBy(r => r.FileId);   // stable page boundaries even on tied timestamps
     }
+
 }

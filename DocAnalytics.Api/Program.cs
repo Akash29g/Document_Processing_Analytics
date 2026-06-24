@@ -1,13 +1,15 @@
 using DocAnalytics.Api.Extensions;
 using DocAnalytics.Api.Middleware;
+using DocAnalytics.Api.Swagger;
 using DocAnalytics.Data;
 using DocAnalytics.Data.Seeding;
 using DocAnalytics.Service;
+using DocAnalytics.Service.Auth;
 using DocAnalytics.Service.Batches;
 using DocAnalytics.Service.Health;
-using DocAnalytics.Service.Auth;
 using Microsoft.OpenApi;
 using System.Text.Json;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +43,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         { new OpenApiSecuritySchemeReference("Bearer", doc), new List<string>() }
     });
+    options.OperationFilter<SiteHeaderOperationFilter>();   // added this line for site id swagger
 
 });
 

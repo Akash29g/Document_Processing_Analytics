@@ -138,7 +138,8 @@ public sealed class BatchService : IBatchService
 
         // 5. order → page → shape
         var items = await q
-            .OrderByDescending(f => f.CreatedAt)
+        .OrderByDescending(f => f.CreatedAt)
+        .ThenBy(f => f.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(f => new BatchFileDto

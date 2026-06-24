@@ -30,3 +30,48 @@ public sealed class BatchListItemDto
     public DateTime LastUpdatedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
 }
+
+// ── GET /api/v1/batches/{id} : drill-down detail ──
+public sealed class BatchDetailDto
+{
+    public Guid Id { get; set; }
+    public string Status { get; set; } = null!;   // from Transaction.State
+    public string Source { get; set; } = null!;    // from Transaction.SourceSystem
+    public int TotalFiles { get; set; }
+    public FileStatsDto FileStats { get; set; } = null!;   // → "file_stats"
+    public BatchTimesDto Times { get; set; } = null!;      // → "times"
+}
+
+public sealed class FileStatsDto
+{
+    public int Uploaded { get; set; }
+    public int Processing { get; set; }
+    public int Failed { get; set; }
+    public int Completed { get; set; }
+}
+
+public sealed class BatchTimesDto
+{
+    public DateTime SubmittedAt { get; set; }
+    public DateTime LastUpdatedAt { get; set; }
+    public DateTime? CompletedAt { get; set; }   // nullable
+}
+
+// ── GET /api/v1/batches/{id}/files : one file row ──
+public sealed class BatchFileDto
+{
+    public Guid Id { get; set; }
+    public string FileName { get; set; } = null!;
+    public string FileType { get; set; } = null!;
+    public string Status { get; set; } = null!;
+    public string CurrentStep { get; set; } = null!;
+    public long? FileSizeBytes { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime LastUpdatedAt { get; set; }
+}
+
+public sealed class BatchFilesQuery
+{
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 20;
+}

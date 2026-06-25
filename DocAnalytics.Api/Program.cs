@@ -25,6 +25,7 @@ builder.Services.AddAuthFeature();
 builder.Services.AddDashboardFeature();
 builder.Services.AddInvoiceFeature();
 builder.Services.AddFileDetailsFeature();
+builder.Services.AddErrorListFeature();
 
 
 builder.Services.AddControllers().AddJsonOptions(o =>

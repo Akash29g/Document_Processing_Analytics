@@ -21,9 +21,8 @@ A **multi-tenant document-processing analytics & monitoring backend** built with
 11. [Project Structure](#project-structure)
 12. [Conventions & Contracts](#conventions--contracts)
 13. [Git Workflow](#git-workflow)
-14. [Troubleshooting](#troubleshooting)
-15. [Roadmap & Status](#roadmap--status)
-16. [Team](#team)
+14. [Roadmap & Status](#roadmap--status)
+15. [Team](#team)
 
 ---
 
@@ -133,17 +132,13 @@ Install locally (none of these are committed to the repo):
 | **IDE** | Visual Studio 2026 / VS Code / Rider | |
 | **dotnet-ef** global tool | latest | `dotnet tool install --global dotnet-ef` (open a **fresh** terminal afterwards so it's on your PATH) |
 
-> 💡 During PostgreSQL installation you will set a password for the built-in **`postgres`** superuser. **Remember it** — you will need it for the connection string (or for the optional bootstrap script below).
+> 💡 During PostgreSQL installation you will set a password for the built-in **`postgres`** superuser. **Remember it** — you will need it for the connection string.
 
 ---
 
 ## Database Setup
 
-You need a running **PostgreSQL 18** server and a database called **`docanalytics`**. You do **not** need to create any tables by hand — **EF Core migrations create the entire schema for you.**
-
-There are two ways to get the database ready. **Pick ONE.**
-
-### Option A — Let EF Core do everything (recommended, simplest)
+You need a running **PostgreSQL 18** server and a database called **`docanalytics`**. You do **not** need to create any tables by hand — and you don't even need to create the database by hand: **EF Core does everything for you.**
 
 EF Core can **create the database itself** and then apply all migrations. You only need PostgreSQL installed and the `postgres` superuser password.
 
@@ -154,21 +149,6 @@ EF Core can **create the database itself** and then apply all migrations. You on
    dotnet ef database update --project DocAnalytics.Data --startup-project DocAnalytics.Api
    ```
    If the `docanalytics` database does not exist yet, EF runs `CREATE DATABASE docanalytics;` automatically, then creates all 12 tables, indexes, and foreign keys.
-
-### Option B — Use the bootstrap script (best practice: dedicated app role)
-
-If you'd rather not connect as the all-powerful `postgres` superuser, run the included **`db/bootstrap.sql`** **once** as `postgres` to create a dedicated login role + database. Then point your connection string at that role.
-
-```Windows Powershell
-# from the repo root, using the psql CLI:
-psql -U postgres -h localhost -p 5432 -f db/bootstrap.sql
-```
-
-`db/bootstrap.sql` creates:
-- a login role `docanalytics_app` (change the password inside the file!), and
-- a database `docanalytics` owned by that role.
-
-Then apply migrations exactly as in Option A. **The migrations — not the script — create the tables.** `bootstrap.sql` only creates the empty database + role.
 
 > 🔎 **Why no `schema.sql`?** Many repos ship a raw-SQL schema file because they don't use an ORM. This project is **migration-based**, so the schema lives in `DocAnalytics.Data/Migrations/`. To change the schema you create a new migration (`dotnet ef migrations add <Name> ...`) — never hand-edit the database.
 
@@ -185,14 +165,20 @@ Host=localhost;Port=5432;Database=docanalytics;Username=postgres;Password=YOUR_L
 | `Host` | Where PostgreSQL is running | `localhost` |
 | `Port` | PostgreSQL listening port | `5432` (the default) |
 | `Database` | The database name | `docanalytics` |
-| `Username` | A PostgreSQL **login role** | `postgres` (Option A) or `docanalytics_app` (Option B) |
-| `Password` | That role's password | whatever you set during install / in `bootstrap.sql` |
+| `Username` | A PostgreSQL **login role** | `postgres` |
+| `Password` | That role's password | whatever you set during install |
 
 ### Seed data
 
 Seed data loads **automatically on first run** of the API (it runs `DbSeeder.SeedAsync`, which also applies any pending migrations). It creates **2 tenants** (Acme + Globex) with sites, users, transactions (batches), files, step history, invoice line items, categories, and an activity-log entry — enough to exercise every feature **and** to prove tenant isolation.
 
-> The seeder is **idempotent**: it short-circuits with `if (await db.Tenants.AnyAsync()) return;`. So if you change the seed data later, you must **reset the database** first (see [Troubleshooting → Reset the database](#reset-the-database-from-scratch)) or the new seed code won't run.
+> The seeder is **idempotent**: it short-circuits with `if (await db.Tenants.AnyAsync()) return;`. So if you change the seed data later, you must **reset the database** first or the new seed code won't run:
+>
+> ```Windows Powershell
+> dotnet ef database drop   --project DocAnalytics.Data --startup-project DocAnalytics.Api --force
+> dotnet ef database update --project DocAnalytics.Data --startup-project DocAnalytics.Api
+> dotnet run --project DocAnalytics.Api   # re-seeds on startup
+> ```
 
 ---
 
@@ -224,7 +210,7 @@ dotnet user-secrets set "ConnectionStrings:Default" "Host=localhost;Port=5432;Da
 dotnet user-secrets set "Jwt:Key" "any-32+-character-secret-key-for-local-dev" --project DocAnalytics.Api
 ```
 
-> ⚠️ **This is your PostgreSQL login.** `Username`/`Password` must match a real PostgreSQL role on your machine (the `postgres` superuser, or the `docanalytics_app` role from `bootstrap.sql`). If they don't match, you'll get a `28P01 password authentication failed` error — see [Troubleshooting](#troubleshooting).
+> ⚠️ **This is your PostgreSQL login.** `Username`/`Password` must match a real PostgreSQL role on your machine (the `postgres` superuser). If they don't match, you'll get a `28P01 password authentication failed` error.
 >
 > ⚠️ **`Jwt:Key` must be ≥ 32 characters**, or startup throws `IDX10720`.
 
@@ -235,7 +221,7 @@ dotnet user-secrets list --project DocAnalytics.Api
 
 ### 3. Create the database
 
-Follow [Database Setup](#database-setup) (Option A or B), then:
+Follow [Database Setup](#database-setup), then:
 
 ```Windows Powershell
 dotnet ef database update --project DocAnalytics.Data --startup-project DocAnalytics.Api
@@ -249,15 +235,21 @@ dotnet ef database update --project DocAnalytics.Data --startup-project DocAnaly
 
 ### Run
 
+There are two ways to run, depending on whether you want Swagger to open for you:
+
 ```Windows Powershell
+# Option 1 — auto-opens Swagger in your browser on launch (and hot-reloads on code changes)
+dotnet watch run --project DocAnalytics.Api
+
+# Option 2 — plain run; you copy the printed URL into a browser yourself
 dotnet run --project DocAnalytics.Api
 ```
 
-Note the port from the console (e.g. `Now listening on: http://localhost:5256`) and open Swagger:
-
-```
-http://localhost:<port>/swagger
-```
+- **`dotnet watch run`** — launches the browser straight to Swagger automatically (per `launchSettings.json`: `launchBrowser: true`, `launchUrl: swagger`). It also **hot-reloads** when you edit code, so it's the nicest option during development.
+- **`dotnet run`** — does **not** open a browser. Note the port from the console (e.g. `Now listening on: http://localhost:5256`) and open Swagger yourself:
+  ```
+  http://localhost:<port>/swagger
+  ```
 
 > The first run also seeds the database. Keep this terminal open — it's running the app. Use a **second** terminal for any `curl` / `git` / `dotnet ef` commands. Press `Ctrl + C` in the app's terminal to stop it.
 
@@ -345,7 +337,6 @@ Single resource: `{ data, error }`. List: `{ data, meta, error }`. On success `e
 ```
 DocAnalytics.slnx
 │
-├─ db/                        # optional bootstrap.sql (create role + database)
 ├─ DocAnalytics.Domain        # entities + contracts (no dependencies)
 ├─ DocAnalytics.Data          # AppDbContext, Migrations/, DbSeeder, AddPersistence()
 ├─ DocAnalytics.Service       # business logic; per-feature folders + AddXxxFeature()
@@ -390,47 +381,6 @@ git push -u origin feature/<thing>
 - **Commit style** (Conventional Commits): `feat:`, `fix:`, `chore:`, `refactor:`, `docs:`, `test:`
 - **Branch names:** `feature/<thing>`, `fix/<thing>`
 - Pull `main` before starting a new branch.
-
----
-
-## Troubleshooting
-
-### `Unable to resolve service for type 'DbContextOptions<AppDbContext>'`
-You ran an EF command without `--startup-project`. The `DbContext` lives in `DocAnalytics.Data` but the connection string + DI live in `DocAnalytics.Api`. Always pass both:
-```Windows Powershell
-dotnet ef database update --project DocAnalytics.Data --startup-project DocAnalytics.Api
-```
-
-### `28P01: password authentication failed for user "..."`
-The `Username`/`Password` in your connection string don't match a real PostgreSQL role. Re-set the secret with the correct password (the one you chose when installing PostgreSQL, or in `bootstrap.sql`):
-```Windows Powershell
-dotnet user-secrets set "ConnectionStrings:Default" "Host=localhost;Port=5432;Database=docanalytics;Username=postgres;Password=CORRECT_PW" --project DocAnalytics.Api
-```
-
-### `Npgsql.NpgsqlException: Connection refused` / `failed to connect`
-PostgreSQL isn't running or isn't on the expected host/port. Start the `postgresql-x64-18` Windows service and confirm `Port=5432`.
-
-### `IDX10720` at startup
-Your `Jwt:Key` is shorter than 32 characters. Set a longer key:
-```Windows Powershell
-dotnet user-secrets set "Jwt:Key" "any-32+-character-secret-key-for-local-dev" --project DocAnalytics.Api
-```
-
-### A `fail: ...Connection[20004]` line during `database update`
-Harmless. It appears because you just dropped the database, so EF's first connection attempt fails — it then runs `CREATE DATABASE` and proceeds. The final `Done.` is the real result.
-
-### `GET /api/v1/batches` returns an empty list
-- **Stale token:** if you reset the DB, log in again — old tokens reference GUIDs that no longer exist.
-- **Site filtering:** the JWT carries no site; if you didn't pass `?site_id=` and a service filters by site unconditionally, you'll get `[]`. Services should scope by **tenant always, site only when supplied**.
-- Confirm data exists: `SELECT id, tenant_id, state FROM transactions;`
-
-### Reset the database from scratch
-Use this when you change seed data or want a clean slate (the seeder is idempotent and won't re-run otherwise):
-```Windows Powershell
-dotnet ef database drop   --project DocAnalytics.Data --startup-project DocAnalytics.Api --force
-dotnet ef database update --project DocAnalytics.Data --startup-project DocAnalytics.Api
-dotnet run --project DocAnalytics.Api   # re-seeds on startup
-```
 
 ---
 

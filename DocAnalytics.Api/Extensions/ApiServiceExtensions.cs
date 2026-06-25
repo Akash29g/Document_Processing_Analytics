@@ -3,6 +3,7 @@ using DocAnalytics.Api.Auth;
 using DocAnalytics.Api.Common;
 using DocAnalytics.Domain.Common;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 
 namespace DocAnalytics.Api.Extensions;
 
@@ -40,7 +41,34 @@ public static class ApiServiceExtensions
     public static IServiceCollection AddSwaggerWithJwt(this IServiceCollection services)
     {
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();   // plain for now; JWT "Authorize" button added with the auth slice
+        services.AddSwaggerGen(options =>
+        {
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "Paste ONLY your JWT (no 'Bearer ' prefix)."
+            });
+
+            options.AddSecurityDefinition("SiteId", new OpenApiSecurityScheme
+            {
+                Name = "X-Site-Id",
+                Type = SecuritySchemeType.ApiKey,
+                In = ParameterLocation.Header,
+                Description = "Paste your site_id GUID once — applied to every request (tenant/site isolation)."
+            });
+
+            options.AddSecurityRequirement(doc => new OpenApiSecurityRequirement
+        {
+            { new OpenApiSecuritySchemeReference("Bearer", doc), new List<string>() },
+            { new OpenApiSecuritySchemeReference("SiteId", doc), new List<string>() }
+        });
+        });
         return services;
     }
+
+
 }

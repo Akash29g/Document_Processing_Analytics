@@ -90,14 +90,9 @@ public static class DbSeeder
             new DocumentType { Id = Guid.NewGuid(), TypeName = "PackingSlip",   Category = "CSV", IsActive = true, CreatedAt = now },
             new DocumentType { Id = Guid.NewGuid(), TypeName = "BillOfLading",  Category = "PDF", IsActive = true, CreatedAt = now },
         };
-        var invoiceType = docTypes[0];
 
         var categories = new[]
         {
-            new InvoiceLineItem { Id = Guid.NewGuid(), FileId = fileOk.Id, TenantId = tenantA.Id, SiteId = siteA.Id, ItemCategoryId = catGoods.Id,    LineNumber = 1, Description = "Steel bolts (box)", Quantity = 10m, UnitPrice = 5.50m, LineTotal = 55.00m, Confidence = 0.95m, IsValid = true, ExtractedAt = now },
-            new InvoiceLineItem { Id = Guid.NewGuid(), FileId = fileOk.Id, TenantId = tenantA.Id, SiteId = siteA.Id, ItemCategoryId = catServices.Id, LineNumber = 2, Description = "Installation service", Quantity = 1m, UnitPrice = 120.00m, LineTotal = 120.00m, Confidence = 0.60m, IsValid = true, ExtractedAt = now },
-            new InvoiceLineItem { Id = Guid.NewGuid(), FileId = fileOk.Id, TenantId = tenantA.Id, SiteId = siteA.Id, ItemCategoryId = null,           LineNumber = 3, Description = "Miscellaneous (uncategorized)", Quantity = 2m, UnitPrice = 10.00m, LineTotal = 20.00m, Confidence = 0.80m, IsValid = true, ExtractedAt = now }
-
             new ItemCategory { Id = Guid.NewGuid(), CategoryCode = "GOODS",    CategoryName = "Goods",    IsActive = true, CreatedAt = now },
             new ItemCategory { Id = Guid.NewGuid(), CategoryCode = "SERVICES", CategoryName = "Services", IsActive = true, CreatedAt = now },
             new ItemCategory { Id = Guid.NewGuid(), CategoryCode = "SHIPPING", CategoryName = "Shipping", IsActive = true, CreatedAt = now },

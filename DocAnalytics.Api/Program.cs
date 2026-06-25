@@ -9,13 +9,11 @@ using DocAnalytics.Service.Auth;
 using DocAnalytics.Service.Batches;
 using DocAnalytics.Service.Health;
 using DocAnalytics.Service.Invoices;
-using Microsoft.OpenApi;
 using System.Text.Json;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
 builder.Services.AddCurrentUser();                              // Api
 builder.Services.AddPersistence(builder.Configuration);         // Data
 builder.Services.AddApplicationServices();                      // Service
@@ -33,27 +31,6 @@ builder.Services.AddControllers().AddJsonOptions(o =>
 {
     o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
 });
-
-builder.Services.AddSwaggerGen(options =>
-{
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Paste ONLY your JWT (no 'Bearer ' prefix)."
-    });
-
-    options.AddSecurityRequirement(doc => new OpenApiSecurityRequirement
-    {
-        { new OpenApiSecuritySchemeReference("Bearer", doc), new List<string>() }
-    });
-    options.OperationFilter<SiteHeaderOperationFilter>();   // added this line for site id swagger
-
-});
-
 
 var app = builder.Build();
 

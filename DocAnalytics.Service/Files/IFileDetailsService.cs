@@ -1,7 +1,7 @@
-﻿namespace DocAnalytics.Service.Files;
+namespace DocAnalytics.Service.Files;
 
 public interface IFileDetailsService
 {
-    Task<LookupResult<FileDetailDto>> GetFileDetailsAsync(Guid fileId, CancellationToken ct = default);
-    Task<LookupResult<FileLogDto>> GetFileLogsAsync(Guid fileId, CancellationToken ct = default);
+    Task<FileDetailDto?> GetFileDetailsAsync(Guid fileId, CancellationToken ct = default);
+    Task<FileLogDto?> GetFileLogsAsync(Guid fileId, CancellationToken ct = default);
 }

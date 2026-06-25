@@ -237,10 +237,12 @@ public static class DbSeeder
                         int lines = rng.Next(2, 7);
                         for (int li = 1; li <= lines; li++)
                         {
-                            var cat = categories[rng.Next(categories.Length)];
+                            // ~15% of lines left uncategorized → exercises the LEFT-join null-category path
+                            ItemCategory? cat = rng.Next(100) < 15 ? null : categories[rng.Next(categories.Length)];
                             decimal qty = rng.Next(1, 200);
                             decimal unit = Math.Round((decimal)(rng.NextDouble() * 900 + 5), 2);
-                            lineItems.Add(new InvoiceLineItem { Id = Guid.NewGuid(), FileId = fileId, TenantId = tenantId, SiteId = siteId, ItemCategoryId = cat.Id, LineNumber = li, Description = $"{cat.CategoryName} item {li}", Quantity = qty, UnitPrice = unit, LineTotal = Math.Round(qty * unit, 2), Confidence = Math.Round((decimal)(0.70 + rng.NextDouble() * 0.29), 3), IsValid = true, ExtractedAt = fileUpdated });
+                            lineItems.Add(new InvoiceLineItem { Id = Guid.NewGuid(), FileId = fileId, TenantId = tenantId, SiteId = siteId, ItemCategoryId = cat?.Id, LineNumber = li, Description = $"{(cat?.CategoryName ?? "Uncategorized")} item {li}", Quantity = qty, UnitPrice = unit, LineTotal = Math.Round(qty * unit, 2), Confidence = Math.Round((decimal)(0.70 + rng.NextDouble() * 0.29), 3), IsValid = true, ExtractedAt = fileUpdated });
+
                         }
                     }
                 }

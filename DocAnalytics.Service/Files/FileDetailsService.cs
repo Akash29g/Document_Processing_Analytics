@@ -10,14 +10,13 @@ public sealed class FileDetailsService : IFileDetailsService
     public FileDetailsService(AppDbContext db) => _db = db;
 
     // GET /api/v1/files/{id}/details — joins Files + FileStepHistory + ErrorCatalog
-    public async Task<LookupResult<FileDetailDto>> GetFileDetailsAsync(Guid fileId, CancellationToken ct = default)
+    public async Task<FileDetailDto?> GetFileDetailsAsync(Guid fileId, CancellationToken ct = default)
     {
         // 1) Load the file SCOPED to this tenant/site (global query filter auto-applies).
         var file = await _db.Files.AsNoTracking()
             .FirstOrDefaultAsync(f => f.Id == fileId, ct);
 
-        if (file is null)
-            return await ClassifyMissingAsync<FileDetailDto>(fileId, ct);   // 404 vs 403
+        if (file is null) return null;   // 404 for both not-found AND other-tenant (no existence leak)
 
         // 2) Pull this file's steps in timeline order. (FileStepHistory is NOT tenant-scoped,
         //    so we always drive from the already-scoped file id — isolation stays intact.)
@@ -63,17 +62,16 @@ public sealed class FileDetailsService : IFileDetailsService
             }).ToList()
         };
 
-        return LookupResult<FileDetailDto>.Found(dto);
+        return dto;
     }
 
     // GET /api/v1/files/{id}/logs — downloadable step-by-step trace
-    public async Task<LookupResult<FileLogDto>> GetFileLogsAsync(Guid fileId, CancellationToken ct = default)
+    public async Task<FileLogDto?> GetFileLogsAsync(Guid fileId, CancellationToken ct = default)
     {
         var file = await _db.Files.AsNoTracking()
             .FirstOrDefaultAsync(f => f.Id == fileId, ct);
 
-        if (file is null)
-            return await ClassifyMissingAsync<FileLogDto>(fileId, ct);
+        if (file is null) return null;
 
         var steps = await _db.FileStepHistory.AsNoTracking()
             .Where(s => s.FileId == fileId)
@@ -109,23 +107,13 @@ public sealed class FileDetailsService : IFileDetailsService
             }
         }
 
-        return LookupResult<FileLogDto>.Found(new FileLogDto
+        return new FileLogDto
         {
             FileName = $"file_{file.Id}_log.txt",
             Content = sb.ToString()
-        });
+        };
     }
 
-    // The 404-vs-403 decision: the scoped query found nothing, so check raw existence.
-    private async Task<LookupResult<T>> ClassifyMissingAsync<T>(Guid fileId, CancellationToken ct)
-    {
-        var existsForAnotherTenant = await _db.Files
-            .IgnoreQueryFilters()           // bypass tenant/site filter on purpose
-            .AsNoTracking()
-            .AnyAsync(f => f.Id == fileId, ct);
 
-        return existsForAnotherTenant
-            ? LookupResult<T>.Forbidden()   // it exists, just not yours → 403
-            : LookupResult<T>.NotFound();   // doesn't exist anywhere   → 404
-    }
+    
 }

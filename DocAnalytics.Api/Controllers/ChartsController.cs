@@ -29,20 +29,5 @@ public sealed class ChartsController : ControllerBase
         return Ok(ApiResponse<ChartSeriesDto>.Ok(series));
     }
 
-    // GET /api/v1/charts/errors/top-frequencies?topN=5
-    [HttpGet("errors/top-frequencies")]
-    public async Task<IActionResult> GetTopErrors([FromQuery] int topN = 5, CancellationToken ct = default)
-    {
-        var series = await _chartService.GetTopErrorsAsync(topN, ct);
-        return Ok(ApiResponse<ChartSeriesDto>.Ok(series));
-    }
-
-    // GET /api/v1/charts/errors/trend
-    [HttpGet("errors/trend")]
-    public async Task<IActionResult> GetErrorTrend(CancellationToken ct)
-    {
-        var series = await _chartService.GetErrorTrendAsync(ct);
-        return Ok(ApiResponse<ChartSeriesDto>.Ok(series));
-    }
 
 }

@@ -37,15 +37,4 @@ public sealed class FileLogDto
     public string Content { get; set; } = null!;    // plain-text trace
 }
 
-// ── lets the service say Found / NotFound / Forbidden (the 404-vs-403 skill) ──
-public enum LookupStatus { Found, NotFound, Forbidden }
 
-public sealed class LookupResult<T>
-{
-    public LookupStatus Status { get; init; }
-    public T? Value { get; init; }
-
-    public static LookupResult<T> Found(T v) => new() { Status = LookupStatus.Found, Value = v };
-    public static LookupResult<T> NotFound() => new() { Status = LookupStatus.NotFound };
-    public static LookupResult<T> Forbidden() => new() { Status = LookupStatus.Forbidden };
-}

@@ -1,0 +1,34 @@
+﻿using DocAnalytics.Api.Common;
+using DocAnalytics.Service.Analytics;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace DocAnalytics.Api.Controllers;
+
+[ApiController]
+[Authorize]
+[Route("api/v1/dashboard")]
+[Tags("Dashboard")]
+public sealed class DashboardAnalyticsController : ControllerBase
+{
+    private readonly IAnalyticsService _analyticsService;
+    public DashboardAnalyticsController(IAnalyticsService chartService) => _analyticsService = chartService;
+
+    // GET /api/v1/dashboard/status-distribution
+    [HttpGet("status-distribution")]
+    public async Task<IActionResult> GetStatusDistribution(CancellationToken ct)
+    {
+        var series = await _analyticsService.GetStatusDistributionAsync(ct);
+        return Ok(ApiResponse<SeriesDto>.Ok(series));
+    }
+
+    // GET /api/v1/dashboard/throughput
+    [HttpGet("throughput")]
+    public async Task<IActionResult> GetThroughput(CancellationToken ct)
+    {
+        var series = await _analyticsService.GetThroughputAsync(ct);
+        return Ok(ApiResponse<SeriesDto>.Ok(series));
+    }
+
+
+}

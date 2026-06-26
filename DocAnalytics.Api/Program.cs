@@ -35,6 +35,8 @@ builder.Services.AddControllers().AddJsonOptions(o =>
     o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
 });
 
+builder.Services.AddValidationBehavior();   // <- Piece B: bad input -> ApiResponse.Fail (400)
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

@@ -1,8 +1,10 @@
-﻿namespace DocAnalytics.Service.Batches;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace DocAnalytics.Service.Batches;
 
 
 // The filters/options the client sends in the URL (?page=1&status=failed...)
-public sealed class BatchListQuery
+public sealed class BatchListQuery : IValidatableObject
 {
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 20;
@@ -13,7 +15,20 @@ public sealed class BatchListQuery
     public string? Search { get; set; }    // partial batch id
     public string? SortBy { get; set; }    // which column to sort by
     public string? SortDir { get; set; }   // asc or desc
+
+    // Cross-field rule: a date window only makes sense if from is on/before to.
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        // Only check when BOTH are supplied — null means "no bound on this side".
+        if (From.HasValue && To.HasValue && From > To)
+        {
+            yield return new ValidationResult(
+                "'from' must be earlier than or equal to 'to'.",
+                new[] { nameof(From), nameof(To) });
+        }
+    }
 }
+
 
 // One row of the batch list that we send back
 public sealed class BatchListItemDto

@@ -9,6 +9,8 @@ using DocAnalytics.Service.Auth;
 using DocAnalytics.Service.Batches;
 using DocAnalytics.Service.Health;
 using DocAnalytics.Service.Invoices;
+using DocAnalytics.Service.Charts;
+using Microsoft.OpenApi;
 using System.Text.Json;
 
 
@@ -25,8 +27,8 @@ builder.Services.AddAuthFeature();
 builder.Services.AddDashboardFeature();
 builder.Services.AddInvoiceFeature();
 builder.Services.AddFileDetailsFeature();
+builder.Services.AddChartsFeature();
 builder.Services.AddErrorListFeature();
-
 
 builder.Services.AddControllers().AddJsonOptions(o =>
 {

@@ -27,26 +27,29 @@ public sealed class ChartService : IChartService
 
     public async Task<ChartSeriesDto> GetThroughputAsync(CancellationToken ct = default)
     {
-        // PHASE 1 — let the DATABASE do the heavy lifting:
-        // GROUP BY calendar day + COUNT. Returns one row per day.
+        // PHASE 1 — DB does the work: only COMPLETED files, bucketed by the day they finished.
+        // FR-1.2: throughput = files *completed* per day (not files uploaded).
+        // NOTE: FileRecord has no completed_at, so LastUpdatedAt is the closest completion signal.
         var raw = await _db.Files
             .AsNoTracking()
-            .GroupBy(f => f.CreatedAt.Date)                       // bucket by day
+            .Where(f => f.Status == "Completed")      // ✅ completed only (PascalCase matches seeder)
+            .GroupBy(f => f.LastUpdatedAt.Date)        // ✅ bucket by completion day
             .Select(g => new { Day = g.Key, Count = g.LongCount() })
-            .OrderBy(x => x.Day)                                  // chronological order
+            .OrderBy(x => x.Day)
             .ToListAsync(ct);
 
-        // PHASE 2 — format the label in MEMORY (data is now tiny: one row per day).
+        // PHASE 2 — format labels in memory (tiny: one row per day).
         var points = raw
             .Select(x => new ChartPointDto
             {
-                Label = x.Day.ToString("yyyy-MM-dd"),             // "2023-10-21"
+                Label = x.Day.ToString("yyyy-MM-dd"),
                 Value = x.Count
             })
             .ToList();
 
         return new ChartSeriesDto { Points = points };
     }
+
 
     public async Task<ChartSeriesDto> GetTopErrorsAsync(int topN = 5, CancellationToken ct = default)
     {

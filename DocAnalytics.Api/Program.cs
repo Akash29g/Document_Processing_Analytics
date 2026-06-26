@@ -31,6 +31,7 @@ builder.Services.AddChartsFeature();
 
 
 
+builder.Services.AddErrorListFeature();
 
 
 builder.Services.AddControllers().AddJsonOptions(o =>

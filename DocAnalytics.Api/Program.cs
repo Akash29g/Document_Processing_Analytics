@@ -30,8 +30,6 @@ builder.Services.AddFileDetailsFeature();
 builder.Services.AddChartsFeature();
 builder.Services.AddErrorListFeature();
 
-
-
 builder.Services.AddControllers().AddJsonOptions(o =>
 {
     o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;

@@ -1,19 +1,19 @@
 ﻿using DocAnalytics.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace DocAnalytics.Service.Charts;
+namespace DocAnalytics.Service.Analytics;
 
-public sealed class ChartService : IChartService
+public sealed class AnalyticsService : IAnalyticsService
 {
     private readonly AppDbContext _db;
-    public ChartService(AppDbContext db) => _db = db;
+    public AnalyticsService(AppDbContext db) => _db = db;
 
-    public async Task<ChartSeriesDto> GetStatusDistributionAsync(CancellationToken ct = default)
+    public async Task<SeriesDto> GetStatusDistributionAsync(CancellationToken ct = default)
     {
         var points = await _db.Files
             .AsNoTracking()
             .GroupBy(f => f.Status)                    // bucket files by their Status
-            .Select(g => new ChartPointDto
+            .Select(g => new SeriesPointDto
             {
                 Label = g.Key,                         // the status value, e.g. "Completed"
                 Value = g.LongCount()                  // COUNT(*) for that status
@@ -22,10 +22,10 @@ public sealed class ChartService : IChartService
             .ThenBy(p => p.Label)                      // tiebreaker → deterministic order
             .ToListAsync(ct);
 
-        return new ChartSeriesDto { Points = points };
+        return new SeriesDto { Points = points };
     }
 
-    public async Task<ChartSeriesDto> GetThroughputAsync(CancellationToken ct = default)
+    public async Task<SeriesDto> GetThroughputAsync(CancellationToken ct = default)
     {
         // PHASE 1 — DB does the work: only COMPLETED files, bucketed by the day they finished.
         // FR-1.2: throughput = files *completed* per day (not files uploaded).
@@ -40,18 +40,18 @@ public sealed class ChartService : IChartService
 
         // PHASE 2 — format labels in memory (tiny: one row per day).
         var points = raw
-            .Select(x => new ChartPointDto
+            .Select(x => new SeriesPointDto
             {
                 Label = x.Day.ToString("yyyy-MM-dd"),
                 Value = x.Count
             })
             .ToList();
 
-        return new ChartSeriesDto { Points = points };
+        return new SeriesDto { Points = points };
     }
 
 
-    public async Task<ChartSeriesDto> GetTopErrorsAsync(int topN = 5, CancellationToken ct = default)
+    public async Task<SeriesDto> GetTopErrorsAsync(int topN = 5, CancellationToken ct = default)
     {
         // Light guard so a silly topN can't break the chart (full validation = Round 5).
         if (topN < 1) topN = 5;
@@ -69,12 +69,12 @@ public sealed class ChartService : IChartService
             .ToListAsync(ct);
 
         var points = raw
-            .Select(x => new ChartPointDto { Label = x.Code, Value = x.Count })
+            .Select(x => new SeriesPointDto { Label = x.Code, Value = x.Count })
             .ToList();
 
-        return new ChartSeriesDto { Points = points };
+        return new SeriesDto { Points = points };
     }
-    public async Task<ChartSeriesDto> GetErrorTrendAsync(CancellationToken ct = default)
+    public async Task<SeriesDto> GetErrorTrendAsync(CancellationToken ct = default)
     {
         var raw = await _db.Files                                  // ① anchor on scoped table
             .AsNoTracking()
@@ -86,14 +86,14 @@ public sealed class ChartService : IChartService
             .ToListAsync(ct);
 
         var points = raw
-            .Select(x => new ChartPointDto
+            .Select(x => new SeriesPointDto
             {
                 Label = x.Day.ToString("yyyy-MM-dd"),             // ⑥ format in memory
                 Value = x.Count
             })
             .ToList();
 
-        return new ChartSeriesDto { Points = points };
+        return new SeriesDto { Points = points };
     }
 
 

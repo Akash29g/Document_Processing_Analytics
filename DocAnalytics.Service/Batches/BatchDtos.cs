@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using DocAnalytics.Service.Common;
 
 namespace DocAnalytics.Service.Batches;
 
@@ -14,6 +15,8 @@ public sealed class BatchListQuery : IValidatableObject
     public DateTime? To { get; set; }      // submitted on/before
     public string? Search { get; set; }    // partial batch id
     public string? SortBy { get; set; }    // which column to sort by
+
+    [OneOf("asc", "desc")]
     public string? SortDir { get; set; }   // asc or desc
 
     // Cross-field rule: a date window only makes sense if from is on/before to.

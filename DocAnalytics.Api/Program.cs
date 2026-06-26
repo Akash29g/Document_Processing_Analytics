@@ -29,6 +29,7 @@ builder.Services.AddInvoiceFeature();
 builder.Services.AddFileDetailsFeature();
 builder.Services.AddAnalyticsFeature();
 builder.Services.AddErrorListFeature();
+builder.Services.AddActivityLogFeature();
 
 builder.Services.AddControllers().AddJsonOptions(o =>
 {

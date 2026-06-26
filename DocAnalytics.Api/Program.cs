@@ -45,6 +45,7 @@ if (app.Environment.IsDevelopment())
     await DbSeeder.SeedAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>());
 }
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();   // outermost net — catches everything below
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<TenantSiteMiddleware>();

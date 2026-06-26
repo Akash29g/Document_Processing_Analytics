@@ -36,10 +36,16 @@ public sealed class BatchService : IBatchService
             q = q.Where(b => b.SourceSystem == query.Source);
 
         if (query.From.HasValue)
-            q = q.Where(b => b.SubmittedAt >= query.From.Value);
-
+        {
+            var fromUtc = query.From.Value.AsUtc();
+            q = q.Where(b => b.SubmittedAt >= fromUtc);
+        }
         if (query.To.HasValue)
-            q = q.Where(b => b.SubmittedAt <= query.To.Value);
+        {
+            var toUtc = query.To.Value.AsUtc();
+            q = q.Where(b => b.SubmittedAt <= toUtc);
+        }
+
 
         if (!string.IsNullOrWhiteSpace(query.Search))
         {

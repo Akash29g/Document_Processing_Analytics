@@ -28,8 +28,7 @@ builder.Services.AddDashboardFeature();
 builder.Services.AddInvoiceFeature();
 builder.Services.AddFileDetailsFeature();
 builder.Services.AddChartsFeature();
-
-
+builder.Services.AddErrorListFeature();
 
 
 

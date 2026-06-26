@@ -1,5 +1,6 @@
 ﻿using DocAnalytics.Api.Common;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace DocAnalytics.Api.Extensions;
 
@@ -17,7 +18,7 @@ public static class ValidationExtensions
                     .Where(kvp => kvp.Value is not null && kvp.Value.Errors.Count > 0)
                     .SelectMany(kvp => kvp.Value!.Errors.Select(e => new
                     {
-                        field = kvp.Key,
+                        field = JsonNamingPolicy.SnakeCaseLower.ConvertName(kvp.Key),
                         error = string.IsNullOrWhiteSpace(e.ErrorMessage)
                             ? "Invalid value."
                             : e.ErrorMessage

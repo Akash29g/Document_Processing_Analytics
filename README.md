@@ -66,6 +66,34 @@ Common errors (`28P01`, `IDX10720`, empty results after DB reset) are covered in
 
 ---
 
+## Frontend (docanalytics-web)
+
+The frontend is an **Angular 22** single-page app (standalone components + Signals) located in `docanalytics-web/`. It consumes the backend REST API under `/api/v1` and renders the Dashboard, Batch Explorer, Error Analysis, and Activity Log.
+
+### Tech Stack
+
+| Layer | Choice |
+|---|---|
+| Framework | Angular 22 (standalone components, Signals) |
+| Routing | Lazy-loaded, nested/parameterized routes (`/site/:siteId/...`) |
+| State | Angular Signals inside injectable services (one service per feature) |
+| HTTP | `HttpClient` + functional interceptors (auth + site, global error) |
+| Styling | CSS variables (AVEVA purple/white theme), functional-first layout |
+
+### Prerequisites
+
+- **Node.js 22+** and npm
+- **Angular CLI 22** — `npm install -g @angular/cli`
+
+### Setup & Run
+
+```Windows Powershell
+cd docanalytics-web
+npm install        # one-time — installs dependencies (node_modules is git-ignored)
+ng serve -o        # serves at http://localhost:4200
+```
+
+
 ## Team
 - **Dev A** — Akash Goswami
 - **Dev B** — Shubh Gupta

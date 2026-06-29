@@ -19,10 +19,13 @@ public static class DbSeeder
     //   Globex/Berlin: b1111111-1111-1111-1111-111111111111
     //   Globex/Munich: b2222222-2222-2222-2222-222222222222
     //  USERS
-    //   viewer@acme.com   (Viewer, Acme  — access to all 3 Acme sites)
-    //   admin@acme.com    (Admin,  Acme  — access to all 3 Acme sites)
-    //   viewer@globex.com (Viewer, Globex— access to both Globex sites)
+    //   user.a@acme.com    (Viewer, Acme   — Mumbai + Delhi)
+    //   admin@acme.com     (Admin,  Acme   — all 3 Acme sites: Mumbai, Delhi, Chennai)
+    //   user.b@acme.com    (Viewer, Acme   — Chennai only)
+    //   user.c@globex.com  (Viewer, Globex — Berlin only)
+    //   admin@globex.com   (Admin,  Globex — both Globex sites: Berlin, Munich)
     // ─────────────────────────────────────────────────────────────
+
     private static readonly Guid AcmeId = new("11111111-1111-1111-1111-111111111111");
     private static readonly Guid GlobexId = new("22222222-2222-2222-2222-222222222222");
 
@@ -32,9 +35,11 @@ public static class DbSeeder
     private static readonly Guid GlobexBerlin = new("b1111111-1111-1111-1111-111111111111");
     private static readonly Guid GlobexMunich = new("b2222222-2222-2222-2222-222222222222");
 
-    private static readonly Guid ViewerAcme = new("c1111111-1111-1111-1111-111111111111");
+    private static readonly Guid AcmeUserA = new("c1111111-1111-1111-1111-111111111111");
     private static readonly Guid AdminAcme = new("c2222222-2222-2222-2222-222222222222");
-    private static readonly Guid ViewerGlobex = new("c3333333-3333-3333-3333-333333333333");
+    private static readonly Guid GlobexUserC = new("c3333333-3333-3333-3333-333333333333");
+    private static readonly Guid AcmeUserB = new("c4444444-4444-4444-4444-444444444444");
+    private static readonly Guid AdminGlobex = new("c5555555-5555-5555-5555-555555555555");
 
     public static async Task SeedAsync(AppDbContext db)
     {
@@ -63,21 +68,28 @@ public static class DbSeeder
 
         var users = new[]
         {
-            new User { Id = ViewerAcme,   TenantId = AcmeId,   Email = "viewer@acme.com",   PasswordHash = hash, Role = "Viewer", CreatedAt = now, IsActive = true },
-            new User { Id = AdminAcme,    TenantId = AcmeId,   Email = "admin@acme.com",    PasswordHash = hash, Role = "Admin",  CreatedAt = now, IsActive = true },
-            new User { Id = ViewerGlobex, TenantId = GlobexId, Email = "viewer@globex.com", PasswordHash = hash, Role = "Viewer", CreatedAt = now, IsActive = true },
+            new User { Id = AcmeUserA,   TenantId = AcmeId,   Email = "user.a@acme.com",   PasswordHash = hash, Role = "Viewer", CreatedAt = now, IsActive = true },
+            new User { Id = AdminAcme,   TenantId = AcmeId,   Email = "admin@acme.com",    PasswordHash = hash, Role = "Admin",  CreatedAt = now, IsActive = true },
+            new User { Id = AcmeUserB,   TenantId = AcmeId,   Email = "user.b@acme.com",   PasswordHash = hash, Role = "Viewer", CreatedAt = now, IsActive = true },
+            new User { Id = GlobexUserC, TenantId = GlobexId, Email = "user.c@globex.com", PasswordHash = hash, Role = "Viewer", CreatedAt = now, IsActive = true },
+            new User { Id = AdminGlobex, TenantId = GlobexId, Email = "admin@globex.com",  PasswordHash = hash, Role = "Admin",  CreatedAt = now, IsActive = true },
+
         };
 
         var access = new[]
         {
-            new UserSiteAccess { Id = Guid.NewGuid(), UserId = ViewerAcme,   SiteId = AcmeMumbai,   GrantedAt = now },
-            new UserSiteAccess { Id = Guid.NewGuid(), UserId = ViewerAcme,   SiteId = AcmeDelhi,    GrantedAt = now },
-            new UserSiteAccess { Id = Guid.NewGuid(), UserId = ViewerAcme,   SiteId = AcmeChennai,  GrantedAt = now },
-            new UserSiteAccess { Id = Guid.NewGuid(), UserId = AdminAcme,    SiteId = AcmeMumbai,   GrantedAt = now },
-            new UserSiteAccess { Id = Guid.NewGuid(), UserId = AdminAcme,    SiteId = AcmeDelhi,    GrantedAt = now },
-            new UserSiteAccess { Id = Guid.NewGuid(), UserId = AdminAcme,    SiteId = AcmeChennai,  GrantedAt = now },
-            new UserSiteAccess { Id = Guid.NewGuid(), UserId = ViewerGlobex, SiteId = GlobexBerlin, GrantedAt = now },
-            new UserSiteAccess { Id = Guid.NewGuid(), UserId = ViewerGlobex, SiteId = GlobexMunich, GrantedAt = now },
+            // Acme
+            new UserSiteAccess { Id = Guid.NewGuid(), UserId = AcmeUserA,   SiteId = AcmeMumbai,   GrantedAt = now },
+            new UserSiteAccess { Id = Guid.NewGuid(), UserId = AcmeUserA,   SiteId = AcmeDelhi,    GrantedAt = now },  // user.a: Mumbai + Delhi
+            new UserSiteAccess { Id = Guid.NewGuid(), UserId = AdminAcme,   SiteId = AcmeMumbai,   GrantedAt = now },
+            new UserSiteAccess { Id = Guid.NewGuid(), UserId = AdminAcme,   SiteId = AcmeDelhi,    GrantedAt = now },
+            new UserSiteAccess { Id = Guid.NewGuid(), UserId = AdminAcme,   SiteId = AcmeChennai,  GrantedAt = now },  // admin@acme: all 3
+            new UserSiteAccess { Id = Guid.NewGuid(), UserId = AcmeUserB,   SiteId = AcmeChennai,  GrantedAt = now },  // user.b: Chennai only
+            // Globex
+            new UserSiteAccess { Id = Guid.NewGuid(), UserId = GlobexUserC, SiteId = GlobexBerlin, GrantedAt = now },  // user.c: Berlin only
+            new UserSiteAccess { Id = Guid.NewGuid(), UserId = AdminGlobex, SiteId = GlobexBerlin, GrantedAt = now },
+            new UserSiteAccess { Id = Guid.NewGuid(), UserId = AdminGlobex, SiteId = GlobexMunich, GrantedAt = now },  // admin@globex: both
+
         };
 
         // ── Global catalogs ────────────────────────────────────────

@@ -32,11 +32,20 @@ public sealed class ActivityLogService : IActivityLogService
             q = q.Where(a => a.EntityName != null && EF.Functions.ILike(a.EntityName, $"%{term}%"));
         }
 
+        // Postgres timestamptz requires Kind=Utc; query-string dates arrive as Kind=Unspecified.
+        // (Swap for query.From.Value.AsUtc() once feature/validation's Service/Common helper merges.)
         if (query.From.HasValue)
-            q = q.Where(a => a.CreatedAt >= query.From.Value);
+        {
+            var fromUtc = DateTime.SpecifyKind(query.From.Value, DateTimeKind.Utc);
+            q = q.Where(a => a.CreatedAt >= fromUtc);
+        }
 
         if (query.To.HasValue)
-            q = q.Where(a => a.CreatedAt <= query.To.Value);
+        {
+            var toUtc = DateTime.SpecifyKind(query.To.Value, DateTimeKind.Utc);
+            q = q.Where(a => a.CreatedAt <= toUtc);
+        }
+
 
         // ---- COUNT before paging ----
         var totalCount = await q.CountAsync(ct);

@@ -51,12 +51,18 @@ public sealed class ErrorService : IErrorService
             where s.Status == "Failed"             // matches DbSeeder literal exactly
             select new { f, s, t, ec };
 
-        // ---- FILTERS (added only if provided) ----
+        // Postgres timestamptz requires Kind=Utc; query-string dates arrive as Kind=Unspecified.
         if (query.From.HasValue)
-            q = q.Where(x => (x.s.CompletedAt ?? x.s.StartedAt) >= query.From.Value);
+        {
+            var fromUtc = DateTime.SpecifyKind(query.From.Value, DateTimeKind.Utc);
+            q = q.Where(x => (x.s.CompletedAt ?? x.s.StartedAt) >= fromUtc);
+        }
 
         if (query.To.HasValue)
-            q = q.Where(x => (x.s.CompletedAt ?? x.s.StartedAt) <= query.To.Value);
+        {
+            var toUtc = DateTime.SpecifyKind(query.To.Value, DateTimeKind.Utc);
+            q = q.Where(x => (x.s.CompletedAt ?? x.s.StartedAt) <= toUtc);
+        }
 
         if (!string.IsNullOrWhiteSpace(query.Step))
             q = q.Where(x => x.s.StepName == query.Step);

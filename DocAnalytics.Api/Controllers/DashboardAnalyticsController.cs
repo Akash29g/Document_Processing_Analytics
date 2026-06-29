@@ -22,13 +22,14 @@ public sealed class DashboardAnalyticsController : ControllerBase
         return Ok(ApiResponse<SeriesDto>.Ok(series));
     }
 
-    // GET /api/v1/dashboard/throughput
+    // GET /api/v1/dashboard/throughput?from=...&to=...
     [HttpGet("throughput")]
-    public async Task<IActionResult> GetThroughput(CancellationToken ct)
+    public async Task<IActionResult> GetThroughput([FromQuery] AnalyticsRangeQuery query, CancellationToken ct)
     {
-        var series = await _analyticsService.GetThroughputAsync(ct);
+        var series = await _analyticsService.GetThroughputAsync(query.From, query.To, ct);
         return Ok(ApiResponse<SeriesDto>.Ok(series));
     }
+
 
 
 }

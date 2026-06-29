@@ -22,11 +22,12 @@ public sealed class ErrorAnalyticsController : ControllerBase
         return Ok(ApiResponse<SeriesDto>.Ok(series));
     }
 
-    // GET /api/v1/errors/trend
+    // GET /api/v1/errors/trend?from=...&to=...
     [HttpGet("trend")]
-    public async Task<IActionResult> GetErrorTrend(CancellationToken ct)
+    public async Task<IActionResult> GetErrorTrend([FromQuery] AnalyticsRangeQuery query, CancellationToken ct)
     {
-        var series = await _chartService.GetErrorTrendAsync(ct);
+        var series = await _chartService.GetErrorTrendAsync(query.From, query.To, ct);
         return Ok(ApiResponse<SeriesDto>.Ok(series));
     }
+
 }

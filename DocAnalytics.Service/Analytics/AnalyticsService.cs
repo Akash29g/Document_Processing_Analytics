@@ -1,7 +1,10 @@
 ﻿using DocAnalytics.Data;
 using Microsoft.EntityFrameworkCore;
+using DocAnalytics.Service.Common;
 
 namespace DocAnalytics.Service.Analytics;
+
+
 
 public sealed class AnalyticsService : IAnalyticsService
 {
@@ -25,26 +28,31 @@ public sealed class AnalyticsService : IAnalyticsService
         return new SeriesDto { Points = points };
     }
 
-    public async Task<SeriesDto> GetThroughputAsync(CancellationToken ct = default)
+    public async Task<SeriesDto> GetThroughputAsync(DateTime? from, DateTime? to, CancellationToken ct = default)
     {
-        // PHASE 1 — DB does the work: only COMPLETED files, bucketed by the day they finished.
-        // FR-1.2: throughput = files *completed* per day (not files uploaded).
-        // NOTE: FileRecord has no completed_at, so LastUpdatedAt is the closest completion signal.
-        var raw = await _db.Files
+        var q = _db.Files
             .AsNoTracking()
-            .Where(f => f.Status == "Completed")      // ✅ completed only (PascalCase matches seeder)
-            .GroupBy(f => f.LastUpdatedAt.Date)        // ✅ bucket by completion day
+            .Where(f => f.Status == "Completed");                 // FR-1.2: completed only
+
+        if (from.HasValue)
+        {
+            var fromUtc = from.Value.AsUtc();
+            q = q.Where(f => f.LastUpdatedAt >= fromUtc);   // optional lower bound (UTC-normalised)
+        }
+        if (to.HasValue)
+        {
+            var toUtc = to.Value.AsUtc();
+            q = q.Where(f => f.LastUpdatedAt <= toUtc);     // optional upper bound (UTC-normalised)
+        }
+
+        var raw = await q
+            .GroupBy(f => f.LastUpdatedAt.Date)                   // bucket by completion day
             .Select(g => new { Day = g.Key, Count = g.LongCount() })
             .OrderBy(x => x.Day)
             .ToListAsync(ct);
 
-        // PHASE 2 — format labels in memory (tiny: one row per day).
         var points = raw
-            .Select(x => new SeriesPointDto
-            {
-                Label = x.Day.ToString("yyyy-MM-dd"),
-                Value = x.Count
-            })
+            .Select(x => new SeriesPointDto { Label = x.Day.ToString("yyyy-MM-dd"), Value = x.Count })
             .ToList();
 
         return new SeriesDto { Points = points };
@@ -74,23 +82,32 @@ public sealed class AnalyticsService : IAnalyticsService
 
         return new SeriesDto { Points = points };
     }
-    public async Task<SeriesDto> GetErrorTrendAsync(CancellationToken ct = default)
+    public async Task<SeriesDto> GetErrorTrendAsync(DateTime? from, DateTime? to, CancellationToken ct = default)
     {
-        var raw = await _db.Files                                  // ① anchor on scoped table
+        var q = _db.Files
             .AsNoTracking()
-            .SelectMany(f => f.Steps)                             // ② out to non-scoped steps
-            .Where(s => s.ErrorCode != null && s.StartedAt != null) // ③ errored AND has a timestamp
-            .GroupBy(s => s.StartedAt!.Value.Date)                // ④ bucket by day (null-guarded)
+            .SelectMany(f => f.Steps)
+            .Where(s => s.ErrorCode != null && s.StartedAt != null);   // errored AND timestamped
+
+        if (from.HasValue)
+        {
+            var fromUtc = from.Value.AsUtc();
+            q = q.Where(s => s.StartedAt >= fromUtc);
+        }
+        if (to.HasValue)
+        {
+            var toUtc = to.Value.AsUtc();
+            q = q.Where(s => s.StartedAt <= toUtc);
+        }
+
+        var raw = await q
+            .GroupBy(s => s.StartedAt!.Value.Date)                // null-guarded above
             .Select(g => new { Day = g.Key, Count = g.LongCount() })
-            .OrderBy(x => x.Day)                                  // ⑤ chronological
+            .OrderBy(x => x.Day)
             .ToListAsync(ct);
 
         var points = raw
-            .Select(x => new SeriesPointDto
-            {
-                Label = x.Day.ToString("yyyy-MM-dd"),             // ⑥ format in memory
-                Value = x.Count
-            })
+            .Select(x => new SeriesPointDto { Label = x.Day.ToString("yyyy-MM-dd"), Value = x.Count })
             .ToList();
 
         return new SeriesDto { Points = points };

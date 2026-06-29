@@ -1,1 +1,36 @@
-/* You can add global styles to this file, and also import other style files */
+/* ===== AVEVA purple/white design tokens ===== */
+:root {
+  --purple-900: #3D1152; /* brand — sidebar, headings */
+  --purple-700: #5B2580; /* hover / active */
+  --purple-500: #7C3AED; /* interactive accent */
+  --purple-200: #E6DBF0; /* borders, tints */
+  --purple-050: #F7F5FA; /* page background */
+  --white: #FFFFFF;
+  --ink: #1A1430; /* primary text */
+  --muted: #6B6480; /* secondary text */
+  --line: #ECE8F1; /* dividers */
+  /* semantic — status only */
+  --ok: #2E9E6B;
+  --err: #D64550;
+  --warn: #E0A100;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--purple-050);
+}
+
+a {
+  color: var(--purple-500);
+  text-decoration: none;
+}

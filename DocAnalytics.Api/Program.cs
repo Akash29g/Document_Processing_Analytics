@@ -38,6 +38,12 @@ builder.Services.AddControllers().AddJsonOptions(o =>
 
 builder.Services.AddValidationBehavior();   // <- Piece B: bad input -> ApiResponse.Fail (400)
 
+builder.Services.AddCors(o => o.AddPolicy("frontend", p =>
+    p.WithOrigins("http://localhost:4200")
+     .AllowAnyHeader()     // allows Authorization + X-Site-Id
+     .AllowAnyMethod()));
+
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -49,6 +55,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();   // outermost net — catches everything below
+app.UseCors("frontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<TenantSiteMiddleware>();

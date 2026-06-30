@@ -50,11 +50,14 @@ export class StatusDistributionChartComponent {
   rows = computed(() => {
     const d = this.data();
     const total = d.reduce((sum, p) => sum + p.value, 0) || 1;
-    return d.map(p => ({
-      label: p.label,
-      value: p.value,
-      pct: Math.round((p.value / total) * 100),
-      key: p.label.toLowerCase().replace(/\s+/g, ''), // "Processing" -> "processing"
-    }));
+    return d.map(p => {
+      const k = p.label.toLowerCase().replace(/\s+/g, '');
+      return {
+        label: p.label,
+        value: p.value,
+        pct: Math.round((p.value / total) * 100),
+        key: k === 'inprogress' ? 'processing' : k, // "In Progress" OR "Processing" → same blue fill
+      };
+    });
   });
 }

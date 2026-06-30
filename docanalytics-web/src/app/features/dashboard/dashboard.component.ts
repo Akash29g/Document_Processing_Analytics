@@ -1,18 +1,30 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject } from '@angular/core';
 import { DashboardService } from './dashboard.service';
 import { RefreshTimerService } from '../../core/services/refresh-timer.service';
-import { SiteContextService } from '../../core/services/site-context.service'; // 👈 adjust path if yours differs
+import { SiteContextService } from '../../core/services/site-context.service';
+import { RefreshTimerComponent } from '../../shared/components/refresh-timer.component';
 import { ThroughputChartComponent } from './throughput-chart.component';
 import { StatusDistributionChartComponent } from './status-distribution-chart.component';
+
+// FR-1.5 configurable interval — single source of truth (could later move to environment.ts)
+const DASHBOARD_REFRESH_MS = 30_000;
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [ThroughputChartComponent, StatusDistributionChartComponent],
+  // 🔵 keep Akash's StatCard/DataTable imports here too when you merge
+  imports: [ThroughputChartComponent, StatusDistributionChartComponent, RefreshTimerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="dash">
-      <h1 class="page-title">Dashboard</h1>
+      <div class="dash-head">
+        <h1 class="page-title">Dashboard</h1>
+        <app-refresh-timer
+          [lastUpdated]="dash.lastUpdated()"
+          [intervalMs]="refreshMs"
+          [busy]="dash.throughputLoading() || dash.distributionLoading()"
+          (refresh)="dash.refreshAll()" />
+      </div>
 
       <!-- 🔵 Akash: summary counter tiles + recent-failures table render here -->
 
@@ -31,6 +43,7 @@ import { StatusDistributionChartComponent } from './status-distribution-chart.co
   styles: [`
     :host { display: block; }
     .dash { display: flex; flex-direction: column; gap: var(--space-2); }
+    .dash-head { display: flex; align-items: center; justify-content: space-between; }
     .page-title { font-family: var(--font-display); color: var(--dark-gray); margin: 0; }
     .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
     @media (max-width: 1100px) { .charts-grid { grid-template-columns: 1fr; } }
@@ -42,16 +55,19 @@ export class DashboardComponent {
   private site = inject(SiteContextService);
   private destroyRef = inject(DestroyRef);
 
+  protected refreshMs = DASHBOARD_REFRESH_MS;
+
   constructor() {
-    // 🔁 Refetch immediately whenever the selected site changes (also fires on first load).
+    // 🔁 Refetch ONLY on subsequent site switches — the poll's initial tick owns first load.
+    let firstSiteRun = true;
     effect(() => {
-      const siteId = this.site.selectedSiteId();   // tracked dependency
-      if (siteId) {
-        this.dash.refreshAll();
-      }
+      const siteId = this.site.selectedSiteId();
+      if (!siteId) return;
+      if (firstSiteRun) { firstSiteRun = false; return; }
+      this.dash.refreshAll();
     });
 
-    // ⏱️ Background 30s heartbeat (pauses on hidden tab).
-    this.poll.start(30_000, () => this.dash.refreshAll(), this.destroyRef);
+    // ⏱️ 30s heartbeat: timer(0, …) handles first load + instant refetch on tab-return.
+    this.poll.start(DASHBOARD_REFRESH_MS, () => this.dash.refreshAll(), this.destroyRef);
   }
 }

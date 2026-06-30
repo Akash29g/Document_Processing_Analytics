@@ -5,11 +5,12 @@ import { map } from 'rxjs';
 import { SiteContextService } from '../core/services/site-context.service';
 import { ToastService } from '../core/services/toast.service';
 import { AuthService } from '../core/services/auth.service';
+import { SiteSelectorComponent } from '../shared/components/site-selector.component';
 
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, SiteSelectorComponent],
   template: `
   <div class="shell">
     <aside class="sidebar">
@@ -24,7 +25,7 @@ import { AuthService } from '../core/services/auth.service';
 
     <div class="main">
       <header class="topbar">
-        <span class="site-pill">Site: {{ siteId() ?? '—' }}</span>
+        <app-site-selector />
         <span class="spacer"></span>
         <span class="user">{{ user()?.role ?? 'Viewer' }}</span>
         <button class="logout-btn" (click)="logout()">Log out</button>

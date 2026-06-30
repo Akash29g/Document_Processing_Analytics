@@ -1,23 +1,27 @@
-import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
+import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
+import { SiteContextService } from '../services/site-context.service';
 
-// Mirrors the server's FR-5.3 check: block a :siteId the user isn't granted.
 export const siteAccessGuard: CanActivateFn = async (route) => {
   const auth = inject(AuthService);
+  const siteCtx = inject(SiteContextService);
   const router = inject(Router);
 
   const siteId = route.paramMap.get('siteId');
   if (!siteId) return router.createUrlTree(['/login']);
 
-  // 🔑 Ensure the session (and the sites list) is loaded BEFORE checking access.
-  // ensureSession() is idempotent — if authGuard already loaded it, this returns instantly.
+  // ensure user + sites are loaded (handles hard refresh where only the token survives)
   const ok = await auth.ensureSession();
   if (!ok) return router.createUrlTree(['/login']);
 
-  if (!auth.hasSiteAccess(siteId)) {
-    return router.createUrlTree(['/login']); // Round 5 can route to a /forbidden page
+  // FR-5.3 client-side check (server still enforces)
+  if (auth.hasSiteAccess(siteId)) {
+    siteCtx.setSite(siteId);
+    return true;
   }
 
-  return true;
+  // logged in but not authorized for THIS site → first allowed site, else login
+  const fallback = auth.sites()[0];
+  return router.createUrlTree(fallback ? ['/site', fallback.site_id, 'dashboard'] : ['/login']);
 };

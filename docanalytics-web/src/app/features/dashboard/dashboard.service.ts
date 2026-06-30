@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../core/models/api-response.model';
 import { SeriesPoint, ChartSeries } from '../../core/models/dashboard.model';
+import { finalize } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
@@ -21,26 +22,30 @@ export class DashboardService {
   readonly distributionError = signal<string | null>(null);
 
   loadThroughput(): void {
-    this.throughputLoading.set(true);
-    this.throughputError.set(null);
-    this.http.get<ApiResponse<ChartSeries>>(`${this.base}/dashboard/throughput`)
-      .subscribe({
-        next: res => this.throughput.set(res.data?.points ?? []),   // 👈 .points
-        error: () => this.throughputError.set('Could not load throughput.'),
-        complete: () => this.throughputLoading.set(false),
-      });
-  }
+  this.throughputLoading.set(true);
+  this.throughputError.set(null);
+  this.http.get<ApiResponse<ChartSeries>>(`${this.base}/dashboard/throughput`)
+    .pipe(finalize(() => this.throughputLoading.set(false)))   // runs on success AND error
+    .subscribe({
+      next: res => this.throughput.set(res.data?.points ?? []),
+      error: () => this.throughputError.set('Could not load throughput.'),
+    });
+}
 
+
+  
   loadStatusDistribution(): void {
-    this.distributionLoading.set(true);
-    this.distributionError.set(null);
-    this.http.get<ApiResponse<ChartSeries>>(`${this.base}/dashboard/status-distribution`)
-      .subscribe({
-        next: res => this.statusDistribution.set(res.data?.points ?? []),  // 👈 .points
-        error: () => this.distributionError.set('Could not load status distribution.'),
-        complete: () => this.distributionLoading.set(false),
-      });
-  }
+  this.distributionLoading.set(true);
+  this.distributionError.set(null);
+  this.http.get<ApiResponse<ChartSeries>>(`${this.base}/dashboard/status-distribution`)
+    .pipe(finalize(() => this.distributionLoading.set(false)))  // runs on success AND error
+    .subscribe({
+      next: res => this.statusDistribution.set(res.data?.points ?? []),
+      error: () => this.distributionError.set('Could not load status distribution.'),
+    });
+}
+
+  
 
   // Shared — the 30s poll calls this
   readonly lastUpdated = signal<Date | null>(null);

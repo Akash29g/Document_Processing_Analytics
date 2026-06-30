@@ -1,7 +1,10 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
+import { finalize } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse, Meta } from '../../core/models/api-response.model';
+import { SKIP_ERROR_TOAST } from '../../core/interceptors/error.interceptor';
+import { ChartSeries, SeriesPoint } from '../../core/models/dashboard.model';
 import {
   DashboardSummary, FailuresSortBy, RecentFailure, RecentFailuresQuery,
 } from './dashboard.models';
@@ -11,7 +14,10 @@ export class DashboardService {
   private readonly http = inject(HttpClient);
   private readonly base = environment.apiBase;
 
-  // ───────────────────────── Dev A · Summary (FR-1.1) ─────────────────────────
+  // tells the error interceptor "don't toast — widgets show errors inline"
+  private readonly silent = { context: new HttpContext().set(SKIP_ERROR_TOAST, true) };
+
+  // ───────── Dev A · Summary (FR-1.1) ─────────
   private readonly _summary = signal<DashboardSummary | null>(null);
   private readonly _summaryLoading = signal(false);
   private readonly _summaryError = signal<string | null>(null);
@@ -22,13 +28,15 @@ export class DashboardService {
   loadSummary(): void {
     this._summaryLoading.set(true);
     this._summaryError.set(null);
-    this.http.get<ApiResponse<DashboardSummary>>(`${this.base}/dashboard/summary`).subscribe({
-      next: (res) => { this._summary.set(res.data); this._summaryLoading.set(false); },
-      error: () => { this._summaryError.set('Could not load summary counters.'); this._summaryLoading.set(false); },
-    });
+    this.http.get<ApiResponse<DashboardSummary>>(`${this.base}/dashboard/summary`, this.silent)
+      .pipe(finalize(() => this._summaryLoading.set(false)))
+      .subscribe({
+        next: (res) => this._summary.set(res.data),
+        error: () => this._summaryError.set('Could not load summary counters.'),
+      });
   }
 
-  // ────────────────────── Dev A · Recent Failures (FR-1.4) ────────────────────
+  // ───────── Dev A · Recent Failures (FR-1.4) ─────────
   private readonly _failures = signal<RecentFailure[]>([]);
   private readonly _failuresMeta = signal<Meta | null>(null);
   private readonly _failuresLoading = signal(false);
@@ -46,21 +54,16 @@ export class DashboardService {
     const q = this._failuresQuery();
     this._failuresLoading.set(true);
     this._failuresError.set(null);
-
     const params = new HttpParams()
-      .set('page', q.page)
-      .set('pageSize', q.pageSize)
-      .set('sortBy', q.sortBy)
-      .set('sortDir', q.sortDir);
-
-    this.http.get<ApiResponse<RecentFailure[]>>(`${this.base}/dashboard/recent-failures`, { params }).subscribe({
-      next: (res) => {
-        this._failures.set(res.data ?? []);
-        this._failuresMeta.set(res.meta ?? null);
-        this._failuresLoading.set(false);
-      },
-      error: () => { this._failuresError.set('Could not load recent failures.'); this._failuresLoading.set(false); },
-    });
+      .set('page', q.page).set('pageSize', q.pageSize)
+      .set('sortBy', q.sortBy).set('sortDir', q.sortDir);
+    this.http.get<ApiResponse<RecentFailure[]>>(
+      `${this.base}/dashboard/recent-failures`, { params, ...this.silent })
+      .pipe(finalize(() => this._failuresLoading.set(false)))
+      .subscribe({
+        next: (res) => { this._failures.set(res.data ?? []); this._failuresMeta.set(res.meta ?? null); },
+        error: () => this._failuresError.set('Could not load recent failures.'),
+      });
   }
 
   setFailuresSort(sortBy: FailuresSortBy, sortDir: 'asc' | 'desc'): void {
@@ -76,16 +79,43 @@ export class DashboardService {
     this.loadFailures();
   }
 
-  // ───────────────────── Dev B · Throughput + Distribution ────────────────────
-  // Shubh: add throughput/distribution signals + loadThroughput()/loadDistribution() here.
+  // ───────── Dev B · Throughput + Status Distribution ─────────
+  readonly throughput = signal<SeriesPoint[]>([]);
+  readonly throughputLoading = signal(false);
+  readonly throughputError = signal<string | null>(null);
+  readonly statusDistribution = signal<SeriesPoint[]>([]);
+  readonly distributionLoading = signal(false);
+  readonly distributionError = signal<string | null>(null);
 
-  // ─────────────────────────── CO-OWNED poll target ───────────────────────────
-  // The RxJS poller (Shubh, FR-1.5) calls this every 30s. On merge, keep BOTH sets
-  // of load() calls in here.
+  loadThroughput(): void {
+    this.throughputLoading.set(true);
+    this.throughputError.set(null);
+    this.http.get<ApiResponse<ChartSeries>>(`${this.base}/dashboard/throughput`, this.silent)
+      .pipe(finalize(() => this.throughputLoading.set(false)))
+      .subscribe({
+        next: (res) => this.throughput.set(res.data?.points ?? []),
+        error: () => this.throughputError.set('Could not load throughput.'),
+      });
+  }
+
+  loadStatusDistribution(): void {
+    this.distributionLoading.set(true);
+    this.distributionError.set(null);
+    this.http.get<ApiResponse<ChartSeries>>(`${this.base}/dashboard/status-distribution`, this.silent)
+      .pipe(finalize(() => this.distributionLoading.set(false)))
+      .subscribe({
+        next: (res) => this.statusDistribution.set(res.data?.points ?? []),
+        error: () => this.distributionError.set('Could not load status distribution.'),
+      });
+  }
+
+  // ───────── CO-OWNED poll target (FR-1.5) ─────────
+  readonly lastUpdated = signal<Date | null>(null);
   refreshAll(): void {
     this.loadSummary();
     this.loadFailures();
-    // this.loadThroughput();   // ← Shubh
-    // this.loadDistribution(); // ← Shubh
+    this.loadThroughput();
+    this.loadStatusDistribution();
+    this.lastUpdated.set(new Date());
   }
 }

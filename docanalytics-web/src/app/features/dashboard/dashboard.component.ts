@@ -1,13 +1,13 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject } from '@angular/core';
 import { DashboardService } from './dashboard.service';
 import { RefreshTimerService } from '../../core/services/refresh-timer.service';
+import { SiteContextService } from '../../core/services/site-context.service'; // 👈 adjust path if yours differs
 import { ThroughputChartComponent } from './throughput-chart.component';
 import { StatusDistributionChartComponent } from './status-distribution-chart.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  // 🔵 keep Akash's StatCard/DataTable imports here too when you merge
   imports: [ThroughputChartComponent, StatusDistributionChartComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -16,7 +16,6 @@ import { StatusDistributionChartComponent } from './status-distribution-chart.co
 
       <!-- 🔵 Akash: summary counter tiles + recent-failures table render here -->
 
-      <!-- 🟣 Shubh: charts -->
       <div class="charts-grid">
         <app-throughput-chart
           [data]="dash.throughput()"
@@ -40,10 +39,19 @@ import { StatusDistributionChartComponent } from './status-distribution-chart.co
 export class DashboardComponent {
   protected dash = inject(DashboardService);
   private poll = inject(RefreshTimerService);
+  private site = inject(SiteContextService);
   private destroyRef = inject(DestroyRef);
 
   constructor() {
-    // single poll → refreshAll() loads all four datasets (yours + Akash's)
+    // 🔁 Refetch immediately whenever the selected site changes (also fires on first load).
+    effect(() => {
+      const siteId = this.site.selectedSiteId();   // tracked dependency
+      if (siteId) {
+        this.dash.refreshAll();
+      }
+    });
+
+    // ⏱️ Background 30s heartbeat (pauses on hidden tab).
     this.poll.start(30_000, () => this.dash.refreshAll(), this.destroyRef);
   }
 }

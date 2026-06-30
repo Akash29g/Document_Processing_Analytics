@@ -1,12 +1,24 @@
 import { Component, computed, input } from '@angular/core';
 
+type BadgeStyle = { bg: string; fg: string; icon: string };
+
 @Component({
   selector: 'app-status-badge',
   standalone: true,
-  template: `<span class="badge" [style.background]="bg()" [style.color]="fg()">{{ status() }}</span>`,
+  template: `
+    <span class="badge" [style.background]="style().bg" [style.color]="style().fg">
+      <span class="material-icons" aria-hidden="true">{{ style().icon }}</span>
+      {{ status() }}
+    </span>
+  `,
   styles: [`
-    .badge { display:inline-block; padding:3px 10px; border-radius:999px;
-             font-size:12px; font-weight:600; line-height:1.6; white-space:nowrap; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 10px; border-radius: 999px;
+      font-family: var(--font-body); font-size: 12px; font-weight: 600;
+      line-height: 1.6; white-space: nowrap;
+    }
+    .material-icons { font-size: 14px; line-height: 1; }
   `],
 })
 export class StatusBadgeComponent {
@@ -14,23 +26,22 @@ export class StatusBadgeComponent {
 
   private key = computed(() => this.status().toLowerCase().replace(/[\s_]/g, ''));
 
-  bg = computed(() => {
+  style = computed<BadgeStyle>(() => {
     switch (this.key()) {
-      case 'completed': case 'success': return 'rgba(46,158,107,.12)';
-      case 'failed': case 'error': return 'rgba(214,69,80,.12)';
-      case 'inprogress': case 'processing': return 'var(--purple-200)';
-      case 'queued': return '#ECECEC';
-      default: return '#ECECEC';
-    }
-  });
-
-  fg = computed(() => {
-    switch (this.key()) {
-      case 'completed': case 'success': return 'var(--ok)';
-      case 'failed': case 'error': return 'var(--err)';
-      case 'inprogress': case 'processing': return 'var(--purple-900)';
-      case 'queued': return 'var(--muted)';
-      default: return 'var(--muted)';
+      case 'completed':
+      case 'success':
+        // confirmed: tint fill + muted green text + check icon
+        return { bg: 'rgba(0,152,72,.12)', fg: 'var(--text-confirmed)', icon: 'check_circle' };
+      case 'failed':
+      case 'error':
+        return { bg: 'rgba(220,10,10,.12)', fg: 'var(--text-error)', icon: 'error' };
+      case 'inprogress':
+      case 'processing':
+        // neutral blue (NOT purple — purple is brand chrome only)
+        return { bg: 'rgba(1,169,244,.12)', fg: '#055f86', icon: 'pause_circle' };
+      case 'queued':
+      default:
+        return { bg: 'rgba(190,204,214,.25)', fg: 'var(--dark-gray-3)', icon: 'schedule' };
     }
   });
 }

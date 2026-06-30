@@ -34,49 +34,75 @@ import { SiteSelectorComponent } from '../shared/components/site-selector.compon
     </div>
 
     <!-- global toast outlet -->
-    <div class="toasts">
-      @for (t of toast.toasts(); track t.id) {
-        <div class="toast"
-             [class.error]="t.type === 'error'"
-             [class.success]="t.type === 'success'">
-          {{ t.text }}
-          <button (click)="toast.dismiss(t.id)">×</button>
-        </div>
-      }
+<div class="toasts">
+  @for (t of toast.toasts(); track t.id) {
+    <div class="toast"
+         [class.error]="t.type === 'error'"
+         [class.success]="t.type === 'success'"
+         [class.warning]="t.type === 'warning'">
+      <span class="material-icons" aria-hidden="true">{{ icon(t.type) }}</span>
+      <span class="toast-text">{{ t.text }}</span>
+      <button (click)="toast.dismiss(t.id)">×</button>
     </div>
+  }
+</div>
+
   </div>
   `,
   styles: [`
-    .shell { display: grid; grid-template-columns: 220px 1fr; height: 100vh; }
-    .sidebar { background: var(--purple-900); color: #fff; padding: 16px 12px; }
-    .brand { font-weight: 700; font-size: 18px; padding: 8px 12px 20px; }
-    nav { display: flex; flex-direction: column; gap: 4px; }
-    nav a { color: var(--purple-200); padding: 10px 12px; border-radius: 8px; font-size: 14px; }
-    nav a:hover { background: var(--purple-700); color: #fff; }
-    nav a.active { background: var(--purple-700); color: #fff; font-weight: 600; }
-    .main { display: flex; flex-direction: column; min-width: 0; }
-    .topbar { display: flex; align-items: center; gap: 12px; background: #fff;
-              border-bottom: 1px solid var(--line); padding: 12px 20px; }
-    .site-pill { background: var(--purple-050); border: 1px solid var(--purple-200);
-                 color: var(--purple-900); border-radius: 999px; padding: 6px 14px;
-                 font-size: 13px; font-weight: 600; }
-    .spacer { flex: 1; }
-    .user { color: var(--muted); font-size: 13px; }
-    .logout-btn { background: transparent; border: 1px solid var(--purple-200);
-                  color: var(--purple-900); border-radius: 8px; padding: 6px 14px;
-                  font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; }
-    .logout-btn:hover { background: var(--purple-900); color: #fff; border-color: var(--purple-900); }
-    .content { flex: 1; padding: 20px; overflow: auto; background: var(--purple-900);}
-    .toasts { position: fixed; bottom: 20px; right: 20px; display: flex;
-              flex-direction: column; gap: 8px; z-index: 1000; }
-    .toast { background: var(--purple-900); color: #fff; padding: 10px 14px;
-             border-radius: 8px; box-shadow: 0 4px 12px rgba(61,17,82,.2);
-             display: flex; gap: 12px; align-items: center; font-size: 14px; }
-    .toast.error { background: var(--err); }
-    .toast.success { background: var(--ok); }
-    .toast button { background: transparent; border: none; color: #fff;
-                    cursor: pointer; font-size: 16px; line-height: 1; }
-  `],
+  .shell { display: grid; grid-template-columns: 220px 1fr; height: 100vh; }
+
+  /* Sidebar = brand chrome → AVEVA purple is allowed here */
+  .sidebar { background: var(--aveva-purple); color: #fff; padding: 16px 12px; }
+  .brand { font-family: var(--font-display); font-weight: 700; font-size: 18px; padding: 8px 12px 20px; }
+  nav { display: flex; flex-direction: column; gap: 4px; }
+  nav a {
+    font-family: var(--font-display); font-weight: 600; font-size: 16px;
+    color: rgba(255,255,255,.75); padding: 10px 12px; border-radius: 8px;
+  }
+  nav a:hover { background: var(--purple); color: #fff; }
+  nav a.active { background: var(--purple); color: #fff; }   /* active tab — allowed */
+
+  .main { display: flex; flex-direction: column; min-width: 0; }
+
+  /* Topbar = white surface (NOT purple) */
+  .topbar {
+    height: 64px; display: flex; align-items: center; gap: 12px;
+    background: var(--white); border-bottom: 1px solid var(--cool-gray);
+    padding: 0 24px;
+  }
+  .spacer { flex: 1; }
+  .user { color: var(--dark-gray-3); font-size: 14px; }
+
+  /* Log out = ghost/secondary button (slate-blue, not purple) */
+  .logout-btn {
+    font-family: var(--font-display); font-weight: 600; font-size: 14px;
+    background: transparent; border: 1px solid var(--slate-blue);
+    color: var(--slate-blue); border-radius: 4px; padding: 8px 16px;
+    cursor: pointer; transition: all .15s;
+  }
+  .logout-btn:hover { background: var(--slate-blue); color: #fff; }
+
+  /* Content canvas = light page bg, NOT purple (this was a bug in your version) */
+  .content { flex: 1; padding: 24px; overflow: auto; background: var(--bg-light); max-width: 1440px; }
+
+  /* Toasts — left color bar + filled icon handled in template; bg is dark per Notification Bar spec */
+  .toasts { position: fixed; bottom: 20px; right: 20px; display: flex;
+            flex-direction: column; gap: 8px; z-index: 1000; }
+  .toast {
+    font-family: var(--font-body); font-weight: 600; font-size: 14px;
+    background: rgba(0,0,0,.85); color: #fff; padding: 12px 16px;
+    border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,.2);
+    display: flex; gap: 12px; align-items: center;
+    border-left: 4px solid var(--status-neutral);   /* default = info */
+  }
+  .toast.success { border-left-color: var(--status-confirmed); }
+  .toast.error   { border-left-color: var(--status-error); }
+  .toast.warning { border-left-color: var(--status-warning); }
+  .toast button { background: transparent; border: none; color: #fff;
+                  cursor: pointer; font-size: 16px; line-height: 1; }
+`],
+
 })
 export class ShellComponent {
   private route = inject(ActivatedRoute);
@@ -105,5 +131,14 @@ export class ShellComponent {
   logout(): void {
     this.auth.logout();
     this.router.navigate(['/login']);
+  }
+
+  icon(type: string): string {
+    switch (type) {
+      case 'success': return 'check_circle';
+      case 'warning': return 'warning';
+      case 'error': return 'error';
+      default: return 'info';
+    }
   }
 }

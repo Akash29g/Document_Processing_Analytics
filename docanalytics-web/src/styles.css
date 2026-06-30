@@ -1,18 +1,40 @@
-/* ===== AVEVA purple/white design tokens ===== */
 :root {
-  --purple-900: #3D1152; /* brand — sidebar, headings */
-  --purple-700: #5B2580; /* hover / active */
-  --purple-500: #7C3AED; /* interactive accent */
-  --purple-200: #E6DBF0; /* borders, tints */
-  --purple-050: #F7F5FA; /* page background */
-  --white: #FFFFFF;
-  --ink: #1A1430; /* primary text */
-  --muted: #6B6480; /* secondary text */
-  --line: #ECE8F1; /* dividers */
-  /* semantic — status only */
-  --ok: #2E9E6B;
-  --err: #D64550;
-  --warn: #E0A100;
+  /* ===== AVEVA Digital UI Palette (exact hex from style guide) ===== */
+  --aveva-purple: #3D1152; /* brand chrome ONLY: top bar, sidebar, active tab */
+  --purple: #6B04A8; /* marketing background fills only */
+  --bright-purple: #C530FF;
+  /* Neutrals / "furniture" */
+  --black: #000000;
+  --dark-gray: #363D42; /* DEFAULT TEXT (light mode) */
+  --dark-gray-3: #545C69; /* secondary text, eyebrow labels */
+  --cool-gray: #BECCD6; /* disabled, borders */
+  --light-gray: #F2F5F7;
+  --bg-light: #F6F8FA; /* page canvas (light) */
+  --bg-dark: #23282B; /* page canvas (dark mode) */
+  --white: #FFFFFF; /* card fill (light) */
+  /* Interactive — Slate Blue, NEVER purple */
+  --slate-blue: #4D5EE0;
+  --slate-blue-3: #78A1FC;
+  /* Status / Feedback (fill + icon ONLY) */
+  --status-neutral: #01A9F4;
+  --status-confirmed: #009848;
+  --status-warning: #F5A624;
+  --status-error: #DC0A0A;
+  /* Light-mode feedback TEXT colors */
+  --text-neutral: #363D42;
+  --text-confirmed: #217046;
+  --text-warning: #7D5D29;
+  --text-error: #8F2727;
+  /* Typography */
+  --font-display: 'Barlow', sans-serif;
+  --font-body: 'Mulish', 'Muli', sans-serif;
+  /* 8px grid spacing scale */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-9: 72px;
 }
 
 * {
@@ -20,17 +42,28 @@
 }
 
 html, body {
-  height: 100%;
   margin: 0;
+  padding: 0;
+  background: var(--bg-light);
 }
 
 body {
-  font-family: 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
-  color: var(--ink);
-  background: var(--purple-050);
+  font-family: var(--font-body);
+  color: var(--dark-gray);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  color: var(--dark-gray);
 }
 
 a {
-  color: var(--purple-500);
+  color: var(--slate-blue);
   text-decoration: none;
 }
+
+  a:hover {
+    text-decoration: underline;
+  }

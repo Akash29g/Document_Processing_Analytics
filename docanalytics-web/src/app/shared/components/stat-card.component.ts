@@ -9,12 +9,21 @@ import { Component, input } from '@angular/core';
       <div class="value">{{ value() }}</div>
     </div>`,
   styles: [`
-    .card { background:var(--white); border:1px solid var(--line);
-            border-left:4px solid var(--purple-500); border-radius:12px;
-            padding:16px 18px; box-shadow:0 1px 3px rgba(61,17,82,.08); min-width:160px; }
-    .title { color:var(--muted); font-size:13px; font-weight:600;
-             text-transform:uppercase; letter-spacing:.03em; }
-    .value { color:var(--purple-900); font-size:30px; font-weight:700; margin-top:6px; }
+    .card {
+      background: var(--white); border: 1px solid var(--cool-gray);
+      border-radius: 6px; padding: 16px 18px;
+      box-shadow: 0 2px 10px 0 rgba(0,0,0,.08); min-width: 160px;
+    }
+    .title {
+      font-family: var(--font-body); color: var(--dark-gray-3);
+      font-size: 12px; font-weight: 600; line-height: 16px;
+      text-transform: uppercase; letter-spacing: 2px;   /* Eyebrow Title spec */
+    }
+    .value {
+      font-family: var(--font-body); color: var(--dark-gray);
+      font-size: 32px; line-height: 38px; font-weight: 700;   /* Number level one */
+      margin-top: 8px;
+    }
   `],
 })
 export class StatCardComponent {

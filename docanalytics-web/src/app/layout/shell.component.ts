@@ -1,9 +1,10 @@
 import { Component, inject } from '@angular/core';
-import { ActivatedRoute, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 import { SiteContextService } from '../core/services/site-context.service';
 import { ToastService } from '../core/services/toast.service';
+import { AuthService } from '../core/services/auth.service';
 
 @Component({
   selector: 'app-shell',
@@ -25,7 +26,8 @@ import { ToastService } from '../core/services/toast.service';
       <header class="topbar">
         <span class="site-pill">Site: {{ siteId() ?? '—' }}</span>
         <span class="spacer"></span>
-        <span class="user">Viewer</span>
+        <span class="user">{{ user()?.role ?? 'Viewer' }}</span>
+        <button class="logout-btn" (click)="logout()">Log out</button>
       </header>
       <main class="content"><router-outlet /></main>
     </div>
@@ -59,7 +61,11 @@ import { ToastService } from '../core/services/toast.service';
                  font-size: 13px; font-weight: 600; }
     .spacer { flex: 1; }
     .user { color: var(--muted); font-size: 13px; }
-    .content { padding: 20px; overflow: auto; }
+    .logout-btn { background: transparent; border: 1px solid var(--purple-200);
+                  color: var(--purple-900); border-radius: 8px; padding: 6px 14px;
+                  font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; }
+    .logout-btn:hover { background: var(--purple-900); color: #fff; border-color: var(--purple-900); }
+    .content { flex: 1; padding: 20px; overflow: auto; background: var(--purple-900);}
     .toasts { position: fixed; bottom: 20px; right: 20px; display: flex;
               flex-direction: column; gap: 8px; z-index: 1000; }
     .toast { background: var(--purple-900); color: #fff; padding: 10px 14px;
@@ -74,10 +80,15 @@ import { ToastService } from '../core/services/toast.service';
 export class ShellComponent {
   private route = inject(ActivatedRoute);
   private siteCtx = inject(SiteContextService);
+  private auth = inject(AuthService);
+  private router = inject(Router);
   toast = inject(ToastService);
 
   // current :siteId from the URL, exposed as a signal for the template
   siteId = toSignal(this.route.paramMap.pipe(map(p => p.get('siteId'))), { initialValue: null });
+
+  // current logged-in user (signal from AuthService) — drives the role label
+  readonly user = this.auth.currentUser;
 
   constructor() {
     // mirror the :siteId URL param into the global service (DT-3 design)
@@ -88,5 +99,10 @@ export class ShellComponent {
 
   link(page: string) {
     return ['/site', this.siteId(), page];
+  }
+
+  logout(): void {
+    this.auth.logout();
+    this.router.navigate(['/login']);
   }
 }

@@ -12,9 +12,16 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError(err => {
+      const isLogin = req.url.includes('/auth/login');
+
+      // Login handles its own errors inline — skip all global toasts/redirects.
+      if (isLogin) {
+        return throwError(() => err);
+      }
+
       const apiMsg = err?.error?.error?.message as string | undefined;
 
-      if (err.status === 401) {
+      if (err.status === 401 && !isLogin) {
         localStorage.removeItem(TOKEN_KEY);
         toast.error('Session expired — please log in again.');
         router.navigate(['/login']);

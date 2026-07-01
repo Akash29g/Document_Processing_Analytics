@@ -14,7 +14,12 @@ import { SiteSelectorComponent } from '../shared/components/site-selector.compon
   template: `
   <div class="shell">
     <aside class="sidebar">
-      <div class="brand">DocAnalytics</div>
+      <div class="brand">
+  <img src="AVEVA_Logo_color_RGB.png" alt="AVEVA"
+       style="width: 130px; height: auto; display: block; filter: brightness(0) invert(1);" />
+  <div style="font-family: var(--font-body); font-size: 0.8rem; letter-spacing: .04em; color: #fff; opacity: .85; margin-top: 6px;">DocAnalytics</div>
+</div>
+
       <nav>
         <a [routerLink]="link('dashboard')" routerLinkActive="active">Dashboard</a>
         <a [routerLink]="link('batches')" routerLinkActive="active">Batches</a>

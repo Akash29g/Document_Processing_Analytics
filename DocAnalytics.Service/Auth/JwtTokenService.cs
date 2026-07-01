@@ -1,7 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using DocAnalytics.Domain.Entities;        // 👈 adjust to your User namespace
+using DocAnalytics.Domain.Entities;       
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 

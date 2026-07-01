@@ -1,9 +1,9 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { BatchService } from './batch.service';
 import { SiteContextService } from '../../core/services/site-context.service';
-import { FilterBarComponent, FilterValues } from '../../shared/components/filter-bar.component';
+import { FilterBarComponent, FilterValues, FilterOption } from '../../shared/components/filter-bar.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge.component';
 import {
   ColumnDef, DataTableComponent, DtCellDirective, SortState,
@@ -26,7 +26,7 @@ import { BatchListItem, BatchSortBy } from './batch.models';
       </header>
 
       <div class="toolbar">
-        <app-filter-bar [sourceOptions]="sourceOptions" (changed)="onFilters($event)" />
+        <app-filter-bar [sourceOptions]="sourceOptions()" (changed)="onFilters($event)" />
         <input class="search-input" type="search" placeholder="Search by Batch ID…"
                [value]="svc.query().search ?? ''" (input)="onSearch($event)" />
       </div>
@@ -84,11 +84,10 @@ export class BatchListComponent {
   private destroyRef = inject(DestroyRef);
   private searchTimer?: ReturnType<typeof setTimeout>;
 
-  // ⚠️ No /sources endpoint — fill from your DbSeeder `sources[]` values.
-  protected sourceOptions = [
-    { value: 'S3_Bucket_Alpha', label: 'S3_Bucket_Alpha' },
-    // add the rest from your seed's sources[] array
-  ];
+  // built from the endpoint
+  protected sourceOptions = computed<FilterOption[]>(() =>
+    this.svc.sources().map(s => ({ value: s, label: s })),
+  );
 
   // Column keys = backend sort tokens. 'last_updated' is a sort token, so its
   // display value is pulled from last_updated_at via the accessor + cell template.
@@ -104,7 +103,11 @@ export class BatchListComponent {
   constructor() {
     effect(() => {
       const siteId = this.site.selectedSiteId();
-      if (siteId) this.svc.loadBatches();
+      if (!siteId) return;
+      untracked(() => {                           
+        this.svc.loadBatches();
+        this.svc.loadSources();
+      });
     });
   }
 

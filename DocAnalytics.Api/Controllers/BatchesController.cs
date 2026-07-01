@@ -35,6 +35,14 @@ public sealed class BatchesController : ControllerBase
         return Ok(ApiResponse<List<BatchListItemDto>>.OkList(result.Items, meta));
     }
 
+    // GET /api/v1/batches/sources — distinct source systems for the FilterBar dropdown
+    [HttpGet("sources")]
+    public async Task<IActionResult> GetSources(CancellationToken ct)
+    {
+        var sources = await _batchService.GetSourcesAsync(ct);
+        return Ok(ApiResponse<List<string>>.Ok(sources));
+    }
+
     // GET /api/v1/batches/{id} — one batch's detail
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetBatchById(Guid id, CancellationToken ct)

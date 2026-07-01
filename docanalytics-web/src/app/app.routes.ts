@@ -22,6 +22,13 @@ export const routes: Routes = [
             (m) => m.DashboardComponent,
           ),
       },
+
+      {
+        path: 'batches',
+        loadComponent: () =>
+          import('./features/batches/batch-list.component').then(m => m.BatchListComponent),
+      },
+
       // 👇 Future rounds add their routes here (keep BOTH entries on merge):
       //   batches            (Round 3 — you)
       //   batches/:batchId   (Round 3 — Shubh)

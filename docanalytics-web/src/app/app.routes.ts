@@ -35,6 +35,14 @@ export const routes: Routes = [
       //   batches/:batchId/files/:fileId (Round 4 — you)
       //   errors             (Round 4 — Shubh)
       //   activity-log       (Round 5 — you)
+      {
+        path: 'batches/:batchId',
+        loadComponent: () =>
+          import('./features/batches/batch-detail.component').then(
+            (m) => m.BatchDetailComponent,
+          ),
+      },
+
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
     ],
   },

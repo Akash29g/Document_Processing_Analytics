@@ -43,6 +43,12 @@ export const routes: Routes = [
           ),
       },
 
+      {
+        path: 'errors',
+        loadComponent: () =>
+          import('./features/errors/errors.component').then((m) => m.ErrorsComponent),
+      },
+
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
     ],
   },

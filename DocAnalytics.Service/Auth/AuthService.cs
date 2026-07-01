@@ -1,4 +1,4 @@
-﻿using DocAnalytics.Data;                // 👈 adjust to your AppDbContext namespace
+﻿using DocAnalytics.Data;               
 using Microsoft.EntityFrameworkCore;
 
 namespace DocAnalytics.Service.Auth;

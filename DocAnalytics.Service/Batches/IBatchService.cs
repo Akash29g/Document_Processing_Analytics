@@ -9,6 +9,8 @@ public interface IBatchService
 
     Task<BatchDetailDto?> GetBatchByIdAsync(Guid id, CancellationToken ct = default);
 
+    Task<List<string>> GetSourcesAsync(CancellationToken ct = default);
+
     Task<PagedResult<BatchFileDto>?> GetBatchFilesAsync(
         Guid id, BatchFilesQuery query, CancellationToken ct = default);
 

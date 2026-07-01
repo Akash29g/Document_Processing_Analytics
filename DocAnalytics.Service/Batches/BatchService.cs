@@ -88,6 +88,19 @@ public sealed class BatchService : IBatchService
         };
     }
 
+    // Distinct source systems for the current tenant/site (Transactions is ITenantScoped
+    // → tenant_id + site_id auto-applied by the global query filter).
+    public async Task<List<string>> GetSourcesAsync(CancellationToken ct = default)
+    {
+        return await _db.Transactions
+            .AsNoTracking()
+            .Select(t => t.SourceSystem)
+            .Distinct()
+            .OrderBy(s => s)
+            .ToListAsync(ct);
+    }
+
+
     // ── GET /api/v1/batches/{id} : drill into ONE batch ──
     public async Task<BatchDetailDto?> GetBatchByIdAsync(
         Guid id, CancellationToken ct = default)

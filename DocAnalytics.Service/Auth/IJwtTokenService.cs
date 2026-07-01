@@ -1,4 +1,4 @@
-﻿using DocAnalytics.Domain.Entities;   // 👈 adjust to wherever your User entity lives
+﻿using DocAnalytics.Domain.Entities;   
 
 namespace DocAnalytics.Service.Auth;
 

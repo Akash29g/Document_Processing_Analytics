@@ -73,6 +73,15 @@ export class BatchService {
   setPageSize(pageSize: number): void { this.patch({ pageSize }); }
   reset(): void { this._query.set({ ...DEFAULT_QUERY }); this.loadBatches(); }
 
+  // ── Source options for the FilterBar (distinct SourceSystem for this site)
+  private _sources = signal<string[]>([]);
+  readonly sources = this._sources.asReadonly();
+
+  loadSources(): void {
+    this.http.get<ApiResponse<string[]>>(`${this.base}/batches/sources`, this.silent)
+      .subscribe({ next: (res) => this._sources.set(res.data ?? []) });
+  }                          
+
   // ─────────────────────────────────────────────
   // Batch Detail + Files  (Dev B · FR-2.4)
   // ─────────────────────────────────────────────

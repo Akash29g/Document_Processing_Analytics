@@ -86,7 +86,7 @@ export class DtCellDirective {
             <label class="psize">
               Rows:
               <select [value]="pageSize()" (change)="onPageSize($event)">
-                @for (n of pageSizeOptions(); track n) { <option [value]="n">{{ n }}</option> }
+                @for (n of pageSizeOptions(); track n) { <option [value]="n" [selected]="n === pageSize()">{{ n }}</option> }
               </select>
             </label>
             <button type="button" [disabled]="page() <= 1" (click)="prev()">‹ Prev</button>

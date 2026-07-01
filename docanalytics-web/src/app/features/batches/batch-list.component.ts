@@ -26,7 +26,10 @@ import { BatchListItem, BatchSortBy } from './batch.models';
       </header>
 
       <div class="toolbar">
-        <app-filter-bar [sourceOptions]="sourceOptions()" (changed)="onFilters($event)" />
+        <app-filter-bar
+          [statusOptions]="statusOptions"
+          [sourceOptions]="sourceOptions()"
+          (changed)="onFilters($event)" />
         <input class="search-input" type="search" placeholder="Search by Batch ID…"
                [value]="svc.query().search ?? ''" (input)="onSearch($event)" />
       </div>
@@ -84,6 +87,16 @@ export class BatchListComponent {
   private destroyRef = inject(DestroyRef);
   private searchTimer?: ReturnType<typeof setTimeout>;
 
+  // Status filter — VALUE 'in_progress' stays (backend maps → Processing); only the LABEL reads "Processing".
+  //  VERIFY backend /batches?status=queued is wired before shipping the Queued option.
+  protected statusOptions: FilterOption[] = [
+    { value: 'all', label: 'All statuses' },
+    { value: 'queued', label: 'Queued' },
+    { value: 'in_progress', label: 'Processing' },
+    { value: 'completed', label: 'Completed' },
+    { value: 'failed', label: 'Failed' },
+  ];
+
   // built from the endpoint
   protected sourceOptions = computed<FilterOption[]>(() =>
     this.svc.sources().map(s => ({ value: s, label: s })),
@@ -104,7 +117,7 @@ export class BatchListComponent {
     effect(() => {
       const siteId = this.site.selectedSiteId();
       if (!siteId) return;
-      untracked(() => {                           
+      untracked(() => {
         this.svc.loadBatches();
         this.svc.loadSources();
       });

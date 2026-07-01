@@ -191,6 +191,7 @@ public sealed class BatchService : IBatchService
             "failed" => "Failed",
             "completed" => "Completed",
             "in_progress" => "Processing",
+            "queued" => "Queued",     // ← ADD THIS
             _ => null
         };
 

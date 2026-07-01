@@ -87,8 +87,8 @@ export class BatchListComponent {
   private destroyRef = inject(DestroyRef);
   private searchTimer?: ReturnType<typeof setTimeout>;
 
-  // Status filter — VALUE 'in_progress' stays (backend maps → Processing); only the LABEL reads "Processing".
-  //  VERIFY backend /batches?status=queued is wired before shipping the Queued option.
+  // Status filter — VALUE 'in_progress' stays (backend maps → Processing); LABEL reads "Processing".
+  // 'queued' now supported after the backend MapStatusToState fix.
   protected statusOptions: FilterOption[] = [
     { value: 'all', label: 'All statuses' },
     { value: 'queued', label: 'Queued' },

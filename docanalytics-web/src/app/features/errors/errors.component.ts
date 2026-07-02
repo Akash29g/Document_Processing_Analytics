@@ -26,35 +26,36 @@ import { ColumnDef, DataTableComponent, DtCellDirective, SortState } from '../..
 
       @if (svc.exportError()) { <p class="inline-error">{{ svc.exportError() }}</p> }
 
-      <div class="charts">
-        <app-chart-card title="Top 10 Error Types" subtitle="Most frequent failure codes"
-          [loading]="svc.topLoading()" [error]="svc.topError()" [empty]="!svc.top().length"
-          emptyMessage="No errors recorded.">
-          <div class="bars">
-            @for (p of svc.top(); track p.label) {
-              <div class="bar-row">
-                <span class="bar-label" [title]="p.label">{{ p.label }}</span>
-                <div class="bar-track"><div class="bar-fill" [style.width.%]="pct(p.value, topMax())"></div></div>
-                <span class="bar-val">{{ p.value }}</span>
-              </div>
-            }
-          </div>
-        </app-chart-card>
+     <div class="charts">
+  <app-chart-card title="Top 10 Error Types" subtitle="Most frequent failure codes"
+    [loading]="svc.topLoading()" [error]="svc.topError()" [empty]="!svc.top().length"
+    emptyMessage="No errors recorded." (retry)="svc.loadTop()">
+    <div class="bars">
+      @for (p of svc.top(); track p.label) {
+        <div class="bar-row">
+          <span class="bar-label" [title]="p.label">{{ p.label }}</span>
+          <div class="bar-track"><div class="bar-fill" [style.width.%]="pct(p.value, topMax())"></div></div>
+          <span class="bar-val">{{ p.value }}</span>
+        </div>
+      }
+    </div>
+  </app-chart-card>
 
-        <app-chart-card title="Error Trend" subtitle="Failures per day"
-          [loading]="svc.trendLoading()" [error]="svc.trendError()" [empty]="!svc.trend().length"
-          emptyMessage="No trend data.">
-          <div class="trend">
-            @for (p of svc.trend(); track p.label) {
-              <div class="col" [title]="p.label + ': ' + p.value">
-                <span class="col-val">{{ p.value }}</span>
-                <div class="col-bar" [style.height.%]="pct(p.value, trendMax())"></div>
-                <span class="col-label">{{ shortDate(p.label) }}</span>
-              </div>
-            }
-          </div>
-        </app-chart-card>
-      </div>
+  <app-chart-card title="Error Trend" subtitle="Failures per day"
+    [loading]="svc.trendLoading()" [error]="svc.trendError()" [empty]="!svc.trend().length"
+    emptyMessage="No trend data." (retry)="svc.loadTrend()">
+    <div class="trend">
+      @for (p of svc.trend(); track p.label) {
+        <div class="col" [title]="p.label + ': ' + p.value">
+          <span class="col-val">{{ p.value }}</span>
+          <div class="col-bar" [style.height.%]="pct(p.value, trendMax())"></div>
+          <span class="col-label">{{ shortDate(p.label) }}</span>
+        </div>
+      }
+    </div>
+  </app-chart-card>
+</div>
+
 
       <app-filter-bar
         statusLabel="Step" [statusOptions]="stepOptions" [sourceOptions]="sourceOptions"

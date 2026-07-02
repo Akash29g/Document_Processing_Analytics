@@ -52,11 +52,13 @@ const DASHBOARD_REFRESH_MS = 30_000;
         <app-throughput-chart
           [data]="dash.throughput()"
           [loading]="dash.throughputLoading()"
-          [error]="dash.throughputError()" />
+          [error]="dash.throughputError()"
+          (retry)="dash.refreshAll()"/>
         <app-status-distribution-chart
           [data]="dash.statusDistribution()"
           [loading]="dash.distributionLoading()"
-          [error]="dash.distributionError()" />
+          [error]="dash.distributionError()"
+          (retry)="dash.refreshAll()" />
       </div>
 
       <!-- FR-1.4 recent failures -->

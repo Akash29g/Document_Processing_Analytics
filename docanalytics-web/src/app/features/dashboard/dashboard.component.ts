@@ -96,9 +96,9 @@ const DASHBOARD_REFRESH_MS = 30_000;
     .dash-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2); }
     .page-title { font-family: var(--font-display); color: var(--dark-gray); margin: 0; }
     .section-title { font-family: var(--font-display); font-size: 1.05rem; color: var(--dark-gray); margin: 0; }
-    .counters { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-2, 16px); }
+    .counters { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-2); }
     .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2, 16px); }
-    @media (max-width: 1100px) { .charts-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 1280px) { .charts-grid { grid-template-columns: 1fr; } }
     .inline-error { color: var(--text-error); font-size: 0.85rem; }
     .inline-error button { margin-left: 8px; }
     .err-code { font-weight: 600; color: var(--dark-gray); }

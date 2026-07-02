@@ -30,6 +30,12 @@ export const routes: Routes = [
       },
 
       {
+        path: 'activity-log',
+        loadComponent: () =>
+          import('./features/activity-log/activity-log.component').then((m) => m.ActivityLogComponent),
+      },
+
+      {
         path: 'batches/:batchId/files/:fileId',
         loadComponent: () =>
           import('./features/files/file-details.component').then((m) => m.FileDetailsComponent),

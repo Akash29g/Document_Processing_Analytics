@@ -6,6 +6,7 @@ import { SiteContextService } from '../core/services/site-context.service';
 import { ToastService } from '../core/services/toast.service';
 import { AuthService } from '../core/services/auth.service';
 import { SiteSelectorComponent } from '../shared/components/site-selector.component';
+import { ThemeService } from '../core/services/theme.service'; 
 
 @Component({
   selector: 'app-shell',
@@ -32,6 +33,12 @@ import { SiteSelectorComponent } from '../shared/components/site-selector.compon
       <header class="topbar">
         <app-site-selector />
         <span class="spacer"></span>
+                <button class="theme-toggle" type="button" (click)="theme.toggle()"
+                [attr.aria-pressed]="theme.isDark()"
+                [attr.aria-label]="theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+                title="Toggle theme">
+          {{ theme.isDark() ? '☀️' : '🌙' }}
+        </button>
         <span class="user">{{ user()?.role ?? 'Viewer' }}</span>
         <button class="logout-btn" (click)="logout()">Log out</button>
       </header>
@@ -88,6 +95,15 @@ import { SiteSelectorComponent } from '../shared/components/site-selector.compon
   }
   .logout-btn:hover { background: var(--slate-blue); color: #fff; }
 
+  .theme-toggle {
+  background: transparent; border: 1px solid var(--cool-gray);
+  color: var(--dark-gray-3); border-radius: 4px;
+  width: 36px; height: 36px; cursor: pointer; font-size: 16px;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.theme-toggle:hover { border-color: var(--slate-blue); color: var(--slate-blue); }
+
   /* Content canvas = light page bg, NOT purple (this was a bug in your version) */
   .content { flex: 1; padding: 24px; overflow: auto; background: var(--bg-light); max-width: 1440px; }
 
@@ -115,6 +131,7 @@ export class ShellComponent {
   private auth = inject(AuthService);
   private router = inject(Router);
   toast = inject(ToastService);
+  protected theme = inject(ThemeService);
 
   // current :siteId from the URL, exposed as a signal for the template
   siteId = toSignal(this.route.paramMap.pipe(map(p => p.get('siteId'))), { initialValue: null });

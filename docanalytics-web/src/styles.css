@@ -67,3 +67,22 @@ a {
   a:hover {
     text-decoration: underline;
   }
+
+/* ===== S-2 Dark mode — Dev B, R5. Scoped overrides only; :root untouched. ===== */
+[data-theme="dark"] {
+  /* Surfaces */
+  --bg-light: #23282B; /* page canvas → reuses existing --bg-dark hue */
+  --white: #2C3338; /* cards / topbar / table fill */
+  --light-gray: #2C3338; /* raised fills / skeleton base */
+  /* Text + borders (invert the greys) */
+  --dark-gray: #E6EAF0; /* primary text */
+  --dark-gray-3: #AEB8C4; /* secondary text / eyebrow */
+  --cool-gray: #3C454C; /* borders / dividers / skeleton highlight */
+  /* Interactive — lift slate blue for contrast on dark */
+  --slate-blue: #78A1FC; /* = your existing --slate-blue-3 */
+  /* Feedback TEXT — brighten for legibility on dark bg */
+  --text-error: #FF9B9B;
+  --text-warning: #F0B95E;
+  --text-confirmed: #5FD08A;
+  --text-neutral: #C9D2DA;
+}

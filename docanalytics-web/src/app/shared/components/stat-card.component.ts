@@ -1,12 +1,18 @@
-import { Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 @Component({
   selector: 'app-stat-card',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="card">
-      <div class="title">{{ title() }}</div>
-      <div class="value">{{ value() }}</div>
+      @if (loading()) {
+        <div class="skel skel-title"></div>
+        <div class="skel skel-value"></div>
+      } @else {
+        <div class="title">{{ title() }}</div>
+        <div class="value">{{ value() }}</div>
+      }
     </div>`,
   styles: [`
     .card {
@@ -17,16 +23,24 @@ import { Component, input } from '@angular/core';
     .title {
       font-family: var(--font-body); color: var(--dark-gray-3);
       font-size: 12px; font-weight: 600; line-height: 16px;
-      text-transform: uppercase; letter-spacing: 2px;   /* Eyebrow Title spec */
+      text-transform: uppercase; letter-spacing: 2px;
     }
     .value {
       font-family: var(--font-body); color: var(--dark-gray);
-      font-size: 32px; line-height: 38px; font-weight: 700;   /* Number level one */
-      margin-top: 8px;
+      font-size: 32px; line-height: 38px; font-weight: 700; margin-top: 8px;
     }
+    /* skeleton (tokens → auto-flips in dark) */
+    .skel {
+      background: linear-gradient(90deg, var(--light-gray) 25%, var(--cool-gray) 37%, var(--light-gray) 63%);
+      background-size: 400% 100%; animation: skel 1.4s ease infinite; border-radius: 4px;
+    }
+    .skel-title { height: 12px; width: 60%; }
+    .skel-value { height: 30px; width: 45%; margin-top: 10px; }
+    @keyframes skel { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
   `],
 })
 export class StatCardComponent {
   title = input.required<string>();
-  value = input.required<string | number>();
+  value = input<string | number>('');   // was input.required — now optional for skeleton use
+  loading = input<boolean>(false);       // NEW
 }

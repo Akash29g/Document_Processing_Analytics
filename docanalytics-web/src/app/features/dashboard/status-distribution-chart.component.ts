@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { ChartCardComponent } from '../../shared/components/chart-card.component';
 import { SeriesPoint } from '../../core/models/dashboard.model';
 
@@ -13,7 +13,8 @@ import { SeriesPoint } from '../../core/models/dashboard.model';
       subtitle="Documents by current status"
       [loading]="loading()"
       [error]="error()"
-      [empty]="!loading() && !error() && data().length === 0">
+      [empty]="!loading() && !error() && data().length === 0"
+       (retry)="retry.emit()">
 
       <div class="bars">
         @for (row of rows(); track row.label) {
@@ -38,7 +39,7 @@ import { SeriesPoint } from '../../core/models/dashboard.model';
     /* status colors = fills only (AVEVA rule) */
     .st-completed  { background: var(--status-confirmed); }
     .st-failed     { background: var(--status-error); }
-    .st-processing { background: var(--status-neutral); }
+    .st-processing { background: var(--status-warning); }
     .st-queued     { background: var(--cool-gray); }
   `]
 })
@@ -46,6 +47,7 @@ export class StatusDistributionChartComponent {
   data = input<SeriesPoint[]>([]);
   loading = input(false);
   error = input<string | null>(null);
+  retry = output<void>();
 
   rows = computed(() => {
     const d = this.data();

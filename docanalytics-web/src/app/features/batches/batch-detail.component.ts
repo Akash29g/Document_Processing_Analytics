@@ -16,24 +16,41 @@ import { ColumnDef, DataTableComponent, DtCellDirective } from '../../shared/com
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="batch">
-     <a class="bd-back" routerLink="..">← Back to batches</a>
-      <!-- summary header -->
-      <div class="head">
-        <div class="titles">
-          <p class="eyebrow">Batch</p>
-          <h1 class="page-title">{{ batch.detail()?.id ?? '—' }}</h1>
-          @if (batch.detail(); as d) { <p class="source">Source: {{ d.source }} · {{ d.total_files }} files</p> }
-        </div>
-        @if (batch.detail(); as d) { <app-status-badge [status]="d.status" /> }
-      </div>
+      <a class="bd-back" routerLink="..">← Back to batches</a>
 
-      @if (batch.detailError()) {
+      @if (batch.detailLoading()) {
+        <!-- header skeleton -->
+        <div class="head">
+          <div class="titles">
+            <div class="skel" style="height:11px;width:60px;"></div>
+            <div class="skel" style="height:20px;width:280px;margin-top:8px;"></div>
+            <div class="skel" style="height:13px;width:180px;margin-top:8px;"></div>
+          </div>
+          <div class="skel" style="height:26px;width:90px;border-radius:13px;"></div>
+        </div>
+        <div class="counters">
+          <app-stat-card title="Uploaded"   [loading]="true"></app-stat-card>
+          <app-stat-card title="Processing" [loading]="true"></app-stat-card>
+          <app-stat-card title="Completed"  [loading]="true"></app-stat-card>
+          <app-stat-card title="Failed"     [loading]="true"></app-stat-card>
+        </div>
+
+      } @else if (batch.detailError()) {
         <p class="inline-error">{{ batch.detailError() }}
           <button type="button" (click)="batch.loadDetail()">Retry</button></p>
-      }
 
-      <!-- file_stats counters -->
-      @if (batch.detail(); as d) {
+      } @else if (batch.detail(); as d) {
+        <!-- summary header -->
+        <div class="head">
+          <div class="titles">
+            <p class="eyebrow">Batch</p>
+            <h1 class="page-title">{{ d.id }}</h1>
+            <p class="source">Source: {{ d.source }} · {{ d.total_files }} files</p>
+          </div>
+          <app-status-badge [status]="d.status" />
+        </div>
+
+        <!-- file_stats counters -->
         <div class="counters">
           <app-stat-card title="Uploaded"   [value]="d.file_stats.uploaded"></app-stat-card>
           <app-stat-card title="Processing" [value]="d.file_stats.processing"></app-stat-card>
@@ -65,7 +82,7 @@ import { ColumnDef, DataTableComponent, DtCellDirective } from '../../shared/com
   styles: [`
     .batch { display: flex; flex-direction: column; gap: var(--space-3, 24px); padding: var(--space-3, 24px); }
     .bd-back { display: inline-block; font-size: .85rem; }
-    .head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); }
+    .head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); flex-wrap: wrap; }
     .eyebrow { margin: 0; font-size: 0.72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--dark-gray-3); }
     .page-title { font-family: var(--font-display); color: var(--dark-gray); margin: 2px 0 0; font-size: 1.1rem; word-break: break-all; }
     .source { margin: 4px 0 0; font-size: 0.82rem; color: var(--dark-gray-3); }
@@ -74,6 +91,13 @@ import { ColumnDef, DataTableComponent, DtCellDirective } from '../../shared/com
     .times { margin: 0; font-size: 0.8rem; color: var(--dark-gray-3); }
     .inline-error { color: var(--text-error); font-size: 0.85rem; }
     .inline-error button { margin-left: 8px; }
+
+    /* skeleton shimmer (tokens → auto-flips in dark) */
+    .skel {
+      background: linear-gradient(90deg, var(--light-gray) 25%, var(--cool-gray) 37%, var(--light-gray) 63%);
+      background-size: 400% 100%; animation: skel 1.4s ease infinite; border-radius: 4px;
+    }
+    @keyframes skel { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
   `]
 })
 export class BatchDetailComponent {
@@ -112,6 +136,6 @@ export class BatchDetailComponent {
 
   // navigate to /site/:siteId/batches/:batchId/files/:fileId (Akash's Round 4 route)
   protected openFile(f: BatchFile): void {
-      this.router.navigate(['files', f.id], { relativeTo: this.route });
+    this.router.navigate(['files', f.id], { relativeTo: this.route });
   }
 }

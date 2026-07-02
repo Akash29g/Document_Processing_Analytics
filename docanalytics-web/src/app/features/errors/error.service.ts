@@ -56,7 +56,7 @@ export class ErrorService {
       .pipe(finalize(() => this._trendLoading.set(false)))
       .subscribe({
         next: (res) => this._trend.set(res.data?.points ?? []),
-        error: () => this._trendError.set('Could not load error trend.'),
+        error: () => this._trendError.set('Could not load error trend. Please retry.'),
       });
   }
 

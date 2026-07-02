@@ -52,11 +52,13 @@ const DASHBOARD_REFRESH_MS = 30_000;
         <app-throughput-chart
           [data]="dash.throughput()"
           [loading]="dash.throughputLoading()"
-          [error]="dash.throughputError()" />
+          [error]="dash.throughputError()"
+          (retry)="dash.refreshAll()"/>
         <app-status-distribution-chart
           [data]="dash.statusDistribution()"
           [loading]="dash.distributionLoading()"
-          [error]="dash.distributionError()" />
+          [error]="dash.distributionError()"
+          (retry)="dash.refreshAll()" />
       </div>
 
       <!-- FR-1.4 recent failures -->
@@ -91,7 +93,7 @@ const DASHBOARD_REFRESH_MS = 30_000;
   `,
   styles: [`
     .dash { display: flex; flex-direction: column; gap: var(--space-3, 24px); padding: var(--space-3, 24px); }
-    .dash-head { display: flex; align-items: center; justify-content: space-between; }
+    .dash-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2); }
     .page-title { font-family: var(--font-display); color: var(--dark-gray); margin: 0; }
     .section-title { font-family: var(--font-display); font-size: 1.05rem; color: var(--dark-gray); margin: 0; }
     .counters { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-2, 16px); }

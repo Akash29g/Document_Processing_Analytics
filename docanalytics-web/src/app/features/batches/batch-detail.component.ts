@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { BatchService } from './batch.service';
 import { BatchFile } from './batch.models';
@@ -12,10 +12,11 @@ import { ColumnDef, DataTableComponent, DtCellDirective } from '../../shared/com
 
 @Component({
   selector: 'app-batch-detail',
-  imports: [StatCardComponent, StatusBadgeComponent, DataTableComponent, DtCellDirective, DatePipe],
+  imports: [RouterLink, StatCardComponent, StatusBadgeComponent, DataTableComponent, DtCellDirective, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="batch">
+     <a class="bd-back" routerLink="..">← Back to batches</a>
       <!-- summary header -->
       <div class="head">
         <div class="titles">
@@ -63,6 +64,7 @@ import { ColumnDef, DataTableComponent, DtCellDirective } from '../../shared/com
   `,
   styles: [`
     .batch { display: flex; flex-direction: column; gap: var(--space-3, 24px); padding: var(--space-3, 24px); }
+    .bd-back { display: inline-block; font-size: .85rem; }
     .head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); }
     .eyebrow { margin: 0; font-size: 0.72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--dark-gray-3); }
     .page-title { font-family: var(--font-display); color: var(--dark-gray); margin: 2px 0 0; font-size: 1.1rem; word-break: break-all; }
@@ -110,8 +112,6 @@ export class BatchDetailComponent {
 
   // navigate to /site/:siteId/batches/:batchId/files/:fileId (Akash's Round 4 route)
   protected openFile(f: BatchFile): void {
-    // ⚠️ TEMP until R4 file route exists — swap console.log for the navigate below when it lands:
-    console.log('open file', f.id);
-    // this.router.navigate(['files', f.id], { relativeTo: this.route });
+      this.router.navigate(['files', f.id], { relativeTo: this.route });
   }
 }

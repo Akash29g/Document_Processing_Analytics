@@ -37,8 +37,8 @@ export class StatusBadgeComponent {
         return { bg: 'rgba(220,10,10,.12)', fg: 'var(--text-error)', icon: 'error' };
       case 'inprogress':
       case 'processing':
-        // neutral blue (NOT purple — purple is brand chrome only)
-        return { bg: 'rgba(1,169,244,.12)', fg: '#055f86', icon: 'pause_circle' };
+        // warning amber (token fg auto-flips: dark-brown in light, bright-amber in dark)
+        return { bg: 'rgba(245,166,36,.15)', fg: 'var(--text-warning)', icon: 'pause_circle' };
       case 'queued':
       default:
         return { bg: 'rgba(190,204,214,.25)', fg: 'var(--dark-gray-3)', icon: 'schedule' };

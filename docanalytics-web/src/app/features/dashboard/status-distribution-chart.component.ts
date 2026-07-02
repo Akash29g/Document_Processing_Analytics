@@ -38,7 +38,7 @@ import { SeriesPoint } from '../../core/models/dashboard.model';
     /* status colors = fills only (AVEVA rule) */
     .st-completed  { background: var(--status-confirmed); }
     .st-failed     { background: var(--status-error); }
-    .st-processing { background: var(--status-neutral); }
+    .st-processing { background: var(--status-warning); }
     .st-queued     { background: var(--cool-gray); }
   `]
 })

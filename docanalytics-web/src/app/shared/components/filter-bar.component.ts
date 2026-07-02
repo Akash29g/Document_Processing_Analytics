@@ -16,7 +16,7 @@ export interface FilterValues {
   template: `
     <div class="fb">
       <label class="fb-field">
-        <span class="fb-label">Status</span>
+        <span class="fb-label">{{ statusLabel() }}</span>
         <select class="fb-input" [value]="status()" (change)="onStatus($event)">
           @for (o of statusOptions(); track o.value) {
             <option [value]="o.value">{{ o.label }}</option>
@@ -66,7 +66,7 @@ export interface FilterValues {
   `],
 })
 export class FilterBarComponent {
-  // config — Batches shows all three; Errors/Activity-Log can hide source/date as needed
+  statusLabel = input<string>('Status'); 
   statusOptions = input<FilterOption[]>([
     { value: 'all', label: 'All statuses' },
     { value: 'in_progress', label: 'In Progress' },

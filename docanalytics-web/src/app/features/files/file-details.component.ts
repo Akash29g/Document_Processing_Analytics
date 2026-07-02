@@ -88,6 +88,7 @@ import { InvoiceLineItem, StepHistoryItem } from './file-details.models';
         } @else if (items().length === 0) {
           <div class="fd-state">No line items — this file has no extracted invoice items.</div>
         } @else {
+          <div class="fd-scroll">
           <table class="tbl">
             <thead>
               <tr>
@@ -121,6 +122,7 @@ import { InvoiceLineItem, StepHistoryItem } from './file-details.models';
               </tr>
             </tfoot>
           </table>
+          </div>
         }
       </div>
     </section>
@@ -130,7 +132,7 @@ import { InvoiceLineItem, StepHistoryItem } from './file-details.models';
     .fd-back { font-size: .85rem; }
     .fd-card { background: var(--white); border: 1px solid var(--cool-gray);
       border-radius: 8px; padding: var(--space-2); }
-    .fd-header { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2); }
+    .fd-header { display: flex; flex-wrap: wrap;  justify-content: space-between; align-items: center; gap: var(--space-2); }
     .fd-header-right { display: flex; align-items: center; gap: var(--space-1); }
     .fd-eyebrow { margin: 0; font-size: .72rem; text-transform: uppercase;
       letter-spacing: .04em; color: var(--dark-gray-3); }
@@ -165,6 +167,8 @@ import { InvoiceLineItem, StepHistoryItem } from './file-details.models';
     .tl-fix { margin-top: 4px; color: var(--dark-gray-3); }
 
     /* invoice table */
+    .fd-scroll { overflow-x: auto; }
+    .fd-scroll .tbl { min-width: 640px; }
     .tbl { width: 100%; border-collapse: collapse; font-size: .85rem; }
     .tbl th, .tbl td { padding: 8px 10px; border-bottom: 1px solid var(--cool-gray); text-align: left; }
     .tbl th { color: var(--dark-gray-3); font-weight: 600; }

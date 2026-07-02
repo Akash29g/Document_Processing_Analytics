@@ -69,6 +69,7 @@ import { AuthService } from '../../core/services/auth.service';
     .login-card {
       width: 100%;
       max-width: 380px;
+      box-sizing: border-box;
       background: #fff;
       border: 1px solid var(--purple-200, #e6dbf0);
       border-radius: 14px;

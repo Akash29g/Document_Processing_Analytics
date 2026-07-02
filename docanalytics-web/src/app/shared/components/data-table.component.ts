@@ -26,7 +26,7 @@ export class DtCellDirective {
   selector: 'app-data-table',
   imports: [NgTemplateOutlet],
   template: `
-    <div class="dt">
+    <div class="dt-scroll">
       <table>
         <thead>
           <tr>
@@ -100,6 +100,9 @@ export class DtCellDirective {
   styles: [`
     .dt { background: var(--white); border: 1px solid var(--cool-gray);
           border-radius: 8px; overflow: hidden; }
+    .dt-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .dt-scroll table { width: 100%; min-width: 720px; border-collapse: collapse; }
+
     table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
     thead th { text-align: left; font-family: var(--font-display);
                font-weight: 600; color: var(--dark-gray-3); background: var(--bg-light);

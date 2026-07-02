@@ -82,7 +82,7 @@ import { ColumnDef, DataTableComponent, DtCellDirective } from '../../shared/com
   styles: [`
     .batch { display: flex; flex-direction: column; gap: var(--space-3, 24px); padding: var(--space-3, 24px); }
     .bd-back { display: inline-block; font-size: .85rem; }
-    .head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); }
+    .head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); flex-wrap: wrap; }
     .eyebrow { margin: 0; font-size: 0.72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--dark-gray-3); }
     .page-title { font-family: var(--font-display); color: var(--dark-gray); margin: 2px 0 0; font-size: 1.1rem; word-break: break-all; }
     .source { margin: 4px 0 0; font-size: 0.82rem; color: var(--dark-gray-3); }

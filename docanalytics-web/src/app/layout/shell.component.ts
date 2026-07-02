@@ -104,8 +104,13 @@ import { ThemeService } from '../core/services/theme.service';
 }
 .theme-toggle:hover { border-color: var(--slate-blue); color: var(--slate-blue); }
 
-  /* Content canvas = light page bg, NOT purple (this was a bug in your version) */
-  .content { flex: 1; padding: 24px; overflow: auto; background: var(--bg-light); max-width: 1440px; }
+ /* Content canvas = light page bg, centered, capped for wide screens */
+.content {
+  flex: 1; overflow: auto; background: var(--bg-light);
+  width: 100%; max-width: 1760px; margin-inline: auto;   /* 👈 B-centered */
+  padding: 24px;
+}
+@media (max-width: 1280px) { .content { padding: 16px; } }   /* 👈 tighter on smaller widths */
 
   /* Toasts — left color bar + filled icon handled in template; bg is dark per Notification Bar spec */
   .toasts { position: fixed; bottom: 20px; right: 20px; display: flex;

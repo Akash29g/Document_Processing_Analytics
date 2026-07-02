@@ -76,7 +76,7 @@ import { ColumnDef, DataTableComponent, DtCellDirective, SortState } from '../..
   `,
   styles: [`
     .page { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-3); }
-    .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); }
+    .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); flex-wrap: wrap; }
     .page-title { margin: 0; font-family: var(--font-display); color: var(--dark-gray); }
     .page-sub { margin: 4px 0 0; color: var(--dark-gray-3); font-size: 0.85rem; }
     .export-btn { height: 38px; padding: 0 16px; cursor: pointer; border-radius: 6px;

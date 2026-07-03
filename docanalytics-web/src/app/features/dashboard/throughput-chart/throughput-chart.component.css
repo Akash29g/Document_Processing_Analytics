@@ -1,0 +1,66 @@
+.tp {
+  display: grid;
+  grid-template-columns: auto auto 1fr; /* y-title | y-labels | plot */
+  grid-template-rows: 1fr auto auto; /* plot | x-labels | x-title */
+  column-gap: var(--space-1);
+  width: 100%;
+}
+
+.y-title {
+  grid-column: 1;
+  grid-row: 1;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  align-self: center;
+  font-size: 0.7rem;
+  color: var(--dark-gray-3);
+}
+
+.y-labels {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: right;
+  font-size: 0.7rem;
+  color: var(--dark-gray-3);
+  padding-right: 4px;
+}
+
+.chart {
+  grid-column: 3;
+  grid-row: 1;
+  width: 100%;
+  height: 220px;
+}
+
+.x-labels {
+  grid-column: 3;
+  grid-row: 2;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--dark-gray-3);
+  margin-top: 4px;
+}
+
+.x-title {
+  grid-column: 3;
+  grid-row: 3;
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--dark-gray-3);
+  margin-top: 2px;
+}
+
+.grid {
+  stroke: var(--light-gray);
+  stroke-width: 1;
+}
+
+.line {
+  fill: none;
+  stroke: var(--slate-blue);
+  stroke-width: 2;
+}

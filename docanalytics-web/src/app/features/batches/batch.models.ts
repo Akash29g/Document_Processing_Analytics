@@ -1,4 +1,4 @@
-import { SortDir } from '../../shared/components/data-table.component';
+import { SortDir } from '../../shared/components/data-table/data-table.component';
 
 // ── Batch List (Dev A · FR-2.1–2.3) ──
 export interface BatchListItem {

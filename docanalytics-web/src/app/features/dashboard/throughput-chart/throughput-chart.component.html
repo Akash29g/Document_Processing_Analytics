@@ -1,0 +1,37 @@
+<app-chart-card
+  title="Throughput"
+  subtitle="Documents processed per day"
+  [loading]="loading()"
+  [error]="error()"
+  [empty]="!loading() && !error() && data().length === 0"
+  (retry)="retry.emit()">
+
+  <div class="tp">
+    <!-- Y axis title -->
+    <span class="y-title">Documents</span>
+
+    <!-- Y axis tick labels (max → mid → 0) -->
+    <div class="y-labels">
+      <span>{{ maxVal() }}</span>
+      <span>{{ midVal() }}</span>
+      <span>0</span>
+    </div>
+
+    <!-- the plot -->
+    <svg class="chart" [attr.viewBox]="'0 0 ' + W + ' ' + H"
+         preserveAspectRatio="none" role="img" aria-label="Documents processed per day">
+      @for (gl of gridLines(); track gl) {
+        <line class="grid" x1="0" [attr.y1]="gl" [attr.x2]="W" [attr.y2]="gl" />
+      }
+      <polyline class="line" [attr.points]="linePoints()" />
+    </svg>
+
+    <!-- X axis tick labels (first → last date) -->
+    <div class="x-labels">
+      <span>{{ firstLabel() }}</span>
+      <span>{{ lastLabel() }}</span>
+    </div>
+    <!-- X axis title -->
+    <span class="x-title">Date</span>
+  </div>
+</app-chart-card>

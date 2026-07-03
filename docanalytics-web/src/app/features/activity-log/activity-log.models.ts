@@ -1,4 +1,4 @@
-import { SortDir } from '../../shared/components/data-table.component';
+import { SortDir } from '../../shared/components/data-table/data-table.component';
 
 // GET /api/v1/activity-log item — matches ActivityLogItemDto (snake_case JSON)
 export interface ActivityLogItem {

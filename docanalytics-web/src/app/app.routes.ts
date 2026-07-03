@@ -50,7 +50,7 @@ export const routes: Routes = [
       {
         path: 'batches/:batchId',
         loadComponent: () =>
-          import('./features/batches/batch-detail.component').then(
+          import('./features/batches/batch-detail/batch-detail.component').then(
             (m) => m.BatchDetailComponent,
           ),
       },
@@ -58,7 +58,7 @@ export const routes: Routes = [
       {
         path: 'errors',
         loadComponent: () =>
-          import('./features/errors/errors.component').then((m) => m.ErrorsComponent),
+          import('./features/errors/errors/errors.component').then((m) => m.ErrorsComponent),
       },
 
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },

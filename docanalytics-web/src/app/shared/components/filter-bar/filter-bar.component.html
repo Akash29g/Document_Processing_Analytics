@@ -1,0 +1,35 @@
+<div class="fb">
+  <label class="fb-field">
+    <span class="fb-label">{{ statusLabel() }}</span>
+    <select class="fb-input" [value]="status()" (change)="onStatus($event)">
+      @for (o of statusOptions(); track o.value) {
+      <option [value]="o.value">{{ o.label }}</option>
+      }
+    </select>
+  </label>
+
+  @if (showSource()) {
+  <label class="fb-field">
+    <span class="fb-label">Source</span>
+    <select class="fb-input" [value]="source() ?? ''" (change)="onSource($event)">
+      <option value="">All sources</option>
+      @for (o of sourceOptions(); track o.value) {
+      <option [value]="o.value">{{ o.label }}</option>
+      }
+    </select>
+  </label>
+  }
+
+  @if (showDateRange()) {
+  <label class="fb-field">
+    <span class="fb-label">From</span>
+    <input class="fb-input" type="date" [value]="from() ?? ''" (change)="onFrom($event)" />
+  </label>
+  <label class="fb-field">
+    <span class="fb-label">To</span>
+    <input class="fb-input" type="date" [value]="to() ?? ''" (change)="onTo($event)" />
+  </label>
+  }
+
+  <button class="fb-clear" type="button" (click)="clear()" [disabled]="!isDirty()">Clear</button>
+</div>

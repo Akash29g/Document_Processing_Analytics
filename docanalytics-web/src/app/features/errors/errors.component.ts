@@ -4,8 +4,8 @@ import { ErrorService } from './error.service';
 import { ErrorListItem, ErrorSortBy } from './errors.models';
 import { SiteContextService } from '../../core/services/site-context.service';
 import { ChartCardComponent } from '../../shared/components/chart-card.component';
-import { FilterBarComponent, FilterOption, FilterValues } from '../../shared/components/filter-bar.component';
-import { ColumnDef, DataTableComponent, DtCellDirective, SortState } from '../../shared/components/data-table.component';
+import { FilterBarComponent, FilterOption, FilterValues } from '../../shared/components/filter-bar/filter-bar.component';
+import { ColumnDef, DataTableComponent, DtCellDirective, SortState } from '../../shared/components/data-table/data-table.component';
 
 @Component({
   selector: 'app-errors',

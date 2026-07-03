@@ -1,0 +1,20 @@
+<app-chart-card
+  title="Status Distribution"
+  subtitle="Documents by current status"
+  [loading]="loading()"
+  [error]="error()"
+  [empty]="!loading() && !error() && data().length === 0"
+   (retry)="retry.emit()">
+
+  <div class="bars">
+    @for (row of rows(); track row.label) {
+      <div class="row">
+        <span class="label">{{ row.label }}</span>
+        <div class="track">
+          <div class="fill" [class]="'st-' + row.key" [style.width.%]="row.pct"></div>
+        </div>
+        <span class="val">{{ row.value }} · {{ row.pct }}%</span>
+      </div>
+    }
+  </div>
+</app-chart-card>

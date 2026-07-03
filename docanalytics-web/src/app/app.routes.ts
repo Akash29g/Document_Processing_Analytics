@@ -13,7 +13,7 @@ export const routes: Routes = [
     path: 'site/:siteId',
     canActivate: [authGuard, siteAccessGuard],
     loadComponent: () =>
-      import('./layout/shell.component').then((m) => m.ShellComponent),
+      import('./layout/shell/shell.component').then((m) => m.ShellComponent),
     children: [
       {
         path: 'dashboard',

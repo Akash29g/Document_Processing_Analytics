@@ -1,0 +1,66 @@
+<section class="al">
+  <header class="al-head">
+    <div>
+      <p class="al-eyebrow">Audit trail</p>
+      <h2 class="al-title">Activity Log</h2>
+    </div>
+    <input class="al-search"
+           type="search"
+           placeholder="Search entity (file / batch)…"
+           (input)="onSearch($event)" />
+  </header>
+
+  <app-filter-bar statusLabel="Event type"
+                  [statusOptions]="eventTypeOptions"
+                  [showSource]="false"
+                  [showDateRange]="true"
+                  (changed)="onFilters($event)" />
+
+  <app-data-table [columns]="columns"
+                  [rows]="svc.rows()"
+                  [loading]="svc.loading()"
+                  [error]="svc.error()"
+                  emptyMessage="No activity for this site yet."
+                  [sortBy]="svc.query.sortBy"
+                  [sortDir]="svc.query.sortDir"
+                  [page]="svc.meta()?.page ?? 1"
+                  [pageSize]="svc.meta()?.page_size ?? 20"
+                  [totalCount]="svc.meta()?.total_count ?? 0"
+                  [totalPages]="svc.meta()?.total_pages ?? 1"
+                  (sortChange)="onSort($event)"
+                  (pageChange)="svc.setPage($event)"
+                  (pageSizeChange)="svc.setPageSize($event)"
+                  (retry)="svc.load()">
+
+    <ng-template dtCell="ts" let-row>
+      {{ row.ts | date: 'medium' }}
+    </ng-template>
+
+    <ng-template dtCell="event_type" let-row>
+      <span class="al-evt">{{ eventLabel(row.event_type) }}</span>
+    </ng-template>
+
+    <ng-template dtCell="entity" let-row>
+      <span class="al-entity">{{ row.entity ?? '—' }}</span>
+      <span class="al-tag">{{ row.entity_type }}</span>
+    </ng-template>
+
+    <ng-template dtCell="transition" let-row>
+      @if (row.old_state && row.new_state) {
+      <span class="al-transition">
+        <app-status-badge [status]="row.old_state" />
+        <span class="al-arrow">→</span>
+        <app-status-badge [status]="row.new_state" />
+      </span>
+      } @else if (row.new_state) {
+      <app-status-badge [status]="row.new_state" />
+      } @else {
+      <span class="al-muted">—</span>
+      }
+    </ng-template>
+
+    <ng-template dtCell="actor" let-row>
+      <span class="al-actor">{{ row.actor }}</span>
+    </ng-template>
+  </app-data-table>
+</section>

@@ -9,7 +9,7 @@ import { RefreshTimerComponent } from '../../shared/components/refresh-timer/ref
 import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
 import {
   ColumnDef, DataTableComponent, DtCellDirective, SortState,
-} from '../../shared/components/data-table.component';
+} from '../../shared/components/data-table/data-table.component';
 import { ThroughputChartComponent } from './throughput-chart/throughput-chart.component';
 import { StatusDistributionChartComponent } from './status-distribution-chart/status-distribution-chart.component';
 import { FailuresSortBy, RecentFailure } from './dashboard.models';
@@ -23,87 +23,8 @@ const DASHBOARD_REFRESH_MS = 30_000;
     ThroughputChartComponent, StatusDistributionChartComponent, RefreshTimerComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <section class="dash">
-      <div class="dash-head">
-        <h1 class="page-title">Dashboard</h1>
-        <app-refresh-timer
-          [lastUpdated]="dash.lastUpdated()"
-          [intervalMs]="refreshMs"
-          [busy]="busy()"
-          (refresh)="dash.refreshAll()" />
-      </div>
-
-      <!-- FR-1.1 counters -->
-      <div class="counters">
-        <app-stat-card title="Queued"      [value]="dash.summary()?.queued ?? 0"></app-stat-card>
-        <app-stat-card title="In Progress" [value]="dash.summary()?.in_progress ?? 0"></app-stat-card>
-        <app-stat-card title="Completed"   [value]="dash.summary()?.completed ?? 0"></app-stat-card>
-        <app-stat-card title="Failed"      [value]="dash.summary()?.failed ?? 0"></app-stat-card>
-      </div>
-      @if (dash.summaryError()) {
-        <p class="inline-error">{{ dash.summaryError() }}
-          <button type="button" (click)="dash.loadSummary()">Retry</button>
-        </p>
-      }
-
-      <!-- FR-1.2 / FR-1.3 charts -->
-      <div class="charts-grid">
-        <app-throughput-chart
-          [data]="dash.throughput()"
-          [loading]="dash.throughputLoading()"
-          [error]="dash.throughputError()"
-          (retry)="dash.refreshAll()"/>
-        <app-status-distribution-chart
-          [data]="dash.statusDistribution()"
-          [loading]="dash.distributionLoading()"
-          [error]="dash.distributionError()"
-          (retry)="dash.refreshAll()" />
-      </div>
-
-      <!-- FR-1.4 recent failures -->
-      <h2 class="section-title">Recent Failures</h2>
-      <app-data-table
-        [columns]="columns"
-        [rows]="dash.failures()"
-        [loading]="dash.failuresLoading()"
-        [error]="dash.failuresError()"
-        emptyMessage="No recent failures 🎉"
-        [sortBy]="dash.failuresQuery().sortBy"
-        [sortDir]="dash.failuresQuery().sortDir"
-        [page]="dash.failuresQuery().page"
-        [pageSize]="dash.failuresQuery().pageSize"
-        [totalCount]="dash.failuresMeta()?.total_count ?? 0"
-        [totalPages]="dash.failuresMeta()?.total_pages ?? 1"
-        (sortChange)="onSort($event)"
-        (pageChange)="dash.setFailuresPage($event)"
-        (pageSizeChange)="dash.setFailuresPageSize($event)"
-        (retry)="dash.loadFailures()">
-
-        <ng-template dtCell="error" let-row>
-          <span class="err-code">{{ row.error_code || '—' }}</span>
-          @if (row.error_message) { <span class="err-msg"> — {{ row.error_message }}</span> }
-        </ng-template>
-
-        <ng-template dtCell="failed_at" let-row>
-          {{ row.failed_at | date: 'short' }}
-        </ng-template>
-      </app-data-table>
-    </section>
-  `,
-  styles: [`
-    .dash { display: flex; flex-direction: column; gap: var(--space-3, 24px); padding: var(--space-3, 24px); }
-    .dash-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2); }
-    .page-title { font-family: var(--font-display); color: var(--dark-gray); margin: 0; }
-    .section-title { font-family: var(--font-display); font-size: 1.05rem; color: var(--dark-gray); margin: 0; }
-    .counters { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-2); }
-    .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2, 16px); }
-    @media (max-width: 1280px) { .charts-grid { grid-template-columns: 1fr; } }
-    .inline-error { color: var(--text-error); font-size: 0.85rem; }
-    .inline-error button { margin-left: 8px; }
-    .err-code { font-weight: 600; color: var(--dark-gray); }
-    .err-msg { color: var(--dark-gray-3); }
-  `],
+  templateUrl: './dashboard.component.html',
+  styleUrl: './dashboard.component.css',
 })
 export class DashboardComponent {
   protected readonly dash = inject(DashboardService);

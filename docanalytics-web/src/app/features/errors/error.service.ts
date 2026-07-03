@@ -4,7 +4,7 @@ import { finalize } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse, Meta } from '../../core/models/api-response.model';
 import { SKIP_ERROR_TOAST } from '../../core/interceptors/error.interceptor';
-import { SortDir } from '../../shared/components/data-table.component';
+import { SortDir } from '../../shared/components/data-table/data-table.component';
 import { ChartPoint, ErrorListItem, ErrorQuery, ErrorSortBy } from './errors.models';
 
 const DEFAULT_QUERY: ErrorQuery = {

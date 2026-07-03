@@ -7,6 +7,7 @@ import { SeriesPoint } from '../../../core/models/dashboard.model';
   standalone: true,
   imports: [ChartCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
+
   templateUrl: './throughput-chart.component.html',
   styleUrl: './throughput-chart.component.css',
 })

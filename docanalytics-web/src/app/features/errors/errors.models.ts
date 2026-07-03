@@ -1,4 +1,4 @@
-import { SortDir } from '../../shared/components/data-table.component';
+import { SortDir } from '../../shared/components/data-table/data-table.component';
 
 // top-frequencies + trend both return { data: { points: [{label,value}] } }
 export interface ChartPoint { label: string; value: number; }

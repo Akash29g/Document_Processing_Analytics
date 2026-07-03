@@ -1,0 +1,136 @@
+.dt {
+  background: var(--white);
+  border: 1px solid var(--cool-gray);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.dt-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+  .dt-scroll table {
+    width: 100%;
+    min-width: 720px;
+    border-collapse: collapse;
+  }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+thead th {
+  text-align: left;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--dark-gray-3);
+  background: var(--bg-light);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--cool-gray);
+  white-space: nowrap;
+  user-select: none;
+}
+
+th.sortable {
+  cursor: pointer;
+}
+
+  th.sortable:hover {
+    color: var(--slate-blue);
+  }
+
+.arrow {
+  margin-left: 4px;
+  font-size: 0.7rem;
+  color: var(--slate-blue);
+}
+
+tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--bg-light);
+  color: var(--dark-gray);
+  vertical-align: top;
+}
+
+tbody tr.clickable {
+  cursor: pointer;
+}
+
+  tbody tr.clickable:hover {
+    background: var(--bg-light);
+  }
+
+.state {
+  text-align: center;
+  padding: 28px 14px;
+  color: var(--dark-gray-3);
+}
+
+  .state.error {
+    color: var(--text-error);
+  }
+
+.retry {
+  margin-left: 10px;
+  border: 1px solid var(--slate-blue);
+  background: transparent;
+  color: var(--slate-blue);
+  border-radius: 6px;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.skeleton .bar {
+  display: block;
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--bg-light), var(--cool-gray), var(--bg-light));
+  background-size: 200% 100%;
+  animation: dt-shimmer 1.2s infinite;
+}
+
+@keyframes dt-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.dt-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg-light);
+  font-size: 0.8rem;
+  color: var(--dark-gray-3);
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+  .pager button {
+    border: 1px solid var(--cool-gray);
+    background: var(--white);
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+    color: var(--dark-gray);
+  }
+
+    .pager button:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+.psize select {
+  margin-left: 4px;
+  border: 1px solid var(--cool-gray);
+  border-radius: 6px;
+  padding: 2px 4px;
+}

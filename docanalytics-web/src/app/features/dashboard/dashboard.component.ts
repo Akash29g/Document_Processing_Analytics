@@ -10,8 +10,8 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
 import {
   ColumnDef, DataTableComponent, DtCellDirective, SortState,
 } from '../../shared/components/data-table.component';
-import { ThroughputChartComponent } from './throughput-chart.component';
-import { StatusDistributionChartComponent } from './status-distribution-chart.component';
+import { ThroughputChartComponent } from './throughput-chart/throughput-chart.component';
+import { StatusDistributionChartComponent } from './status-distribution-chart/status-distribution-chart.component';
 import { FailuresSortBy, RecentFailure } from './dashboard.models';
 
 const DASHBOARD_REFRESH_MS = 30_000;

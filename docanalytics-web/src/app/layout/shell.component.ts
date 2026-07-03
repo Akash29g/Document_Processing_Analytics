@@ -5,7 +5,7 @@ import { map } from 'rxjs';
 import { SiteContextService } from '../core/services/site-context.service';
 import { ToastService } from '../core/services/toast.service';
 import { AuthService } from '../core/services/auth.service';
-import { SiteSelectorComponent } from '../shared/components/site-selector.component';
+import { SiteSelectorComponent } from '../shared/components/site-selector/site-selector.component';
 import { ThemeService } from '../core/services/theme.service'; 
 
 @Component({

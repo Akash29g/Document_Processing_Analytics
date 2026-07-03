@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { ChartCardComponent } from '../../shared/components/chart-card.component';
+import { ChartCardComponent } from '../../shared/components/chart-card/chart-card.component';
 import { SeriesPoint } from '../../core/models/dashboard.model';
 
 @Component({

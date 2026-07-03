@@ -1,0 +1,27 @@
+<div class="dd">
+  <!-- trigger button (closed state) -->
+  <button type="button" class="dd-trigger"
+          [class.open]="open()"
+          (click)="toggle()"
+          [attr.aria-expanded]="open()"
+          aria-haspopup="listbox">
+    <span class="label">{{ currentName() }}</span>
+    <span class="material-icons chevron" aria-hidden="true">expand_more</span>
+  </button>
+
+  <!-- options list -->
+  @if (open()) {
+  <ul class="dd-list" role="listbox" tabindex="-1">
+    @for (s of sites(); track s.site_id; let i = $index) {
+    <li role="option"
+        [attr.aria-selected]="s.site_id === currentSiteId()"
+        [class.selected]="s.site_id === currentSiteId()"
+        [class.active]="i === activeIndex()"
+        (click)="choose(s.site_id)"
+        (mouseenter)="activeIndex.set(i)">
+      {{ s.site_name }}
+    </li>
+    }
+  </ul>
+  }
+</div>

@@ -6,8 +6,8 @@ import { map } from 'rxjs/operators';
 import { BatchService } from './batch.service';
 import { BatchFile } from './batch.models';
 import { SiteContextService } from '../../core/services/site-context.service';
-import { StatCardComponent } from '../../shared/components/stat-card.component';
-import { StatusBadgeComponent } from '../../shared/components/status-badge.component';
+import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
+import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { ColumnDef, DataTableComponent, DtCellDirective } from '../../shared/components/data-table.component';
 
 @Component({

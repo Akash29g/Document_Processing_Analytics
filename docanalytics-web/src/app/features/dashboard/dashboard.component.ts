@@ -5,8 +5,8 @@ import {
 import { DashboardService } from './dashboard.service';
 import { RefreshTimerService } from '../../core/services/refresh-timer.service';
 import { SiteContextService } from '../../core/services/site-context.service';
-import { RefreshTimerComponent } from '../../shared/components/refresh-timer.component';
-import { StatCardComponent } from '../../shared/components/stat-card.component';
+import { RefreshTimerComponent } from '../../shared/components/refresh-timer/refresh-timer.component';
+import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
 import {
   ColumnDef, DataTableComponent, DtCellDirective, SortState,
 } from '../../shared/components/data-table/data-table.component';

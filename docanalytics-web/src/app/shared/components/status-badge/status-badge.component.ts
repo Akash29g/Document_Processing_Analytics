@@ -5,21 +5,8 @@ type BadgeStyle = { bg: string; fg: string; icon: string };
 @Component({
   selector: 'app-status-badge',
   standalone: true,
-  template: `
-    <span class="badge" [style.background]="style().bg" [style.color]="style().fg">
-      <span class="material-icons" aria-hidden="true">{{ style().icon }}</span>
-      {{ status() }}
-    </span>
-  `,
-  styles: [`
-    .badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 3px 10px; border-radius: 999px;
-      font-family: var(--font-body); font-size: 12px; font-weight: 600;
-      line-height: 1.6; white-space: nowrap;
-    }
-    .material-icons { font-size: 14px; line-height: 1; }
-  `],
+  templateUrl: './status-badge.component.html',
+  styleUrl: './status-badge.component.css',
 })
 export class StatusBadgeComponent {
   status = input.required<string>();

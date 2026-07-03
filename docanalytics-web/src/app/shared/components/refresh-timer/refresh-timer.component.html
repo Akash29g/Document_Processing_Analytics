@@ -1,0 +1,7 @@
+<div class="rt">
+  <span class="stamp">{{ stampText() }}</span>
+  <button type="button" class="btn" (click)="refresh.emit()" [disabled]="busy()">
+    <span class="material-icons" aria-hidden="true">refresh</span>
+    Refresh
+  </button>
+</div>

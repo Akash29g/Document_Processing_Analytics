@@ -1,0 +1,24 @@
+<section class="chart-card">
+  <header class="cc-head">
+    <div class="cc-titles">
+      <h3 class="cc-title">{{ title() }}</h3>
+      @if (subtitle()) { <p class="cc-sub">{{ subtitle() }}</p> }
+    </div>
+    <div class="cc-actions"><ng-content select="[card-actions]" /></div>
+  </header>
+
+  <div class="cc-body">
+    @if (loading()) {
+    <div class="cc-state"><span class="spinner"></span><span>Loading…</span></div>
+    } @else if (error()) {
+    <div class="cc-state cc-error">
+      <span>⚠️ {{ error() }}</span>
+      <button type="button" class="cc-retry" (click)="retry.emit()">Retry</button>
+    </div>
+    } @else if (empty()) {
+    <div class="cc-state">{{ emptyMessage() }}</div>
+    } @else {
+    <ng-content />
+    }
+  </div>
+</section>

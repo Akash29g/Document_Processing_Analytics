@@ -1,0 +1,9 @@
+<div class="card">
+  @if (loading()) {
+  <div class="skel skel-title"></div>
+  <div class="skel skel-value"></div>
+  } @else {
+  <div class="title">{{ title() }}</div>
+  <div class="value">{{ value() }}</div>
+  }
+</div>

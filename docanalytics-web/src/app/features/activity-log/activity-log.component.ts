@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, effect, inject, untracked } from '@
 import { ActivityLogService } from './activity-log.service';
 import { ActivityLogItem, ActivityLogSortBy } from './activity-log.models';
 import { SiteContextService } from '../../core/services/site-context.service';
-import { StatusBadgeComponent } from '../../shared/components/status-badge.component';
+import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import {
   FilterBarComponent, FilterOption, FilterValues,
 } from '../../shared/components/filter-bar/filter-bar.component';

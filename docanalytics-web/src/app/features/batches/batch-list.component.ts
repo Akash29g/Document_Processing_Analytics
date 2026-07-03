@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { BatchService } from './batch.service';
 import { SiteContextService } from '../../core/services/site-context.service';
 import { FilterBarComponent, FilterValues, FilterOption } from '../../shared/components/filter-bar/filter-bar.component';
-import { StatusBadgeComponent } from '../../shared/components/status-badge.component';
+import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import {
   ColumnDef, DataTableComponent, DtCellDirective, SortState,
 } from '../../shared/components/data-table/data-table.component';

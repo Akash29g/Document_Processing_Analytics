@@ -1,0 +1,46 @@
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="AVEVA_Logo_color_RGB.png" alt="AVEVA"
+           style="width: 130px; height: auto; display: block; filter: brightness(0) invert(1);" />
+      <div style="font-family: var(--font-body); font-size: 0.8rem; letter-spacing: .04em; color: #fff; opacity: .85; margin-top: 6px;">DocAnalytics</div>
+    </div>
+
+    <nav>
+      <a [routerLink]="link('dashboard')" routerLinkActive="active">Dashboard</a>
+      <a [routerLink]="link('batches')" routerLinkActive="active">Batches</a>
+      <a [routerLink]="link('errors')" routerLinkActive="active">Errors</a>
+      <a [routerLink]="link('activity-log')" routerLinkActive="active">Activity Log</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <app-site-selector />
+      <span class="spacer"></span>
+      <button class="theme-toggle" type="button" (click)="theme.toggle()"
+              [attr.aria-pressed]="theme.isDark()"
+              [attr.aria-label]="theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+              title="Toggle theme">
+        {{ theme.isDark() ? '☀️' : '🌙' }}
+      </button>
+      <span class="user">{{ user()?.role ?? 'Viewer' }}</span>
+      <button class="logout-btn" (click)="logout()">Log out</button>
+    </header>
+    <main class="content"><router-outlet /></main>
+  </div>
+
+  <!-- global toast outlet -->
+  <div class="toasts">
+    @for (t of toast.toasts(); track t.id) {
+    <div class="toast"
+         [class.error]="t.type === 'error'"
+         [class.success]="t.type === 'success'"
+         [class.warning]="t.type === 'warning'">
+      <span class="material-icons" aria-hidden="true">{{ icon(t.type) }}</span>
+      <span class="toast-text">{{ t.text }}</span>
+      <button (click)="toast.dismiss(t.id)">×</button>
+    </div>
+    }
+  </div>
+</div>

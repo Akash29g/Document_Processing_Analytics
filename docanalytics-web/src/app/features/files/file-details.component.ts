@@ -7,7 +7,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { FileDetailsService } from './file-details.service';
 import { SiteContextService } from '../../core/services/site-context.service';
-import { StatusBadgeComponent } from '../../shared/components/status-badge.component';
+import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { InvoiceLineItem, StepHistoryItem } from './file-details.models';
 
 @Component({

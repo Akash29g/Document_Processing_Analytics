@@ -1,0 +1,66 @@
+import { HttpClient, HttpContext } from '@angular/common/http';
+import { Injectable, inject, signal } from '@angular/core';
+import { finalize } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { ApiResponse } from '../../core/models/api-response.model';
+import { SKIP_ERROR_TOAST } from '../../core/interceptors/error.interceptor';
+import { AlertRule, AlertRulePayload } from './alerts.models';
+
+@Injectable({ providedIn: 'root' })
+export class AlertsService {
+  private http = inject(HttpClient);
+  private base = `${environment.apiBase}/alerts`;
+  private silent = { context: new HttpContext().set(SKIP_ERROR_TOAST, true) };
+
+  private _rules = signal<AlertRule[]>([]);
+  private _loading = signal(false);
+  private _error = signal<string | null>(null);
+  private _saving = signal(false);
+
+  readonly rules = this._rules.asReadonly();
+  readonly loading = this._loading.asReadonly();
+  readonly error = this._error.asReadonly();
+  readonly saving = this._saving.asReadonly();
+
+  loadRules(): void {
+    this._loading.set(true);
+    this._error.set(null);
+    this.http.get<ApiResponse<AlertRule[]>>(this.base, this.silent)
+      .pipe(finalize(() => this._loading.set(false)))
+      .subscribe({
+        next: (res) => this._rules.set(res.data ?? []),
+        error: () => this._error.set('Could not load alert rules.'),
+      });
+  }
+
+  create(payload: AlertRulePayload): void {
+    this._saving.set(true);
+    this.http.post<ApiResponse<AlertRule>>(this.base, payload)
+      .pipe(finalize(() => this._saving.set(false)))
+      .subscribe({ next: () => this.loadRules() });
+  }
+
+  update(id: string, payload: AlertRulePayload): void {
+    this._saving.set(true);
+    this.http.put<ApiResponse<AlertRule>>(`${this.base}/${id}`, payload)
+      .pipe(finalize(() => this._saving.set(false)))
+      .subscribe({ next: () => this.loadRules() });
+  }
+
+  /** enable/disable toggle = a small update */
+  toggle(rule: AlertRule): void {
+    this.update(rule.id, {
+      name: rule.name,
+      threshold_percent: rule.threshold_percent,
+      window_minutes: rule.window_minutes,
+      email: rule.email,
+      cooldown_minutes: rule.cooldown_minutes,
+      is_enabled: !rule.is_enabled,
+    });
+  }
+
+  remove(id: string): void {
+    this.http.delete<void>(`${this.base}/${id}`)
+      .subscribe({ next: () => this.loadRules() });
+  }
+}

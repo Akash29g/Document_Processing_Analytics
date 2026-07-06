@@ -1,0 +1,80 @@
+<section class="al">
+  <header class="al-head">
+    <div>
+      <p class="al-eyebrow">Notifications</p>
+      <h2 class="al-title">Failure-Rate Alerts</h2>
+    </div>
+  </header>
+
+  <!-- create form (Admin only) -->
+  @if (isAdmin()) {
+  <form class="al-form" (ngSubmit)="submit()">
+    <input class="al-in" name="name" placeholder="Rule name" [(ngModel)]="form.name" required />
+    <input class="al-in" name="email" type="email" placeholder="alert@company.com" [(ngModel)]="form.email" required />
+    <label class="al-lbl">
+      Threshold %
+      <input class="al-in sm" name="th" type="number" min="0" max="100" [(ngModel)]="form.threshold_percent" />
+    </label>
+    <label class="al-lbl">
+      Window (min)
+      <input class="al-in sm" name="win" type="number" min="1" [(ngModel)]="form.window_minutes" />
+    </label>
+    <label class="al-lbl">
+      Cooldown (min)
+      <input class="al-in sm" name="cd" type="number" min="1" [(ngModel)]="form.cooldown_minutes" />
+    </label>
+    <button class="al-btn" type="submit" [disabled]="svc.saving()">
+      {{ svc.saving() ? 'Saving…' : 'Add rule' }}
+    </button>
+  </form>
+  } @else {
+  <p class="al-note">You have read-only access. Ask an Admin to configure alerts.</p>
+  }
+
+  <!-- list -->
+  @if (svc.loading()) {
+  <p class="al-state">Loading…</p>
+  } @else if (svc.error()) {
+  <p class="al-state err">{{ svc.error() }} <button (click)="svc.loadRules()">Retry</button></p>
+  } @else if (svc.rules().length === 0) {
+  <p class="al-state">No alert rules yet.</p>
+  } @else {
+  <table class="al-tbl">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th class="r">Threshold</th>
+        <th class="r">Window</th>
+        <th class="r">Cooldown</th>
+        <th>Last fired</th>
+        <th>Enabled</th>
+        @if (isAdmin()) {
+        <th></th> }
+      </tr>
+    </thead>
+    <tbody>
+      @for (r of svc.rules(); track r.id) {
+      <tr [class.off]="!r.is_enabled">
+        <td>{{ r.name }}</td>
+        <td>{{ r.email }}</td>
+        <td class="r">{{ r.threshold_percent }}%</td>
+        <td class="r">{{ r.window_minutes }}m</td>
+        <td class="r">{{ r.cooldown_minutes }}m</td>
+        <td>{{ r.last_triggered_at ? (r.last_triggered_at | date:'short') : '—' }}</td>
+        <td>
+          @if (isAdmin()) {
+          <button class="al-toggle" (click)="svc.toggle(r)">{{ r.is_enabled ? 'On' : 'Off' }}</button>
+          } @else {
+          {{ r.is_enabled ? 'On' : 'Off' }}
+          }
+        </td>
+        @if (isAdmin()) {
+        <td><button class="al-del" (click)="svc.remove(r.id)">Delete</button></td>
+        }
+      </tr>
+      }
+    </tbody>
+  </table>
+  }
+</section>

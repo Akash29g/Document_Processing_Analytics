@@ -30,6 +30,12 @@ export const routes: Routes = [
       },
 
       {
+        path: 'alerts',
+        loadComponent: () =>
+          import('./features/alerts/alerts.component').then((m) => m.AlertsComponent),
+      },
+
+      {
         path: 'activity-log',
         loadComponent: () =>
           import('./features/activity-log/activity-log.component').then((m) => m.ActivityLogComponent),

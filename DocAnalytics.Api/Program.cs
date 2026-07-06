@@ -32,7 +32,8 @@ builder.Services.AddFileDetailsFeature();
 builder.Services.AddAnalyticsFeature();
 builder.Services.AddErrorListFeature();
 builder.Services.AddActivityLogFeature();
-// ── S-1: real-time (SignalR) ──
+builder.Services.AddAlertsFeature();
+builder.Services.AddHostedService<DocAnalytics.Api.BackgroundServices.AlertEvaluationBackgroundService>();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IPipelineNotifier, SignalRPipelineNotifier>();
 builder.Services.AddScoped<ISimulationService, SimulationService>();

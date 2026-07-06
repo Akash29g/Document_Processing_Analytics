@@ -36,6 +36,8 @@ public static class ApiServiceExtensions
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.Key))
             };
 
+            o.MapInboundClaims = false;   // keep JWT claim names as-is ("role" stays "role")
+
             // ── S-1: allow SignalR to authenticate the WebSocket via ?access_token= ──
             o.Events = new JwtBearerEvents
             {

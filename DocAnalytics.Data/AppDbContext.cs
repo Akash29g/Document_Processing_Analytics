@@ -25,6 +25,8 @@ public class AppDbContext : DbContext
     public DbSet<DocumentType> DocumentTypes => Set<DocumentType>();
     public DbSet<InvoiceLineItem> InvoiceLineItems => Set<InvoiceLineItem>();
     public DbSet<ItemCategory> ItemCategories => Set<ItemCategory>();
+    public DbSet<AlertRule> AlertRules => Set<AlertRule>();
+
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -61,6 +63,15 @@ public class AppDbContext : DbContext
         b.Entity<InvoiceLineItem>().HasIndex(i => i.FileId);
         b.Entity<InvoiceLineItem>().HasIndex(i => new { i.TenantId, i.SiteId, i.ItemCategoryId });
         b.Entity<ActivityLog>().HasIndex(a => new { a.TenantId, a.SiteId, a.CreatedAt });
+
+        // ---- table names ----
+        b.Entity<AlertRule>().ToTable("alert_rules");
+
+        // ---- constraints / indexes ----
+        b.Entity<AlertRule>().Property(a => a.Name).HasMaxLength(120);
+        b.Entity<AlertRule>().Property(a => a.Email).HasMaxLength(400);
+        b.Entity<AlertRule>().HasIndex(a => new { a.TenantId, a.SiteId });
+
 
         // ---- relationships ----
         b.Entity<Site>().HasOne(s => s.Tenant).WithMany(t => t.Sites)

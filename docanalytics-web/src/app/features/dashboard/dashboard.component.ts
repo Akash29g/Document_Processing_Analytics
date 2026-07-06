@@ -13,6 +13,7 @@ import {
 import { ThroughputChartComponent } from './throughput-chart/throughput-chart.component';
 import { StatusDistributionChartComponent } from './status-distribution-chart/status-distribution-chart.component';
 import { FailuresSortBy, RecentFailure } from './dashboard.models';
+import { StepPercentilesComponent } from './step-percentiles/step-percentiles.component';
 
 const DASHBOARD_REFRESH_MS = 30_000;
 
@@ -20,7 +21,7 @@ const DASHBOARD_REFRESH_MS = 30_000;
   selector: 'app-dashboard',
   imports: [
     StatCardComponent, DataTableComponent, DtCellDirective, DatePipe,
-    ThroughputChartComponent, StatusDistributionChartComponent, RefreshTimerComponent,
+    ThroughputChartComponent, StatusDistributionChartComponent, RefreshTimerComponent, StepPercentilesComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard.component.html',

@@ -1,0 +1,30 @@
+<app-chart-card title="Processing Time by Step"
+                subtitle="P50 / P90 / P99 (seconds) per step"
+                [loading]="loading()"
+                [error]="error()"
+                [empty]="!loading() && !error() && data().length === 0"
+                emptyMessage="No completed steps yet."
+                (retry)="retry.emit()">
+  <table class="pct">
+    <thead>
+      <tr>
+        <th>Step</th>
+        <th class="r">P50</th>
+        <th class="r">P90</th>
+        <th class="r">P99</th>
+        <th class="r">Samples</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of data(); track row.step) {
+      <tr>
+        <td>{{ row.step }}</td>
+        <td class="r">{{ row.p50_seconds }}s</td>
+        <td class="r">{{ row.p90_seconds }}s</td>
+        <td class="r">{{ row.p99_seconds }}s</td>
+        <td class="r">{{ row.sample_count }}</td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</app-chart-card>

@@ -18,6 +18,15 @@ export interface RecentFailure {
   failed_at: string;
 }
 
+// S-5 — per-step processing-time percentiles
+export interface StepPercentile {
+  step: string;
+  sample_count: number;
+  p50_seconds: number;
+  p90_seconds: number;
+  p99_seconds: number;
+}
+
 export type FailuresSortBy = 'failed_at' | 'file_name' | 'failed_step';
 
 export interface RecentFailuresQuery {

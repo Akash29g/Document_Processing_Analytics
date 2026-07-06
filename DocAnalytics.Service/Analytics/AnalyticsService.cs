@@ -113,5 +113,60 @@ public sealed class AnalyticsService : IAnalyticsService
         return new SeriesDto { Points = points };
     }
 
+    public async Task<List<StepPercentileDto>> GetStepPercentilesAsync(CancellationToken ct = default)
+    {
+        // Drive from Files (ITenantScoped → tenant_id + site_id auto-applied),
+        // navigate out to its steps → isolation guaranteed without touching FileStepHistory directly.
+        var raw = await _db.Files
+            .AsNoTracking()
+            .SelectMany(f => f.Steps)
+            .Where(s => s.StartedAt != null && s.CompletedAt != null)   // only completed steps
+            .Select(s => new { s.StepName, s.StartedAt, s.CompletedAt })
+            .ToListAsync(ct);
+
+        return raw
+            .GroupBy(x => x.StepName)
+            .Select(g =>
+            {
+                var durations = g
+                    .Select(x => (x.CompletedAt!.Value - x.StartedAt!.Value).TotalSeconds)
+                    .Where(d => d >= 0)
+                    .OrderBy(d => d)
+                    .ToList();
+
+                return new StepPercentileDto
+                {
+                    Step = g.Key,
+                    SampleCount = durations.Count,
+                    P50Seconds = Math.Round(Percentile(durations, 0.50), 1),
+                    P90Seconds = Math.Round(Percentile(durations, 0.90), 1),
+                    P99Seconds = Math.Round(Percentile(durations, 0.99), 1),
+                };
+            })
+            .OrderBy(r => StepOrder(r.Step))   // Upload → Validate → Transform → Load
+            .ToList();
+    }
+
+    // Linear-interpolation percentile (same method Postgres percentile_cont uses).
+    private static double Percentile(IReadOnlyList<double> sorted, double p)
+    {
+        if (sorted.Count == 0) return 0;
+        if (sorted.Count == 1) return sorted[0];
+        var rank = p * (sorted.Count - 1);
+        var lo = (int)Math.Floor(rank);
+        var hi = (int)Math.Ceiling(rank);
+        if (lo == hi) return sorted[lo];
+        return sorted[lo] + (sorted[hi] - sorted[lo]) * (rank - lo);
+    }
+
+    private static int StepOrder(string step) => step switch
+    {
+        "Upload" => 0,
+        "Validate" => 1,
+        "Transform" => 2,
+        "Load" => 3,
+        _ => 99
+    };
+
 
 }

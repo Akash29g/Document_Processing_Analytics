@@ -13,6 +13,16 @@ public sealed class SeriesPointDto
     public long Value { get; set; }               // the count
 }
 
+// Per-step processing-time percentiles (S-5). snake_case'd globally.
+public sealed class StepPercentileDto
+{
+    public string Step { get; set; } = null!;   // → "step"
+    public int SampleCount { get; set; }         // → "sample_count"  (completed steps counted)
+    public double P50Seconds { get; set; }       // → "p50_seconds"
+    public double P90Seconds { get; set; }       // → "p90_seconds"
+    public double P99Seconds { get; set; }       // → "p99_seconds"
+}
+
 // Optional date-range filter for time-series analytics (throughput, error-trend).
 public sealed class AnalyticsRangeQuery : IValidatableObject
 {

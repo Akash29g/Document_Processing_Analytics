@@ -35,6 +35,13 @@
       (retry)="dash.refreshAll()" />
   </div>
 
+<!-- S-5: processing-time percentiles -->
+<app-step-percentiles
+  [data]="dash.percentiles()"
+  [loading]="dash.percentilesLoading()"
+  [error]="dash.percentilesError()"
+  (retry)="dash.loadPercentiles()" />
+
   <!-- FR-1.4 recent failures -->
   <h2 class="section-title">Recent Failures</h2>
   <app-data-table

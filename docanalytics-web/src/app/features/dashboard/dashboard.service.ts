@@ -6,7 +6,7 @@ import { ApiResponse, Meta } from '../../core/models/api-response.model';
 import { SKIP_ERROR_TOAST } from '../../core/interceptors/error.interceptor';
 import { ChartSeries, SeriesPoint } from '../../core/models/dashboard.model';
 import {
-  DashboardSummary, FailuresSortBy, RecentFailure, RecentFailuresQuery,
+  DashboardSummary, FailuresSortBy, RecentFailure, RecentFailuresQuery, StepPercentile,
 } from './dashboard.models';
 
 @Injectable({ providedIn: 'root' })
@@ -79,6 +79,27 @@ export class DashboardService {
     this.loadFailures();
   }
 
+  // ── S-5 · Step percentiles ──
+  private _percentiles = signal<StepPercentile[]>([]);
+  private _percentilesLoading = signal(false);
+  private _percentilesError = signal<string | null>(null);
+  readonly percentiles = this._percentiles.asReadonly();
+  readonly percentilesLoading = this._percentilesLoading.asReadonly();
+  readonly percentilesError = this._percentilesError.asReadonly();
+
+  loadPercentiles(): void {
+    this._percentilesLoading.set(true);
+    this._percentilesError.set(null);
+    this.http
+      .get<ApiResponse<StepPercentile[]>>(`${this.base}/dashboard/step-percentiles`, this.silent)
+      .pipe(finalize(() => this._percentilesLoading.set(false)))
+      .subscribe({
+        next: (res) => this._percentiles.set(res.data ?? []),
+        error: () => this._percentilesError.set('Failed to load processing-time percentiles.'),
+      });
+  }
+
+
   // ───────── Dev B · Throughput + Status Distribution ─────────
   readonly throughput = signal<SeriesPoint[]>([]);
   readonly throughputLoading = signal(false);
@@ -116,6 +137,7 @@ export class DashboardService {
     this.loadFailures();
     this.loadThroughput();
     this.loadStatusDistribution();
+    this.loadPercentiles();
     this.lastUpdated.set(new Date());
   }
 }

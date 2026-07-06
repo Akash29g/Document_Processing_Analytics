@@ -34,6 +34,8 @@ export class DashboardComponent {
 
   protected readonly refreshMs = DASHBOARD_REFRESH_MS;
 
+  protected readonly compareLink = computed(() => ['/site', this.site.selectedSiteId(), 'comparison']);
+
   protected readonly busy = computed(() =>
     this.dash.summaryLoading() || this.dash.failuresLoading() ||
     this.dash.throughputLoading() || this.dash.distributionLoading());

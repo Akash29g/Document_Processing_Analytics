@@ -61,9 +61,17 @@ export const routes: Routes = [
           import('./features/errors/errors.component').then((m) => m.ErrorsComponent),
       },
 
+      {
+        path: 'comparison',
+        loadComponent: () =>
+          import('./features/comparison/comparison.component').then((m) => m.ComparisonComponent),
+      },
+
+
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
     ],
   },
+
   { path: '', pathMatch: 'full', redirectTo: 'login' },
   { path: '**', redirectTo: 'login' },
 ];

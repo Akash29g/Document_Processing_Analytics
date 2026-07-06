@@ -13,6 +13,8 @@ import {
 import { ThroughputChartComponent } from './throughput-chart/throughput-chart.component';
 import { StatusDistributionChartComponent } from './status-distribution-chart/status-distribution-chart.component';
 import { FailuresSortBy, RecentFailure } from './dashboard.models';
+import { RealtimeService } from '../../core/services/realtime.service';
+
 
 const DASHBOARD_REFRESH_MS = 30_000;
 
@@ -30,6 +32,7 @@ export class DashboardComponent {
   protected readonly dash = inject(DashboardService);
   private readonly poll = inject(RefreshTimerService);
   private readonly site = inject(SiteContextService);
+  protected readonly realtime = inject(RealtimeService); 
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly refreshMs = DASHBOARD_REFRESH_MS;
@@ -51,6 +54,13 @@ export class DashboardComponent {
       const siteId = this.site.selectedSiteId();
       if (siteId) this.dash.refreshAll();
     });
+
+    // NEW (S-1): live push → refresh the dashboard the instant a file changes state
+    effect(() => {
+      const evt = this.realtime.lastEvent();
+      if (evt) this.dash.refreshAll();
+    });
+
     // recurring 30s + pause-on-hidden + refresh-on-return; tick is guarded too
     this.poll.start(DASHBOARD_REFRESH_MS, () => {
       if (this.site.selectedSiteId()) this.dash.refreshAll();

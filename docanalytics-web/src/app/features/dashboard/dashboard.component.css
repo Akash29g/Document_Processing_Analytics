@@ -61,3 +61,35 @@
 .err-msg {
   color: var(--dark-gray-3);
 }
+
+.dash-live {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 16px);
+}
+
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--dark-gray-3);
+}
+
+  .live-badge .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--cool-gray);
+  }
+
+  .live-badge.on {
+    color: var(--status-confirmed, #2e7d32);
+  }
+
+    .live-badge.on .dot {
+      background: var(--status-confirmed, #2e7d32);
+      box-shadow: 0 0 0 3px rgba(46, 125, 50, .15);
+    }
+

@@ -1,11 +1,15 @@
 <section class="dash">
   <div class="dash-head">
     <h1 class="page-title">Dashboard</h1>
-    <app-refresh-timer
-      [lastUpdated]="dash.lastUpdated()"
-      [intervalMs]="refreshMs"
-      [busy]="busy()"
-      (refresh)="dash.refreshAll()" />
+    <div class="dash-live">
+      <span class="live-badge" [class.on]="realtime.connected()">
+        <span class="dot"></span>{{ realtime.connected() ? 'Live' : 'Offline' }}
+      </span>
+      <app-refresh-timer [lastUpdated]="dash.lastUpdated()"
+                         [intervalMs]="refreshMs"
+                         [busy]="busy()"
+                         (refresh)="dash.refreshAll()" />
+    </div>
   </div>
 
   <!-- FR-1.1 counters -->

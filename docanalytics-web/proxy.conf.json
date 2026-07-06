@@ -3,5 +3,11 @@
     "target": "https://localhost:7001",
     "secure": false,
     "changeOrigin": true
+  },
+  "/hubs": {
+    "target": "https://localhost:7001",
+    "secure": false,
+    "ws": true,
+    "changeOrigin": true
   }
 }

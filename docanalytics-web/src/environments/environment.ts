@@ -1,4 +1,5 @@
 export const environment = {
   production: false,
-  apiBase: '/api/v1', // relative — the dev proxy (step 8) forwards /api → backend
+  apiBase: '/api/v1',
+  hubUrl: '/hubs/pipeline',   // ← S-1: relative → proxied to the backend hub
 };

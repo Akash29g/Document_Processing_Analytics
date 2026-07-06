@@ -30,6 +30,15 @@ public sealed class DashboardAnalyticsController : ControllerBase
         return Ok(ApiResponse<SeriesDto>.Ok(series));
     }
 
+    // GET /api/v1/dashboard/step-percentiles  (S-5)
+    [HttpGet("step-percentiles")]
+    public async Task<IActionResult> GetStepPercentiles(CancellationToken ct)
+    {
+        var data = await _analyticsService.GetStepPercentilesAsync(ct);
+        return Ok(ApiResponse<List<StepPercentileDto>>.Ok(data));
+    }
+
+
 
 
 }

@@ -10,6 +10,8 @@ using DocAnalytics.Service.Batches;
 using DocAnalytics.Service.Health;
 using DocAnalytics.Service.Invoices;
 using DocAnalytics.Service.Analytics;
+using DocAnalytics.Api.Realtime;
+using DocAnalytics.Service.Realtime;
 using Microsoft.OpenApi;
 using System.Text.Json;
 
@@ -30,6 +32,11 @@ builder.Services.AddFileDetailsFeature();
 builder.Services.AddAnalyticsFeature();
 builder.Services.AddErrorListFeature();
 builder.Services.AddActivityLogFeature();
+// ── S-1: real-time (SignalR) ──
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<IPipelineNotifier, SignalRPipelineNotifier>();
+builder.Services.AddScoped<ISimulationService, SimulationService>();
+
 
 builder.Services.AddControllers().AddJsonOptions(o =>
 {
@@ -60,5 +67,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<TenantSiteMiddleware>();
 app.MapControllers();
+app.MapHub<PipelineHub>("/hubs/pipeline");   // ← S-1: SignalR endpoint
 
 app.Run();

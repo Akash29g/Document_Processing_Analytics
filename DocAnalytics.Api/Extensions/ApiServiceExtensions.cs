@@ -4,6 +4,8 @@ using DocAnalytics.Api.Common;
 using DocAnalytics.Domain.Common;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+
 
 namespace DocAnalytics.Api.Extensions;
 
@@ -32,6 +34,21 @@ public static class ApiServiceExtensions
                 ValidIssuer = settings.Issuer,
                 ValidAudience = settings.Audience,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.Key))
+            };
+
+            // ── S-1: allow SignalR to authenticate the WebSocket via ?access_token= ──
+            o.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    var accessToken = context.Request.Query["access_token"];
+                    var path = context.HttpContext.Request.Path;
+                    if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                    {
+                        context.Token = accessToken;   // use the query-string token for hub requests
+                    }
+                    return Task.CompletedTask;
+                }
             };
         });
         services.AddAuthorization();

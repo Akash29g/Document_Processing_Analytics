@@ -1,0 +1,122 @@
+.cmp {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 24px);
+  padding: var(--space-3, 24px);
+}
+
+.cmp-eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--dark-gray-3);
+}
+
+.cmp-title {
+  margin: 2px 0 0;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--dark-gray);
+}
+
+.cmp-sub {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: var(--dark-gray-3);
+}
+
+/* two columns side by side, collapse to one on narrow screens */
+.cmp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2, 16px);
+}
+
+@media (max-width: 1100px) {
+  .cmp-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cmp-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 16px);
+}
+
+.cmp-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-1, 8px);
+}
+
+.cmp-tag {
+  align-self: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.cmp-tag-a {
+  background: var(--slate-blue);
+}
+
+.cmp-tag-b {
+  background: var(--status-confirmed, #2e7d32);
+}
+
+.cmp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: var(--dark-gray-3);
+}
+
+  .cmp-field input {
+    padding: 7px 10px;
+    border: 1px solid var(--cool-gray);
+    border-radius: 6px;
+    font: inherit;
+    color: var(--dark-gray);
+    background: var(--white);
+  }
+
+    .cmp-field input:focus {
+      outline: none;
+      border-color: var(--slate-blue);
+    }
+
+.cmp-btn {
+  height: 34px;
+  padding: 0 16px;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 1px solid var(--slate-blue);
+  background: var(--slate-blue);
+  color: var(--white);
+  font: inherit;
+}
+
+  .cmp-btn:disabled {
+    opacity: .5;
+    cursor: default;
+  }
+
+.cmp-delta {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--dark-gray-3);
+}
+
+  .cmp-delta strong.up {
+    color: var(--status-confirmed, #2e7d32);
+  }
+
+  .cmp-delta strong.down {
+    color: var(--text-error, #d92d20);
+  }

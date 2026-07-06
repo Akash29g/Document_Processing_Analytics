@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { ChartCardComponent } from '../../../shared/components/chart-card/chart-card.component';
 import { SeriesPoint } from '../../../core/models/dashboard.model';
 
 @Component({
   selector: 'app-throughput-chart',
   standalone: true,
-  imports: [ChartCardComponent],
+  imports: [ChartCardComponent, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
 
   templateUrl: './throughput-chart.component.html',
@@ -15,6 +16,7 @@ export class ThroughputChartComponent {
   data = input<SeriesPoint[]>([]);
   loading = input(false);
   error = input<string | null>(null);
+  compareLink = input<any[] | null>(null); 
   retry = output<void>();
 
   readonly W = 600;

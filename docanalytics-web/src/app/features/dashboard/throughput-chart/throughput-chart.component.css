@@ -6,6 +6,19 @@
   width: 100%;
 }
 
+.tp-compare {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--slate-blue);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+  .tp-compare:hover {
+    text-decoration: underline;
+  }
+
+
 .y-title {
   grid-column: 1;
   grid-row: 1;

@@ -31,6 +31,7 @@
       [data]="dash.throughput()"
       [loading]="dash.throughputLoading()"
       [error]="dash.throughputError()"
+      [compareLink]="compareLink()"
       (retry)="dash.refreshAll()"/>
     <app-status-distribution-chart
       [data]="dash.statusDistribution()"

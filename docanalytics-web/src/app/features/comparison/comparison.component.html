@@ -1,0 +1,60 @@
+<section class="cmp">
+  <header class="cmp-head">
+    <p class="cmp-eyebrow">Analytics</p>
+    <h2 class="cmp-title">Throughput Comparison</h2>
+    <p class="cmp-sub">Pick two date ranges to compare completed-file throughput side by side.</p>
+  </header>
+
+  <div class="cmp-grid">
+    <!-- Range A -->
+    <div class="cmp-col">
+      <div class="cmp-controls">
+        <span class="cmp-tag cmp-tag-a">Range A</span>
+        <label class="cmp-field">
+          <span>From</span>
+          <input type="date" [(ngModel)]="aFrom" />
+        </label>
+        <label class="cmp-field">
+          <span>To</span>
+          <input type="date" [(ngModel)]="aTo" />
+        </label>
+        <button type="button" class="cmp-btn" [disabled]="!aFrom || !aTo" (click)="runA()">Load A</button>
+      </div>
+      <app-throughput-chart [data]="svc.rangeA().points"
+                            [loading]="svc.rangeA().loading"
+                            [error]="svc.rangeA().error"
+                            (retry)="runA()" />
+    </div>
+
+    <!-- Range B -->
+    <div class="cmp-col">
+      <div class="cmp-controls">
+        <span class="cmp-tag cmp-tag-b">Range B</span>
+        <label class="cmp-field">
+          <span>From</span>
+          <input type="date" [(ngModel)]="bFrom" />
+        </label>
+        <label class="cmp-field">
+          <span>To</span>
+          <input type="date" [(ngModel)]="bTo" />
+        </label>
+        <button type="button" class="cmp-btn" [disabled]="!bFrom || !bTo" (click)="runB()">Load B</button>
+      </div>
+      <app-throughput-chart [data]="svc.rangeB().points"
+                            [loading]="svc.rangeB().loading"
+                            [error]="svc.rangeB().error"
+                            (retry)="runB()" />
+    </div>
+  </div>
+
+  <!-- insight footer: totals + delta % (hidden until Range A has data) -->
+  @if (delta() !== null) {
+  <p class="cmp-delta">
+    Range B is
+    <strong [class.up]="delta()! >= 0" [class.down]="delta()! < 0">
+      {{ delta()! >= 0 ? '▲ +' : '▼ ' }}{{ delta() }}%
+    </strong>
+    vs Range A · {{ totalA() }} → {{ totalB() }} files completed.
+  </p>
+  }
+</section>

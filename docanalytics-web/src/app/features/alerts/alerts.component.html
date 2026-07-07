@@ -10,7 +10,30 @@
   @if (isAdmin()) {
   <form class="al-form" (ngSubmit)="submit()">
     <input class="al-in" name="name" placeholder="Rule name" [(ngModel)]="form.name" required />
-    <input class="al-in" name="email" type="email" placeholder="alert@company.com" [(ngModel)]="form.email" required />
+
+    <!-- recipients multi-select dropdown -->
+    <div class="al-dd">
+      <button type="button" class="al-in al-dd-trigger" (click)="toggleMenu(); $event.stopPropagation()">
+        <span>{{ selectedLabel() }}</span>
+        <span class="al-dd-caret">▾</span>
+      </button>
+      @if (menuOpen()) {
+      <div class="al-dd-panel">
+        @if (svc.recipients().length === 0) {
+        <div class="al-dd-empty">No users have access to this site.</div>
+        } @else {
+        @for (r of svc.recipients(); track r.id) {
+        <label class="al-dd-opt">
+          <input type="checkbox" [checked]="isChecked(r.email)" (change)="toggleEmail(r.email)" />
+          <span class="al-dd-email">{{ r.email }}</span>
+          <span class="al-dd-role">{{ r.role }}</span>
+        </label>
+        }
+        }
+      </div>
+      }
+    </div>
+
     <label class="al-lbl">
       Threshold %
       <input class="al-in sm" name="th" type="number" min="0" max="100" [(ngModel)]="form.threshold_percent" />
@@ -23,10 +46,12 @@
       Cooldown (min)
       <input class="al-in sm" name="cd" type="number" min="1" [(ngModel)]="form.cooldown_minutes" />
     </label>
+
     <button class="al-btn" type="submit" [disabled]="svc.saving()">
       {{ svc.saving() ? 'Saving…' : 'Add rule' }}
     </button>
   </form>
+
   } @else {
   <p class="al-note">You have read-only access. Ask an Admin to configure alerts.</p>
   }
@@ -43,7 +68,7 @@
     <thead>
       <tr>
         <th>Name</th>
-        <th>Email</th>
+        <th>Recipients</th>
         <th class="r">Threshold</th>
         <th class="r">Window</th>
         <th class="r">Cooldown</th>
@@ -57,7 +82,15 @@
       @for (r of svc.rules(); track r.id) {
       <tr [class.off]="!r.is_enabled">
         <td>{{ r.name }}</td>
-        <td>{{ r.email }}</td>
+        <td>
+          <div class="al-chips">
+            @for (c of recipientChips(r.email); track c.email) {
+            <span class="al-chip" [class.admin]="c.isAdmin" [title]="c.email">{{ c.name }}</span>
+            }
+          </div>
+        </td>
+
+
         <td class="r">{{ r.threshold_percent }}%</td>
         <td class="r">{{ r.window_minutes }}m</td>
         <td class="r">{{ r.cooldown_minutes }}m</td>

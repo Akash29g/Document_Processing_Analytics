@@ -19,3 +19,10 @@ export interface AlertRulePayload {
   cooldown_minutes: number;
   is_enabled: boolean;
 }
+
+export interface Recipient {
+  id: string;
+  email: string;
+  role: string;
+}
+

@@ -9,21 +9,39 @@ public static class DbSeeder
     // FIXED IDs — stable across resets so tokens & site_id never go stale.
     // Login: Password123!  for every user below.
     //
+
     //  TENANTS
     //   Acme   : 11111111-1111-1111-1111-111111111111
     //   Globex : 22222222-2222-2222-2222-222222222222
+
     //  SITES (paste these into X-Site-Id)
     //   Acme/Mumbai  : a1111111-1111-1111-1111-111111111111
     //   Acme/Delhi   : a2222222-2222-2222-2222-222222222222
     //   Acme/Chennai : a3333333-3333-3333-3333-333333333333
+    //   Acme/Pune    : a4444444-4444-4444-4444-444444444444
+    //   Acme/Kolkata : a5555555-5555-5555-5555-555555555555
     //   Globex/Berlin: b1111111-1111-1111-1111-111111111111
     //   Globex/Munich: b2222222-2222-2222-2222-222222222222
-    //  USERS
+
+    //  USERS  (password: Password123!)
     //   user.a@acme.com    (Viewer, Acme   — Mumbai + Delhi)
-    //   admin@acme.com     (Admin,  Acme   — all 3 Acme sites: Mumbai, Delhi, Chennai)
+    //   admin@acme.com     (Admin,  Acme   — all 5 Acme sites: Mumbai, Delhi, Chennai, Pune, Kolkata)
     //   user.b@acme.com    (Viewer, Acme   — Chennai only)
+    //   user.d@acme.com    (Viewer, Acme   — Mumbai only)
+    //   user.e@acme.com    (Viewer, Acme   — Mumbai only)
+    //   user.f@acme.com    (Viewer, Acme   — Mumbai + Pune)
+    //   user.g@acme.com    (Viewer, Acme   — Pune + Kolkata)
     //   user.c@globex.com  (Viewer, Globex — Berlin only)
     //   admin@globex.com   (Admin,  Globex — both Globex sites: Berlin, Munich)
+ 
+    //  RECIPIENTS PER SITE (S-4 alert dropdown):
+    //   Mumbai  → user.a, admin@acme, user.d, user.e, user.f  (5)
+    //   Pune    → admin@acme, user.f, user.g                  (3)
+    //   Kolkata → admin@acme, user.g                          (2)
+    //   Delhi   → user.a, admin@acme                          (2)
+    //   Chennai → admin@acme, user.b                          (2)
+
+
     // ─────────────────────────────────────────────────────────────
 
     private static readonly Guid AcmeId = new("11111111-1111-1111-1111-111111111111");
@@ -32,13 +50,19 @@ public static class DbSeeder
     private static readonly Guid AcmeMumbai = new("a1111111-1111-1111-1111-111111111111");
     private static readonly Guid AcmeDelhi = new("a2222222-2222-2222-2222-222222222222");
     private static readonly Guid AcmeChennai = new("a3333333-3333-3333-3333-333333333333");
+    private static readonly Guid AcmePune = new("a4444444-4444-4444-4444-444444444444");
+    private static readonly Guid AcmeKolkata = new("a5555555-5555-5555-5555-555555555555");
     private static readonly Guid GlobexBerlin = new("b1111111-1111-1111-1111-111111111111");
     private static readonly Guid GlobexMunich = new("b2222222-2222-2222-2222-222222222222");
 
     private static readonly Guid AcmeUserA = new("c1111111-1111-1111-1111-111111111111");
+    private static readonly Guid AcmeUserB = new("c4444444-4444-4444-4444-444444444444");
+    private static readonly Guid AcmeUserD = new("c6666666-6666-6666-6666-666666666666");
+    private static readonly Guid AcmeUserE = new("c7777777-7777-7777-7777-777777777777");
+    private static readonly Guid AcmeUserF = new("c8888888-8888-8888-8888-888888888888");
+    private static readonly Guid AcmeUserG = new("c9999999-9999-9999-9999-999999999999");
     private static readonly Guid AdminAcme = new("c2222222-2222-2222-2222-222222222222");
     private static readonly Guid GlobexUserC = new("c3333333-3333-3333-3333-333333333333");
-    private static readonly Guid AcmeUserB = new("c4444444-4444-4444-4444-444444444444");
     private static readonly Guid AdminGlobex = new("c5555555-5555-5555-5555-555555555555");
 
     public static async Task SeedAsync(AppDbContext db)
@@ -62,6 +86,8 @@ public static class DbSeeder
             new Site { Id = AcmeMumbai,   TenantId = AcmeId,   Name = "Mumbai Plant",    Location = "Mumbai, IN",  CreatedAt = now, IsActive = true },
             new Site { Id = AcmeDelhi,    TenantId = AcmeId,   Name = "Delhi Warehouse", Location = "Delhi, IN",   CreatedAt = now, IsActive = true },
             new Site { Id = AcmeChennai,  TenantId = AcmeId,   Name = "Chennai Hub",     Location = "Chennai, IN", CreatedAt = now, IsActive = true },
+            new Site { Id = AcmePune,     TenantId = AcmeId,   Name = "Pune Center",     Location = "Pune, IN",    CreatedAt = now, IsActive = true },
+            new Site { Id = AcmeKolkata,  TenantId = AcmeId,   Name = "Kolkata Depot",   Location = "Kolkata, IN", CreatedAt = now, IsActive = true },
             new Site { Id = GlobexBerlin, TenantId = GlobexId, Name = "Berlin DC",       Location = "Berlin, DE",  CreatedAt = now, IsActive = true },
             new Site { Id = GlobexMunich, TenantId = GlobexId, Name = "Munich Plant",    Location = "Munich, DE",  CreatedAt = now, IsActive = true },
         };
@@ -71,6 +97,10 @@ public static class DbSeeder
             new User { Id = AcmeUserA,   TenantId = AcmeId,   Email = "user.a@acme.com",   PasswordHash = hash, Role = "Viewer", CreatedAt = now, IsActive = true },
             new User { Id = AdminAcme,   TenantId = AcmeId,   Email = "admin@acme.com",    PasswordHash = hash, Role = "Admin",  CreatedAt = now, IsActive = true },
             new User { Id = AcmeUserB,   TenantId = AcmeId,   Email = "user.b@acme.com",   PasswordHash = hash, Role = "Viewer", CreatedAt = now, IsActive = true },
+            new User { Id = AcmeUserD,   TenantId = AcmeId,   Email = "user.d@acme.com",   PasswordHash = hash, Role = "Viewer", CreatedAt = now, IsActive = true },
+            new User { Id = AcmeUserE,   TenantId = AcmeId,   Email = "user.e@acme.com",   PasswordHash = hash, Role = "Viewer", CreatedAt = now, IsActive = true },
+            new User { Id = AcmeUserF,   TenantId = AcmeId,   Email = "user.f@acme.com",   PasswordHash = hash, Role = "Viewer", CreatedAt = now, IsActive = true },
+            new User { Id = AcmeUserG,   TenantId = AcmeId,   Email = "user.g@acme.com",   PasswordHash = hash, Role = "Viewer", CreatedAt = now, IsActive = true },
             new User { Id = GlobexUserC, TenantId = GlobexId, Email = "user.c@globex.com", PasswordHash = hash, Role = "Viewer", CreatedAt = now, IsActive = true },
             new User { Id = AdminGlobex, TenantId = GlobexId, Email = "admin@globex.com",  PasswordHash = hash, Role = "Admin",  CreatedAt = now, IsActive = true },
 
@@ -83,8 +113,17 @@ public static class DbSeeder
             new UserSiteAccess { Id = Guid.NewGuid(), UserId = AcmeUserA,   SiteId = AcmeDelhi,    GrantedAt = now },  // user.a: Mumbai + Delhi
             new UserSiteAccess { Id = Guid.NewGuid(), UserId = AdminAcme,   SiteId = AcmeMumbai,   GrantedAt = now },
             new UserSiteAccess { Id = Guid.NewGuid(), UserId = AdminAcme,   SiteId = AcmeDelhi,    GrantedAt = now },
-            new UserSiteAccess { Id = Guid.NewGuid(), UserId = AdminAcme,   SiteId = AcmeChennai,  GrantedAt = now },  // admin@acme: all 3
+            new UserSiteAccess { Id = Guid.NewGuid(), UserId = AdminAcme,   SiteId = AcmeChennai,  GrantedAt = now },  // admin@acme: all 5
+            new UserSiteAccess { Id = Guid.NewGuid(), UserId = AdminAcme,   SiteId = AcmePune,     GrantedAt = now },
+            new UserSiteAccess { Id = Guid.NewGuid(), UserId = AdminAcme,   SiteId = AcmeKolkata,  GrantedAt = now },
             new UserSiteAccess { Id = Guid.NewGuid(), UserId = AcmeUserB,   SiteId = AcmeChennai,  GrantedAt = now },  // user.b: Chennai only
+            new UserSiteAccess { Id = Guid.NewGuid(), UserId = AcmeUserD,   SiteId = AcmeMumbai,   GrantedAt = now },
+            new UserSiteAccess { Id = Guid.NewGuid(), UserId = AcmeUserE,   SiteId = AcmeMumbai,   GrantedAt = now },
+            new UserSiteAccess { Id = Guid.NewGuid(), UserId = AcmeUserF,   SiteId = AcmeMumbai,   GrantedAt = now },
+            new UserSiteAccess { Id = Guid.NewGuid(), UserId = AcmeUserF,   SiteId = AcmePune,     GrantedAt = now },
+            new UserSiteAccess { Id = Guid.NewGuid(), UserId = AcmeUserG,   SiteId = AcmePune,     GrantedAt = now },
+            new UserSiteAccess { Id = Guid.NewGuid(), UserId = AcmeUserG,   SiteId = AcmeKolkata,  GrantedAt = now },
+
             // Globex
             new UserSiteAccess { Id = Guid.NewGuid(), UserId = GlobexUserC, SiteId = GlobexBerlin, GrantedAt = now },  // user.c: Berlin only
             new UserSiteAccess { Id = Guid.NewGuid(), UserId = AdminGlobex, SiteId = GlobexBerlin, GrantedAt = now },
@@ -140,7 +179,7 @@ public static class DbSeeder
         var siteTenant = new (Guid TenantId, Guid SiteId)[]
         {
             (AcmeId, AcmeMumbai), (AcmeId, AcmeDelhi), (AcmeId, AcmeChennai),
-            (GlobexId, GlobexBerlin), (GlobexId, GlobexMunich),
+            (GlobexId, GlobexBerlin), (GlobexId, GlobexMunich), (AcmeId, AcmePune), (AcmeId, AcmeKolkata),
         };
 
         int batchSeq = 0;

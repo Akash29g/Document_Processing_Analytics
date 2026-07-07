@@ -25,6 +25,14 @@ public sealed class CreateAlertRuleRequest
     public bool IsEnabled { get; set; } = true;
 }
 
+public sealed class RecipientDto
+{
+    public Guid Id { get; set; }
+    public string Email { get; set; } = null!;
+    public string Role { get; set; } = null!;
+}
+
+
 public sealed class UpdateAlertRuleRequest
 {
     public string Name { get; set; } = null!;

@@ -35,6 +35,11 @@ public sealed class AlertsController : ControllerBase
             : Ok(ApiResponse<AlertRuleDto>.Ok(dto));
     }
 
+    [HttpGet("recipients")]
+    public async Task<IActionResult> Recipients(CancellationToken ct) =>
+    Ok(ApiResponse<IReadOnlyList<RecipientDto>>.Ok(await _svc.ListRecipientsAsync(ct)));
+
+
     // ── writes: Admin only (S-3 RBAC) ──
     [HttpPost]
     public async Task<IActionResult> Create(CreateAlertRuleRequest req, CancellationToken ct)

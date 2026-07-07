@@ -173,3 +173,80 @@ nav {
     font-size: 16px;
     line-height: 1;
   }
+
+/* ----- logout confirmation modal ----- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(0, 0, 0, .45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modal {
+  background: var(--white);
+  border: 1px solid var(--cool-gray);
+  border-radius: 8px;
+  padding: 24px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .2);
+}
+
+.modal-title {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--dark-gray);
+}
+
+.modal-text {
+  margin: 0 0 20px;
+  font-size: 0.9rem;
+  color: var(--dark-gray-3);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn-cancel {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  background: transparent;
+  border: 1px solid var(--cool-gray);
+  color: var(--dark-gray);
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all .15s;
+}
+
+  .btn-cancel:hover {
+    border-color: var(--slate-blue);
+    color: var(--slate-blue);
+  }
+
+.btn-confirm {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  background: var(--status-error);
+  border: 1px solid var(--status-error);
+  color: #fff;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+
+  .btn-confirm:hover {
+    opacity: .9;
+  }
+

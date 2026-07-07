@@ -26,7 +26,7 @@
         {{ theme.isDark() ? '☀️' : '🌙' }}
       </button>
       <span class="user">{{ user()?.role ?? 'Viewer' }}</span>
-      <button class="logout-btn" (click)="logout()">Log out</button>
+      <button class="logout-btn" (click)="askLogout()">Log out</button>
     </header>
     <main class="content"><router-outlet /></main>
   </div>
@@ -44,4 +44,18 @@
     </div>
     }
   </div>
+  <!-- logout confirmation dialog -->
+  @if (showLogoutConfirm()) {
+  <div class="modal-backdrop" (click)="cancelLogout()">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="logout-title"
+         (click)="$event.stopPropagation()">
+      <h2 id="logout-title" class="modal-title">Log out?</h2>
+      <p class="modal-text">Are you sure you want to log out?</p>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="cancelLogout()">No, stay</button>
+        <button type="button" class="btn-confirm" (click)="confirmLogout()">Yes, log out</button>
+      </div>
+    </div>
+  </div>
+  }
 </div>

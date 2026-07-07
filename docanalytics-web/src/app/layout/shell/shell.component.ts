@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
@@ -31,6 +31,38 @@ export class ShellComponent {
 
   // current logged-in user (signal from AuthService) — drives the role label
   readonly user = this.auth.currentUser;
+  private host = inject(ElementRef);
+  protected menuOpen = signal(false);
+
+  protected isAdmin = computed(() =>
+    (this.user()?.role ?? '').toLowerCase() === 'admin');
+
+  // "admin@acme.com" → "AD", "user.a@acme.com" → "UA"
+  protected initials = computed(() => {
+    const local = (this.user()?.email ?? '').split('@')[0] ?? '';
+    const parts = local.split(/[.\-_]/).filter(Boolean);
+    const s = parts.length >= 2 ? parts[0][0] + parts[1][0] : local.slice(0, 2);
+    return s.toUpperCase();
+  });
+
+  // "admin@acme.com" → "Acme", "user.c@globex.com" → "Globex"
+  protected company = computed(() => {
+    const name = (this.user()?.email ?? '').split('@')[1]?.split('.')[0] ?? '';
+    return name ? name.charAt(0).toUpperCase() + name.slice(1) : '';
+  });
+
+  // "admin@acme.com" → "Admin", "user.a@acme.com" → "User A"
+  protected displayName = computed(() =>
+    ((this.user()?.email ?? '').split('@')[0] ?? '')
+      .split(/[.\-_]/).filter(Boolean)
+      .map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(' '));
+
+  protected toggleMenu(): void { this.menuOpen.update((v) => !v); }
+
+  @HostListener('document:click', ['$event'])
+  onDocClick(e: MouseEvent): void {
+    if (this.menuOpen() && !this.host.nativeElement.contains(e.target)) this.menuOpen.set(false);
+  }
 
   constructor() {
     // mirror the :siteId URL param into the global service (DT-3 design)

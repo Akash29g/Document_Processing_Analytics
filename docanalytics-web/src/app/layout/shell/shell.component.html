@@ -17,6 +17,8 @@
 
   <div class="main">
     <header class="topbar">
+      <span class="ctx-company">{{ company() }}</span>
+      <span class="ctx-sep" aria-hidden="true">›</span>
       <app-site-selector />
       <span class="spacer"></span>
       <button class="theme-toggle" type="button" (click)="theme.toggle()"
@@ -25,8 +27,28 @@
               title="Toggle theme">
         {{ theme.isDark() ? '☀️' : '🌙' }}
       </button>
-      <span class="user">{{ user()?.role ?? 'Viewer' }}</span>
-      <button class="logout-btn" (click)="askLogout()">Log out</button>
+      <div class="me-menu">
+        <button type="button" class="me-trigger" [title]="user()?.email"
+                [attr.aria-expanded]="menuOpen()" (click)="toggleMenu(); $event.stopPropagation()">
+          <div class="me-avatar">{{ initials() }}</div>
+        </button>
+
+        @if (menuOpen()) {
+        <div class="me-card">
+          @if (company()) { <div class="me-card-company">{{ company() }}</div> }
+          <div class="me-card-body">
+            <div class="me-avatar lg">{{ initials() }}</div>
+            <div class="me-card-id">
+              <span class="me-card-name">{{ displayName() }}</span>
+              <span class="me-card-email">{{ user()?.email }}</span>
+              <span class="me-role" [class.admin]="isAdmin()">{{ user()?.role }}</span>
+            </div>
+          </div>
+          <button class="me-card-logout" (click)="menuOpen.set(false); askLogout()">Log out</button>
+        </div>
+        }
+      </div>
+
     </header>
     <main class="content"><router-outlet /></main>
   </div>

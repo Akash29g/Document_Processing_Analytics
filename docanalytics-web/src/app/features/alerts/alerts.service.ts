@@ -4,7 +4,7 @@ import { finalize } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../core/models/api-response.model';
 import { SKIP_ERROR_TOAST } from '../../core/interceptors/error.interceptor';
-import { AlertRule, AlertRulePayload } from './alerts.models';
+import { AlertRule, AlertRulePayload, Recipient } from './alerts.models';
 
 @Injectable({ providedIn: 'root' })
 export class AlertsService {
@@ -21,6 +21,14 @@ export class AlertsService {
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
   readonly saving = this._saving.asReadonly();
+  private _recipients = signal<Recipient[]>([]);
+  readonly recipients = this._recipients.asReadonly();
+
+  loadRecipients(): void {
+    this.http.get<ApiResponse<Recipient[]>>(`${this.base}/recipients`, this.silent)
+      .subscribe({ next: (res) => this._recipients.set(res.data ?? []) });
+  }
+
 
   loadRules(): void {
     this._loading.set(true);

@@ -17,17 +17,65 @@ public sealed class AlertRuleService : IAlertRuleService
     }
 
     // reads auto-scope to tenant/site via the global ITenantScoped filter
-    public async Task<IReadOnlyList<AlertRuleDto>> ListAsync(CancellationToken ct = default) =>
-        await _db.AlertRules.AsNoTracking()
+    public async Task<IReadOnlyList<AlertRuleDto>> ListAsync(CancellationToken ct = default)
+    {
+        var rules = await _db.AlertRules.AsNoTracking()
             .OrderByDescending(r => r.CreatedAt)
-            .Select(r => ToDto(r))
-            .ToListAsync(ct);
+            .ToListAsync(ct);   // per-site list is small → safe to filter in memory
+
+        // Viewers only see rules they're a recipient of; Admins see everything.
+        if (!string.Equals(_me.Role, "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            var myEmail = await _db.Users.AsNoTracking()
+                .Where(u => u.Id == _me.UserId)
+                .Select(u => u.Email)
+                .FirstOrDefaultAsync(ct);
+
+            rules = string.IsNullOrEmpty(myEmail)
+                ? new List<AlertRule>()
+                : rules.Where(r => IsRecipient(r.Email, myEmail)).ToList();
+        }
+
+        return rules.Select(ToDto).ToList();
+    }
+
+    // email field is a comma-joined string → match this user's address exactly on a boundary
+    private static bool IsRecipient(string emailCsv, string myEmail) =>
+        emailCsv.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                .Any(e => string.Equals(e, myEmail, StringComparison.OrdinalIgnoreCase));
+
 
     public async Task<AlertRuleDto?> GetAsync(Guid id, CancellationToken ct = default)
     {
         var r = await _db.AlertRules.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, ct);
-        return r is null ? null : ToDto(r);
+        if (r is null) return null;
+
+        if (!string.Equals(_me.Role, "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            var myEmail = await _db.Users.AsNoTracking()
+                .Where(u => u.Id == _me.UserId).Select(u => u.Email).FirstOrDefaultAsync(ct);
+            if (string.IsNullOrEmpty(myEmail) || !IsRecipient(r.Email, myEmail)) return null;  // → 404
+        }
+        return ToDto(r);
     }
+
+
+    public async Task<IReadOnlyList<RecipientDto>> ListRecipientsAsync(CancellationToken ct = default)
+    {
+        // Users granted access to the CURRENT site, within the CURRENT tenant.
+        // User & UserSiteAccess aren't ITenantScoped, so we filter tenant/site explicitly (tenant-safe).
+        return await _db.UserSiteAccess
+            .AsNoTracking()
+            .Where(usa => usa.SiteId == _me.SiteId)
+            .Join(_db.Users.AsNoTracking().Where(u => u.TenantId == _me.TenantId && u.IsActive),
+                  usa => usa.UserId,
+                  u => u.Id,
+                  (usa, u) => new RecipientDto { Id = u.Id, Email = u.Email, Role = u.Role })
+            .Distinct()
+            .OrderBy(r => r.Email)
+            .ToListAsync(ct);
+    }
+
 
     public async Task<AlertRuleDto> CreateAsync(CreateAlertRuleRequest req, CancellationToken ct = default)
     {

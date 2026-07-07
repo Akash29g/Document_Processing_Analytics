@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
@@ -23,6 +23,9 @@ export class ShellComponent {
   toast = inject(ToastService);
   protected theme = inject(ThemeService);
 
+  // controls the logout confirmation dialog
+  protected showLogoutConfirm = signal(false);
+
   // current :siteId from the URL, exposed as a signal for the template
   siteId = toSignal(this.route.paramMap.pipe(map(p => p.get('siteId'))), { initialValue: null });
 
@@ -40,7 +43,17 @@ export class ShellComponent {
     return ['/site', this.siteId(), page];
   }
 
-  logout(): void {
+  // ── logout flow with confirmation ──
+  askLogout(): void {
+    this.showLogoutConfirm.set(true);
+  }
+
+  cancelLogout(): void {
+    this.showLogoutConfirm.set(false);
+  }
+
+  confirmLogout(): void {
+    this.showLogoutConfirm.set(false);
     this.auth.logout();
     this.router.navigate(['/login']);
   }

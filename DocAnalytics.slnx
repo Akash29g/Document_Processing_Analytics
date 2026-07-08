@@ -3,4 +3,5 @@
   <Project Path="DocAnalytics.Data/DocAnalytics.Data.csproj" />
   <Project Path="DocAnalytics.Domain/DocAnalytics.Domain.csproj" />
   <Project Path="DocAnalytics.Service/DocAnalytics.Service.csproj" />
+  <Project Path="DocAnalytics.Tests/DocAnalytics.Tests.csproj" />
 </Solution>

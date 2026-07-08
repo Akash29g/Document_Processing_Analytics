@@ -24,4 +24,6 @@ public class FileRecord : ITenantScoped
     public DocumentType? DocumentType { get; set; }
     public ICollection<FileStepHistory> Steps { get; set; } = new List<FileStepHistory>();
     public ICollection<InvoiceLineItem> LineItems { get; set; } = new List<InvoiceLineItem>();
+
+    public string? StorageKey { get; set; }   // S3 object key; null for seed rows
 }

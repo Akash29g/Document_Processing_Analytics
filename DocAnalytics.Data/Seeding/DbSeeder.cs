@@ -161,12 +161,16 @@ public static class DbSeeder
             ("ERR_UNSUPPORTED_FORMAT","The file format is not supported.",                     "Convert the file to PDF or CSV.",                 "Format '.docx' is not supported."),
             ("ERR_DUPLICATE",         "A document with the same hash already exists.",         "Remove the duplicate before re-submitting.",      "Duplicate of an existing file."),
             ("ERR_AUTH_UPSTREAM",     "Authentication with an upstream service failed.",       "Renew upstream credentials and retry.",           "Upstream returned 401 Unauthorized."),
+            ("ERR_BEDROCK_LOWCONF",    "Extraction confidence below the accepted threshold.", "Re-upload a clearer PDF; verify totals.",          "Confidence 0.60 < 0.70 threshold."),
+            ("ERR_UNREADABLE",         "Nova could not read core fields from the document.",  "Ensure the PDF isn't a blank/garbled scan.",       "Seller/total missing."),
+            ("ERR_EXTRACTION_FAILED",  "The extraction step threw an unexpected error.",      "Retry; if it persists, check Bedrock access.",     "Bedrock call failed."),
+
         };
         var errorCatalog = errorDefs
             .Select(e => new ErrorCatalog { Id = Guid.NewGuid(), ErrorCode = e.Code, Description = e.Desc, RemediationMsg = e.Remediation, CreatedAt = now, UpdatedAt = now })
             .ToArray();
 
-        string[] sources = { "S3_Bucket_Alpha", "SFTP_Beta", "API_Upload", "Manual_Upload", "Azure_Blob_Gamma" };
+        string[] sources = { "S3_Bucket_Alpha", "SFTP_Beta", "API_Upload", "Legacy_Import", "Azure_Blob_Gamma" };
         string[] pipeline = { "Upload", "Validate", "Transform", "Load" };
 
         // ── Bulk transactional data ────────────────────────────────

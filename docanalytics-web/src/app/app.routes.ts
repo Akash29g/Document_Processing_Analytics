@@ -30,6 +30,11 @@ export const routes: Routes = [
       },
 
       {
+        path: 'upload', loadComponent: () =>
+          import('./features/upload/upload.component').then(m => m.UploadComponent)
+      },
+
+      {
         path: 'alerts',
         loadComponent: () =>
           import('./features/alerts/alerts.component').then((m) => m.AlertsComponent),

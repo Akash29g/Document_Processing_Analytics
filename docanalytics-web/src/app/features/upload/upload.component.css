@@ -1,0 +1,75 @@
+.up {
+  max-width: 720px;
+}
+
+.up-eyebrow {
+  margin: 0;
+  font-size: .72rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--dark-gray-3);
+}
+
+.up-title {
+  margin: 4px 0 0;
+  font-family: var(--font-display);
+  color: var(--dark-gray);
+}
+
+.up-sub {
+  margin: 4px 0 20px;
+  color: var(--dark-gray-3);
+  font-size: .9rem;
+}
+
+.up-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 200px;
+  padding: 32px;
+  border: 2px dashed var(--cool-gray);
+  border-radius: 14px;
+  cursor: pointer;
+  color: var(--dark-gray-3);
+  background: var(--surface, #fff);
+  transition: all .15s;
+}
+
+  .up-drop.drag {
+    border-color: var(--slate-blue, #4b6bfb);
+    background: color-mix(in srgb, var(--slate-blue,#4b6bfb) 8%, transparent);
+  }
+
+.up-icon {
+  font-size: 2rem;
+}
+
+.up-done {
+  margin-top: 16px;
+  color: var(--status-success, #2e7d32);
+  font-size: .9rem;
+}
+
+.up-err {
+  margin-top: 16px;
+  color: var(--text-error, #c62828);
+  font-size: .9rem;
+}
+
+.up-spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid var(--cool-gray);
+  border-top-color: var(--slate-blue,#4b6bfb);
+  border-radius: 50%;
+  animation: up-spin .7s linear infinite;
+}
+
+@keyframes up-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -38,6 +38,10 @@ builder.Services.AddSignalR();
 builder.Services.AddSingleton<IPipelineNotifier, SignalRPipelineNotifier>();
 builder.Services.AddScoped<ISimulationService, SimulationService>();
 
+builder.Services.AddInvoicePipeline(builder.Configuration);
+builder.Services.AddHostedService<DocAnalytics.Api.BackgroundServices.ExtractionWorker>();
+
+
 
 builder.Services.AddControllers().AddJsonOptions(o =>
 {

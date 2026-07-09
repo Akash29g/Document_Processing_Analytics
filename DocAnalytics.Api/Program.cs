@@ -50,6 +50,8 @@ builder.Services.AddSignalR();
 builder.Services.AddSingleton<IPipelineNotifier, SignalRPipelineNotifier>();
 builder.Services.AddScoped<ISimulationService, SimulationService>();
 builder.Services.AddProvisioningFeature();
+builder.Services.AddAdminUsersFeature();
+
 
 builder.Services.AddInvoicePipeline(builder.Configuration);
 builder.Services.AddHostedService<DocAnalytics.Api.BackgroundServices.ExtractionWorker>();

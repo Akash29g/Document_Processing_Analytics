@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="DocAnalytics.Api.Tests/DocAnalytics.Api.Tests.csproj" />
   <Project Path="DocAnalytics.Api/DocAnalytics.Api.csproj" />
   <Project Path="DocAnalytics.Data/DocAnalytics.Data.csproj" />
   <Project Path="DocAnalytics.Domain/DocAnalytics.Domain.csproj" />

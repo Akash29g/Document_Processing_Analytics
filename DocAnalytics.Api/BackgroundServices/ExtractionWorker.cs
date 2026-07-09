@@ -76,8 +76,32 @@ public sealed class ExtractionWorker : BackgroundService
             var old = await db.InvoiceLineItems.Where(i => i.FileId == file.Id).ToListAsync(ct);
             db.RemoveRange(old);
 
-            var catByCode = await db.Set<ItemCategory>().AsNoTracking()
-                .ToDictionaryAsync(c => c.CategoryCode, c => c.Id, ct);
+            var cats = await db.Set<ItemCategory>().ToListAsync(ct);   // tracked — we may add to it
+
+            Guid? ResolveCategory(string? name)
+            {
+                if (string.IsNullOrWhiteSpace(name)) return null;
+                var clean = name.Trim();
+
+                // 1) try to match an existing category
+                var m = cats.FirstOrDefault(c =>
+                    string.Equals(c.CategoryName, clean, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(c.CategoryCode, clean, StringComparison.OrdinalIgnoreCase) ||
+                    clean.Contains(c.CategoryName, StringComparison.OrdinalIgnoreCase));
+                if (m is not null) return m.Id;
+
+                // 2) not found → create it on the fly
+                var created = new ItemCategory
+                {
+                    Id = Guid.NewGuid(),
+                    CategoryCode = clean.ToUpperInvariant().Replace(' ', '_'),
+                    CategoryName = clean,
+                };
+                db.Add(created);
+                cats.Add(created);   // reuse within this same file
+                return created.Id;
+            }
+
 
             foreach (var li in result.LineItems)
                 db.Add(new InvoiceLineItem
@@ -86,7 +110,7 @@ public sealed class ExtractionWorker : BackgroundService
                     FileId = file.Id,
                     TenantId = file.TenantId,
                     SiteId = file.SiteId,
-                    ItemCategoryId = null,   // Nova doesn't categorize; leave null (LEFT-join safe)
+                    ItemCategoryId = ResolveCategory(li.Category),
                     LineNumber = li.LineNumber,
                     Description = li.Description,
                     Quantity = li.Quantity,
@@ -96,6 +120,29 @@ public sealed class ExtractionWorker : BackgroundService
                     IsValid = v.IsValid,
                     ExtractedAt = DateTime.UtcNow,
                 });
+
+            // idempotent header upsert (same pattern as line items — gotcha #2)
+            var oldHeader = await db.Set<InvoiceHeader>().Where(h => h.FileId == file.Id).ToListAsync(ct);
+            db.RemoveRange(oldHeader);
+            db.Add(new InvoiceHeader
+            {
+                Id = Guid.NewGuid(),
+                FileId = file.Id,
+                TenantId = file.TenantId,
+                SiteId = file.SiteId,
+                InvoiceNumber = result.InvoiceNumber,
+                InvoiceDate = result.InvoiceDate,
+                Seller = result.Seller,
+                Buyer = result.Client,
+                Currency = result.Currency,
+                Subtotal = result.Subtotal,
+                Discount = result.Discount,
+                Tax = result.Tax,
+                Shipping = result.Shipping,
+                Total = result.Total,
+                ExtractedAt = DateTime.UtcNow,
+            });
+
 
             var done = DateTime.UtcNow;
             bool failed = !v.IsValid;

@@ -223,3 +223,23 @@
     transform: rotate(360deg);
   }
 }
+
+.fd-inv-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 12px 0 16px;
+}
+
+  .fd-inv-head .k {
+    display: block;
+    font-size: .72rem;
+    color: var(--dark-gray-3);
+    text-transform: uppercase;
+  }
+
+  .fd-inv-head .v {
+    font-weight: 600;
+    color: var(--dark-gray);
+  }
+

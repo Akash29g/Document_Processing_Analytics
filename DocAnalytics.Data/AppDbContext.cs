@@ -1,8 +1,9 @@
-﻿using System.Linq.Expressions;
-using System.Reflection;
-using DocAnalytics.Domain.Common;
+﻿using DocAnalytics.Domain.Common;
 using DocAnalytics.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Reflection.Emit;
 
 namespace DocAnalytics.Data;
 
@@ -26,6 +27,8 @@ public class AppDbContext : DbContext
     public DbSet<InvoiceLineItem> InvoiceLineItems => Set<InvoiceLineItem>();
     public DbSet<ItemCategory> ItemCategories => Set<ItemCategory>();
     public DbSet<AlertRule> AlertRules => Set<AlertRule>();
+
+    public DbSet<InvoiceHeader> InvoiceHeaders => Set<InvoiceHeader>();
 
 
     protected override void OnModelCreating(ModelBuilder b)
@@ -86,6 +89,17 @@ public class AppDbContext : DbContext
             .HasForeignKey(i => i.FileId).OnDelete(DeleteBehavior.Cascade);
         b.Entity<InvoiceLineItem>().HasOne(i => i.ItemCategory).WithMany(c => c.LineItems)
             .HasForeignKey(i => i.ItemCategoryId).OnDelete(DeleteBehavior.SetNull);
+
+        b.Entity<InvoiceHeader>(e =>
+        {
+            e.Property(p => p.Subtotal).HasPrecision(12, 2);
+            e.Property(p => p.Discount).HasPrecision(12, 2);
+            e.Property(p => p.Tax).HasPrecision(12, 2);
+            e.Property(p => p.Shipping).HasPrecision(12, 2);
+            e.Property(p => p.Total).HasPrecision(12, 2);
+            e.HasOne(p => p.File).WithMany().HasForeignKey(p => p.FileId);
+        });
+
 
         // ---- GLOBAL TENANT/SITE FILTER (every ITenantScoped entity) ----
         foreach (var et in b.Model.GetEntityTypes())

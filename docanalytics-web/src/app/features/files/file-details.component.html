@@ -55,11 +55,11 @@
   </div>
   }
 
-  <!-- ─────────── Invoice line items ─────────── -->
+  <!-- ─────────── Invoice ─────────── -->
   <div class="fd-card">
-    <h2 class="fd-h2">Invoice line items</h2>
+    <h2 class="fd-h2">Invoice</h2>
     @if (svc.invoiceLoading()) {
-    <div class="fd-state"><span class="spinner"></span> Loading line items…</div>
+    <div class="fd-state"><span class="spinner"></span> Loading invoice…</div>
     } @else if (!svc.hasInvoice()) {
     <div class="fd-state">This file could not be found.</div>
     } @else if (svc.invoiceError()) {
@@ -67,7 +67,20 @@
       {{ svc.invoiceError() }}
       <button class="fd-btn" (click)="svc.loadLineItems()">Retry</button>
     </div>
-    } @else if (items().length === 0) {
+    } @else {
+
+    <!-- header info strip -->
+    @if (svc.invoice()?.header; as h) {
+    <div class="fd-inv-head">
+      <div><span class="k">Invoice #</span><span class="v">{{ h.invoice_number ?? '—' }}</span></div>
+      <div><span class="k">Date</span><span class="v">{{ h.invoice_date ?? '—' }}</span></div>
+      <div><span class="k">Seller</span><span class="v">{{ h.seller ?? '—' }}</span></div>
+      <div><span class="k">Buyer</span><span class="v">{{ h.buyer ?? '—' }}</span></div>
+      <div><span class="k">Currency</span><span class="v">{{ h.currency ?? '—' }}</span></div>
+    </div>
+    }
+
+    @if (items().length === 0) {
     <div class="fd-state">No line items — this file has no extracted invoice items.</div>
     } @else {
     <div class="fd-scroll">
@@ -97,14 +110,24 @@
           }
         </tbody>
         <tfoot>
+          @if (svc.invoice()?.header; as h) {
+          @if (h.discount) {
+          <tr><td colspan="5" class="r">Discount</td><td class="r">− {{ h.currency }} {{ num(h.discount, 2) }}</td><td></td></tr> }
+          @if (h.tax) {
+          <tr><td colspan="5" class="r">Tax</td><td class="r">{{ h.currency }} {{ num(h.tax, 2) }}</td><td></td></tr> }
+          @if (h.shipping) {
+          <tr><td colspan="5" class="r">Shipping</td><td class="r">{{ h.currency }} {{ num(h.shipping, 2) }}</td><td></td></tr> }
+          }
           <tr>
             <td colspan="5" class="r"><strong>Grand total</strong></td>
-            <td class="r"><strong>{{ num(svc.invoice()?.grand_total ?? 0, 2) }}</strong></td>
+            <td class="r"><strong>{{ svc.invoice()?.header?.currency }} {{ num(svc.invoice()?.grand_total ?? 0, 2) }}</strong></td>
             <td></td>
           </tr>
         </tfoot>
       </table>
     </div>
     }
+    }
   </div>
+
 </section>

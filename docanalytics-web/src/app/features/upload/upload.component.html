@@ -39,4 +39,20 @@
   <p class="up-done">✅ Uploaded. Your batch will appear under <strong>Batches</strong> (source: Manual_Upload) once extracted.</p>
   }
   @if (svc.error()) { <p class="up-err">⚠️ {{ svc.error() }}</p> }
+
+  @if (dup.pending(); as fileName) {
+  <div class="dup-backdrop">
+    <div class="dup-modal" role="dialog" aria-modal="true">
+      <h3 class="dup-title">Duplicate file</h3>
+      <p class="dup-msg">
+        <strong>{{ fileName }}</strong> was already uploaded today. What would you like to do?
+      </p>
+      <div class="dup-actions">
+        <button class="dup-btn danger" (click)="dup.choose('replace')">Replace existing</button>
+        <button class="dup-btn primary" (click)="dup.choose('rename')">Keep both</button>
+        <button class="dup-btn ghost" (click)="dup.choose('skip')">Skip this file</button>
+      </div>
+    </div>
+  </div>
+  }
 </section>

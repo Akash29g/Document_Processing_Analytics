@@ -243,3 +243,13 @@
     color: var(--dark-gray);
   }
 
+.fd-btn-invoice {
+  color: var(--text-success, #27ae60);
+  border-color: color-mix(in srgb, var(--text-success, #27ae60) 45%, transparent);
+}
+
+  .fd-btn-invoice:hover {
+    background: color-mix(in srgb, var(--text-success, #27ae60) 12%, transparent);
+  }
+
+

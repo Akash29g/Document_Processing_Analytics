@@ -75,7 +75,6 @@ export class FileDetailsService {
       });
   }
 
-  /** Bonus (Failed-Files feature): download the step-by-step .txt trace. */
   downloadLogs(): void {
     if (!this._fileId) return;
     this.http
@@ -98,6 +97,17 @@ export class FileDetailsService {
         },
       });
   }
+
+  downloadOriginal(): void {
+    if (!this._fileId) return;
+    this.http
+      .get<ApiResponse<{ url: string }>>(`${this.base}/files/${this._fileId}/download-url`, this.silent)
+      .subscribe({
+        next: (res) => { if (res.data?.url) window.open(res.data.url, '_blank'); },
+      });
+  }
+
+
 
   reset(): void {
     this._fileId = null;

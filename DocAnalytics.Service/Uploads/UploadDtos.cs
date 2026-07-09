@@ -11,6 +11,8 @@ public sealed record UploadUrlRequest
     public Guid BatchId { get; init; }     
     public string FileName { get; init; } = "";
     public long SizeBytes { get; init; }
+
+    public string? OnDuplicate { get; init; }   // null | "replace" | "rename"
 }
 
 public sealed record UploadUrlResponse

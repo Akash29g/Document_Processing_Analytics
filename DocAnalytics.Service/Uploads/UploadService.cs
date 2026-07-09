@@ -64,6 +64,15 @@ public sealed class UploadService : IUploadService
         return new CreateBatchResponse { BatchId = txn.Id };
     }
 
+    public async Task<string?> GetDownloadUrlAsync(Guid fileId, CancellationToken ct = default)
+    {
+        // tenant-scoped by the global filter — other tenants get null → 404
+        var file = await _db.Files.AsNoTracking().FirstOrDefaultAsync(f => f.Id == fileId, ct);
+        if (file is null || string.IsNullOrEmpty(file.StorageKey)) return null;
+        return _storage.GetDownloadUrl(file.StorageKey, file.FileName, TimeSpan.FromMinutes(5));
+    }
+
+
     // MODIFIED — attach file to an existing batch (no new Transaction)
     public async Task<UploadUrlResponse> CreateUploadAsync(UploadUrlRequest req, CancellationToken ct = default)
     {
@@ -72,7 +81,7 @@ public sealed class UploadService : IUploadService
         if (req.SizeBytes is <= 0 or > MaxBytes)
             throw new InvalidOperationException("File is empty or exceeds the 15 MB limit.");
 
-        // verify the batch exists and belongs to this tenant/site
+        // verify the batch exists and belongs to this tenant/site (unchanged)
         var batchExists = await _db.Set<Transaction>()
             .AnyAsync(t => t.Id == req.BatchId && t.TenantId == _me.TenantId && t.SiteId == _me.SiteId, ct);
         if (!batchExists)
@@ -83,18 +92,44 @@ public sealed class UploadService : IUploadService
             .Select(d => (Guid?)d.Id)
             .FirstOrDefaultAsync(ct);
 
+        // ── NEW: friendly S3 path — tenant/site NAMES instead of GUIDs ──
+        var tenantName = await _db.Tenants.Where(t => t.Id == _me.TenantId).Select(t => t.Name).FirstAsync(ct);
+        var siteName = await _db.Sites.Where(s => s.Id == _me.SiteId).Select(s => s.Name).FirstAsync(ct);
+
         var now = DateTime.UtcNow;
+        var fileName = req.FileName;
+
+        // ── NEW: duplicate check — same file name uploaded today for this site ──
+        var today = now.Date;
+        var existing = await _db.Files.FirstOrDefaultAsync(f =>
+            f.FileName == fileName && f.CreatedAt >= today && f.CreatedAt < today.AddDays(1), ct);
+
+        if (existing is not null)
+        {
+            switch (req.OnDuplicate?.ToLowerInvariant())
+            {
+                case "replace":
+                    _db.Files.Remove(existing);   // cascades: steps, line items, header
+                    break;
+                case "rename":
+                    fileName = await MakeUniqueNameAsync(fileName, today, ct);
+                    break;
+                default:
+                    throw new DuplicateFileException(fileName);   // → controller returns 409
+            }
+        }
+
         var fileId = Guid.NewGuid();
-        var key = _storage.BuildKey(_me.TenantId, _me.SiteId, fileId);
+        var key = _storage.BuildKey(tenantName, siteName, now, fileName);   // 👈 NEW signature
 
         var file = new FileRecord
         {
             Id = fileId,
             TenantId = _me.TenantId,
             SiteId = _me.SiteId,
-            TransactionId = req.BatchId,     // 👈 shared batch
+            TransactionId = req.BatchId,
             DocumentTypeId = invoiceTypeId,
-            FileName = req.FileName,
+            FileName = fileName,              // 👈 NOTE: fileName (may be renamed), not req.FileName
             FileType = "PDF",
             Status = "Queued",
             CurrentStep = "Upload",
@@ -113,6 +148,56 @@ public sealed class UploadService : IUploadService
         return new UploadUrlResponse { FileId = fileId, UploadUrl = url };
     }
 
+    // Called when the user skips a duplicate: the batch now expects one fewer file.
+    public async Task<bool> ShrinkBatchAsync(Guid batchId, CancellationToken ct = default)
+    {
+        var txn = await _db.Set<Transaction>().FirstOrDefaultAsync(t => t.Id == batchId, ct);
+        if (txn is null) return false;
+
+        txn.TotalFiles = Math.Max(0, txn.TotalFiles - 1);
+        txn.LastUpdatedAt = DateTime.UtcNow;
+
+        // if every file was skipped, remove the empty batch entirely
+        if (txn.TotalFiles == 0 && !await _db.Files.AnyAsync(f => f.TransactionId == txn.Id, ct))
+        {
+            _db.Remove(txn);
+        }
+        else
+        {
+            // maybe the remaining files already settled → finalize now
+            var settled = txn.CompletedCount + txn.FailedCount;
+            if (settled >= txn.TotalFiles)
+            {
+                txn.State = txn.FailedCount > 0 ? "Failed" : "Completed";
+                txn.CompletedAt = DateTime.UtcNow;
+            }
+        }
+
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
+
+    public async Task<bool> DeleteBatchAsync(Guid batchId, CancellationToken ct = default)
+    {
+        var txn = await _db.Set<Transaction>().FirstOrDefaultAsync(t => t.Id == batchId, ct);
+        if (txn is null) return false;
+
+        var files = await _db.Files.Where(f => f.TransactionId == batchId).ToListAsync(ct);
+
+        // 1) S3 objects first (best-effort — don't leave DB rows if S3 fails midway)
+        foreach (var f in files.Where(f => !string.IsNullOrEmpty(f.StorageKey)))
+            await _storage.DeleteAsync(f.StorageKey!, ct);
+
+        // 2) DB: files cascade to headers/line-items/errors; then the batch itself
+        _db.Files.RemoveRange(files);
+        _db.Remove(txn);
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
+
+
+
+
     // MODIFIED — bump batch UploadedCount, then enqueue
     public async Task<bool> CompleteAsync(Guid fileId, CancellationToken ct = default)
     {
@@ -130,4 +215,22 @@ public sealed class UploadService : IUploadService
         await _queue.EnqueueAsync(fileId, ct);   // hand off to the worker
         return true;
     }
+
+    private async Task<string> MakeUniqueNameAsync(string name, DateTime today, CancellationToken ct)
+    {
+        var stem = Path.GetFileNameWithoutExtension(name);
+        var ext = Path.GetExtension(name);
+        for (var i = 2; ; i++)
+        {
+            var candidate = $"{stem} ({i}){ext}";
+            var taken = await _db.Files.AnyAsync(f =>
+                f.FileName == candidate && f.CreatedAt >= today && f.CreatedAt < today.AddDays(1), ct);
+            if (!taken) return candidate;
+        }
+    }
+
 }
+
+public sealed class DuplicateFileException(string fileName)
+    : Exception($"\"{fileName}\" was already uploaded today.");
+

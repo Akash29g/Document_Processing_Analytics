@@ -37,4 +37,21 @@ public sealed class UploadsController : ControllerBase
             ? Ok(ApiResponse<object>.Ok(new { queued = true }))
             : NotFound(ApiResponse<object>.Fail("NOT_FOUND", "File not found."));
     }
+
+    // POST /api/v1/files/batches
+    [HttpPost("batches")]
+    public async Task<IActionResult> CreateBatch([FromBody] CreateBatchRequest req, CancellationToken ct)
+    {
+        try
+        {
+            var result = await _uploads.CreateBatchAsync(req, ct);
+            return Ok(ApiResponse<CreateBatchResponse>.Ok(result));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ApiResponse<object>.Fail("BATCH_REJECTED", ex.Message));
+        }
+    }
+
+
 }

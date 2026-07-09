@@ -2,14 +2,20 @@
 
 namespace DocAnalytics.Service.Uploads;
 
-public sealed class UploadUrlRequest
+// Uploads contracts
+public sealed record CreateBatchRequest { public int FileCount { get; init; } }
+public sealed record CreateBatchResponse { public Guid BatchId { get; init; } }
+
+public sealed record UploadUrlRequest
 {
-    [Required] public string FileName { get; set; } = null!;
-    [Required] public long SizeBytes { get; set; }
+    public Guid BatchId { get; init; }     
+    public string FileName { get; init; } = "";
+    public long SizeBytes { get; init; }
 }
 
-public sealed class UploadUrlResponse
+public sealed record UploadUrlResponse
 {
-    public Guid FileId { get; set; }
-    public string UploadUrl { get; set; } = null!;
+    public Guid FileId { get; init; }
+    public string UploadUrl { get; init; } = "";
 }
+

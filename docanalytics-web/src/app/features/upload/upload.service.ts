@@ -5,6 +5,7 @@ import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../core/models/api-response.model';
 import { SKIP_ERROR_TOAST } from '../../core/interceptors/error.interceptor';
 
+interface CreateBatchResponse { batch_id: string; }
 interface UploadUrlResponse { file_id: string; upload_url: string; }
 
 @Injectable({ providedIn: 'root' })
@@ -14,32 +15,49 @@ export class UploadService {
 
   readonly uploading = signal(false);
   readonly error = signal<string | null>(null);
-  readonly lastFileId = signal<string | null>(null);
+  readonly progress = signal<{ done: number; total: number } | null>(null);
+  readonly lastBatchId = signal<string | null>(null);
 
-  async upload(file: File): Promise<boolean> {
+  async uploadBatch(files: File[]): Promise<boolean> {
+    if (!files.length) return false;
     this.uploading.set(true);
     this.error.set(null);
+    this.lastBatchId.set(null);
+    this.progress.set({ done: 0, total: files.length });
+    const ctx = new HttpContext().set(SKIP_ERROR_TOAST, true);
+
     try {
-      // 1) ask our API for a presigned URL
-      const ctx = new HttpContext().set(SKIP_ERROR_TOAST, true);
-      const res = await firstValueFrom(this.http.post<ApiResponse<UploadUrlResponse>>(
-        `${this.base}/files/upload-url`,
-        { file_name: file.name, size_bytes: file.size },
+      // 1) open ONE batch for the whole upload
+      const batchRes = await firstValueFrom(this.http.post<ApiResponse<CreateBatchResponse>>(
+        `${this.base}/files/batches`, 
+        { file_count: files.length },
         { context: ctx }));
+      const batchId = batchRes.data!.batch_id;
 
-      const data = res.data!;
-      // 2) PUT the bytes straight to S3 (no auth header — it's a signed URL)
-      await fetch(data.upload_url, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/pdf' },
-        body: file,
-      }).then(r => { if (!r.ok) throw new Error('S3 upload failed'); });
+      // 2) upload each file INTO that batch
+      for (const file of files) {
+        // a) presigned URL
+        const res = await firstValueFrom(this.http.post<ApiResponse<UploadUrlResponse>>(
+          `${this.base}/files/upload-url`,
+          { batch_id: batchId, file_name: file.name, size_bytes: file.size },
+          { context: ctx }));
+        const data = res.data!;
 
-      // 3) tell our API it's done → enqueues extraction
-      await firstValueFrom(this.http.post<ApiResponse<unknown>>(
-        `${this.base}/files/${data.file_id}/complete`, {}, { context: ctx }));
+        // b) PUT bytes straight to S3 (signed URL — no auth header)
+        await fetch(data.upload_url, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/pdf' },
+          body: file,
+        }).then(r => { if (!r.ok) throw new Error(`S3 upload failed for ${file.name}`); });
 
-      this.lastFileId.set(data.file_id);
+        // c) mark complete → enqueues extraction
+        await firstValueFrom(this.http.post<ApiResponse<unknown>>(
+          `${this.base}/files/${data.file_id}/complete`, {}, { context: ctx }));
+
+        this.progress.update(p => p ? { done: p.done + 1, total: p.total } : p);
+      }
+
+      this.lastBatchId.set(batchId);
       return true;
     } catch (e: any) {
       this.error.set(e?.error?.error?.message ?? e?.message ?? 'Upload failed.');

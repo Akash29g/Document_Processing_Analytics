@@ -167,13 +167,18 @@ public sealed class ExtractionWorker : BackgroundService
         }
     }
 
-    // your DT-1 rule: any file fails → transaction fails
+    // DT-1 preserved: any file fails → batch Failed. But only finalize once ALL files are settled.
     private static void RecomputeState(Transaction t, DateTime at)
     {
-        t.State = t.FailedCount > 0 ? "Failed"
-                : (t.UploadedCount + t.ProcessingCount) > 0 ? "Processing"
-                : "Completed";
+        var settled = t.CompletedCount + t.FailedCount;
+        var allDone = settled >= t.TotalFiles;
+
+        t.State = allDone
+            ? (t.FailedCount > 0 ? "Failed" : "Completed")
+            : "Processing";
+
         t.LastUpdatedAt = at;
-        if (t.State is "Completed" or "Failed") t.CompletedAt = at;
+        t.CompletedAt = allDone ? at : null;
     }
+
 }

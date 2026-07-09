@@ -80,6 +80,14 @@ export const routes: Routes = [
           import('./features/comparison/comparison.component').then((m) => m.ComparisonComponent),
       },
 
+      {
+        path: 'admin',
+        canActivate: [roleGuard(['Admin'])],
+        loadComponent: () =>
+          import('./features/admin/admin.component').then((m) => m.AdminComponent),
+      },
+
+
      
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
     ],

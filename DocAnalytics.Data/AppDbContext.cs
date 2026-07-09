@@ -13,19 +13,20 @@ public class AppDbContext : DbContext
     public AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUser currentUser)
         : base(options) => _currentUser = currentUser;
 
-    public DbSet<Tenant> Tenants => Set<Tenant>();
-    public DbSet<Site> Sites => Set<Site>();
-    public DbSet<User> Users => Set<User>();
-    public DbSet<UserSiteAccess> UserSiteAccess => Set<UserSiteAccess>();
-    public DbSet<Transaction> Transactions => Set<Transaction>();
-    public DbSet<FileRecord> Files => Set<FileRecord>();
-    public DbSet<FileStepHistory> FileStepHistory => Set<FileStepHistory>();
-    public DbSet<ErrorCatalog> ErrorCatalog => Set<ErrorCatalog>();
-    public DbSet<ActivityLog> ActivityLog => Set<ActivityLog>();
-    public DbSet<DocumentType> DocumentTypes => Set<DocumentType>();
-    public DbSet<InvoiceLineItem> InvoiceLineItems => Set<InvoiceLineItem>();
-    public DbSet<ItemCategory> ItemCategories => Set<ItemCategory>();
-    public DbSet<AlertRule> AlertRules => Set<AlertRule>();
+    public virtual DbSet<Tenant> Tenants => Set<Tenant>();
+    public virtual DbSet<Site> Sites => Set<Site>();
+    public virtual DbSet<User> Users => Set<User>();
+    public virtual DbSet<UserSiteAccess> UserSiteAccess => Set<UserSiteAccess>();
+    public virtual DbSet<Transaction> Transactions => Set<Transaction>();
+    public virtual DbSet<FileRecord> Files => Set<FileRecord>();
+    public virtual DbSet<FileStepHistory> FileStepHistory => Set<FileStepHistory>();
+    public virtual DbSet<ErrorCatalog> ErrorCatalog => Set<ErrorCatalog>();
+    public virtual DbSet<ActivityLog> ActivityLog => Set<ActivityLog>();
+    public virtual DbSet<DocumentType> DocumentTypes => Set<DocumentType>();
+    public virtual DbSet<InvoiceLineItem> InvoiceLineItems => Set<InvoiceLineItem>();
+    public virtual DbSet<ItemCategory> ItemCategories => Set<ItemCategory>();
+    public virtual DbSet<AlertRule> AlertRules => Set<AlertRule>();
+
 
 
     protected override void OnModelCreating(ModelBuilder b)

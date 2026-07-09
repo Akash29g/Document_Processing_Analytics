@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+		<PackageReference Include="xunit" Version="2.9.3" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+		<PackageReference Include="Moq" Version="4.20.72" />
+		<PackageReference Include="MockQueryable.Moq" Version="7.0.3" />
+		<!-- NEW: Option A -->
+		<PackageReference Include="coverlet.collector" Version="6.0.4" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="Xunit" />
+		<!-- same global-using convenience as your existing project -->
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\DocAnalytics.Service\DocAnalytics.Service.csproj" />
+		<ProjectReference Include="..\DocAnalytics.Data\DocAnalytics.Data.csproj" />
+		<ProjectReference Include="..\DocAnalytics.Domain\DocAnalytics.Domain.csproj" />
+	</ItemGroup>
+</Project>

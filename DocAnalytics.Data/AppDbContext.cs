@@ -3,7 +3,6 @@ using DocAnalytics.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Reflection.Emit;
 
 namespace DocAnalytics.Data;
 

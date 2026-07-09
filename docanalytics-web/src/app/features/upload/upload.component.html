@@ -1,8 +1,8 @@
 <section class="up">
   <header class="up-head">
     <p class="up-eyebrow">Invoices</p>
-    <h2 class="up-title">Upload Invoice</h2>
-    <p class="up-sub">Drop a PDF invoice — it's stored in S3 and extracted automatically.</p>
+    <h2 class="up-title">Upload Invoices</h2>
+    <p class="up-sub">Drop one or more PDF invoices (or a ZIP of PDFs) — they're stored in S3 and extracted automatically as a single batch.</p>
   </header>
 
   <label class="up-drop"
@@ -10,18 +10,33 @@
          (dragover)="$event.preventDefault(); dragging.set(true)"
          (dragleave)="dragging.set(false)"
          (drop)="onDrop($event)">
-    <input type="file" accept="application/pdf" hidden (change)="onPick($event)" />
-    @if (svc.uploading()) {
+    <input type="file" accept="application/pdf,.zip" multiple hidden (change)="onPick($event)" />
+
+    @if (expanding()) {
     <span class="up-spinner"></span>
-    <span>Uploading “{{ fileName() }}”…</span>
+    <span>Reading files…</span>
+    } @else if (svc.uploading()) {
+    <span class="up-spinner"></span>
+    @if (svc.progress(); as p) {
+    <span>Uploading {{ p.done }} / {{ p.total }}…</span>
+    } @else {
+    <span>Uploading…</span>
+    }
     } @else {
     <span class="up-icon">⬆️</span>
-    <span><strong>Click to choose</strong> or drag a PDF here</span>
+    <span><strong>Click to choose</strong> or drag PDFs / a ZIP here</span>
     }
   </label>
 
-  @if (svc.lastFileId(); as id) {
-  <p class="up-done">✅ Uploaded. It'll appear under <strong>Batches</strong> (source: Manual_Upload) once extracted.</p>
+  @if (fileNames().length) {
+  <ul class="up-list">
+    @for (name of fileNames(); track name) {
+    <li>{{ name }}</li> }
+  </ul>
+  }
+
+  @if (svc.lastBatchId(); as id) {
+  <p class="up-done">✅ Uploaded. Your batch will appear under <strong>Batches</strong> (source: Manual_Upload) once extracted.</p>
   }
   @if (svc.error()) { <p class="up-err">⚠️ {{ svc.error() }}</p> }
 </section>

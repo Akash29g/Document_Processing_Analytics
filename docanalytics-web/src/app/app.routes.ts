@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { siteAccessGuard } from './core/guards/site-access.guard';
+import { roleGuard } from './core/guards/role.guard';
+
 
 export const routes: Routes = [
   {
@@ -90,6 +92,12 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/auth/change-password.component')
       .then(m => m.ChangePasswordComponent),
+  },
+  {
+    path: 'provision',
+    canActivate: [roleGuard(['Developer'])],
+    loadComponent: () =>
+      import('./features/provisioning/provisioning.component').then((m) => m.ProvisioningComponent),
   },
   { path: '**', redirectTo: 'login' },
 ];

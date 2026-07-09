@@ -16,6 +16,33 @@ public class TenantSiteMiddleware
 
     public async Task Invoke(HttpContext ctx, CurrentUser currentUser, AppDbContext db)
     {
+        // Developer = provisioning only — hard-block all data routes at the API level,
+        // even if a controller attribute is ever forgotten.
+        var roleClaim = ctx.User.FindFirstValue("role");
+        if (roleClaim == "Developer")
+        {
+            var path = ctx.Request.Path.Value ?? string.Empty;
+            var allowed = path.StartsWith("/api/v1/auth", StringComparison.OrdinalIgnoreCase)
+                       || path.StartsWith("/api/v1/provisioning", StringComparison.OrdinalIgnoreCase)
+                       || path.StartsWith("/api/v1/health", StringComparison.OrdinalIgnoreCase);
+            if (!allowed)
+            {
+                ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
+                ctx.Response.ContentType = "application/json";
+                var forbidden = ApiResponse<object>.Fail(
+                    "FORBIDDEN_ROLE", "Developer role has no access to business data.");
+                await ctx.Response.WriteAsync(JsonSerializer.Serialize(forbidden, JsonOpts));
+                return;
+            }
+            // Developer has no tenant/site — set identity only, skip tenant context
+            var devUserIdRaw = ctx.User.FindFirstValue("userId");
+            if (Guid.TryParse(devUserIdRaw, out var devUid))
+                currentUser.Set(devUid, Guid.Empty, Guid.Empty, "Developer");
+
+            await _next(ctx);
+            return;
+        }
+
         if (ctx.User.Identity?.IsAuthenticated == true)
         {
             var userId = ctx.User.FindFirstValue("userId");

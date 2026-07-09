@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DocAnalytics.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Policy = "DataAccess")]   // ← was [Authorize]
 [Route("api/v1/dashboard")]
 public sealed class DashboardController : ControllerBase
 {

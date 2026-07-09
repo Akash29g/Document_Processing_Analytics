@@ -22,6 +22,18 @@ builder.Services.AddCurrentUser();                              // Api
 builder.Services.AddPersistence(builder.Configuration);         // Data
 builder.Services.AddApplicationServices();                      // Service
 builder.Services.AddJwtAuth(builder.Configuration);             // Api
+
+// Role-based policies (feature: provisioning roles)
+builder.Services.AddAuthorization(o =>
+{
+    // Developer = platform provisioning only
+    o.AddPolicy("DeveloperOnly", p => p.RequireClaim("role", "Developer"));
+    // Admin = manages users/sites within their own tenant
+    o.AddPolicy("AdminOnly", p => p.RequireClaim("role", "Admin"));
+    // Business data (dashboards, batches, errors, files…) = tenant users only
+    o.AddPolicy("DataAccess", p => p.RequireClaim("role", "Admin", "Viewer"));
+});
+
 builder.Services.AddSwaggerWithJwt();                           // Api
 builder.Services.AddBatchFeature();
 builder.Services.AddHealthFeature();
@@ -37,6 +49,7 @@ builder.Services.AddHostedService<DocAnalytics.Api.BackgroundServices.AlertEvalu
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IPipelineNotifier, SignalRPipelineNotifier>();
 builder.Services.AddScoped<ISimulationService, SimulationService>();
+
 
 builder.Services.AddInvoicePipeline(builder.Configuration);
 builder.Services.AddHostedService<DocAnalytics.Api.BackgroundServices.ExtractionWorker>();

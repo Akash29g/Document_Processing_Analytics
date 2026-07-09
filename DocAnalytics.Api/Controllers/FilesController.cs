@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DocAnalytics.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Policy = "DataAccess")]   // ← was [Authorize]
 [Route("api/v1/files")]
 public sealed class FilesController : ControllerBase
 {

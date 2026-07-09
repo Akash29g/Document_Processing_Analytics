@@ -78,11 +78,18 @@ export const routes: Routes = [
           import('./features/comparison/comparison.component').then((m) => m.ComparisonComponent),
       },
 
-
+     
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
     ],
   },
 
   { path: '', pathMatch: 'full', redirectTo: 'login' },
+
+  {
+    path: 'change-password',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/auth/change-password.component')
+      .then(m => m.ChangePasswordComponent),
+  },
   { path: '**', redirectTo: 'login' },
 ];

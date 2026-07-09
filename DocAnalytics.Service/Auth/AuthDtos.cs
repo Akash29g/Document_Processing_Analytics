@@ -1,10 +1,17 @@
-﻿namespace DocAnalytics.Service.Auth;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace DocAnalytics.Service.Auth;
 
 // What the client SENDS to POST /auth/login
 public record LoginRequest(string Email, string Password);
 
 // What POST /auth/login RETURNS
-public record LoginResponse(string Token, UserDto User, IReadOnlyList<SiteDto> Sites);
+public record LoginResponse(string Token, UserDto User, IReadOnlyList<SiteDto> Sites, bool MustChangePassword);
+
+// What the client SENDS to POST /auth/change-password
+public record ChangePasswordRequest(
+    [Required] string CurrentPassword,
+    [Required, MinLength(10)] string NewPassword);
 
 // What GET /auth/me RETURNS
 public record MeResponse(UserDto User, IReadOnlyList<SiteDto> Sites);

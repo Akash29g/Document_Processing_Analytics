@@ -59,11 +59,15 @@ public sealed class InvoiceService : IInvoiceService
         var lineSum = items.Sum(i => i.LineTotal ?? 0m);
 
         // 4. NEW — assemble with header; grand total = the REAL total (incl. shipping)
+        // 4. NEW — assemble with header; grand total = the REAL total (incl. shipping)
         return new InvoiceDetailDto
         {
+            FileId = fileId,
             Header = header,
             Items = items,
+            LineItemCount = items.Count,
             GrandTotal = header?.Total ?? lineSum,
         };
+
     }
 }

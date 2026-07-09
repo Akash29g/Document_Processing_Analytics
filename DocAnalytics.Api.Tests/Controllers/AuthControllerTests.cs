@@ -12,7 +12,7 @@ public class AuthControllerTests
     [Fact]
     public async Task Login_returns_200_with_envelope_on_success()
     {
-        var response = new LoginResponse("jwt", new UserDto(Guid.NewGuid(), "a@org.com", "Viewer"), new List<SiteDto>());
+        var response = new LoginResponse("jwt", new UserDto(Guid.NewGuid(), "a@org.com", "Viewer"), new List<SiteDto>(), false);
         var auth = new Mock<IAuthService>();
         auth.Setup(a => a.LoginAsync(It.IsAny<LoginRequest>(), It.IsAny<CancellationToken>())).ReturnsAsync(response);
 

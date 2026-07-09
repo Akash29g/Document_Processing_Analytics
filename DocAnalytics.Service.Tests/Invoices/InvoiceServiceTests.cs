@@ -34,6 +34,7 @@ public class InvoiceServiceTests
         var ctx = MockDb.Create();
         ctx.Setup(c => c.Files).Returns(files.BuildMockDbSet().Object);
         ctx.Setup(c => c.InvoiceLineItems).Returns(items.BuildMockDbSet().Object);
+        ctx.Setup(c => c.InvoiceHeaders).Returns(Array.Empty<InvoiceHeader>().BuildMockDbSet().Object);
 
         var result = await new InvoiceService(ctx.Object).GetInvoiceForFileAsync(fileId);
 

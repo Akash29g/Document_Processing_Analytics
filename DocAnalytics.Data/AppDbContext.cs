@@ -28,7 +28,7 @@ public class AppDbContext : DbContext
     public virtual DbSet<AlertRule> AlertRules => Set<AlertRule>();
 
 
-    public DbSet<InvoiceHeader> InvoiceHeaders => Set<InvoiceHeader>();
+    public virtual DbSet<InvoiceHeader> InvoiceHeaders => Set<InvoiceHeader>();
 
 
     protected override void OnModelCreating(ModelBuilder b)

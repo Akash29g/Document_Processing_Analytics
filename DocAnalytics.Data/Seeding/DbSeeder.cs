@@ -24,6 +24,7 @@ public static class DbSeeder
     //   Globex/Munich: b2222222-2222-2222-2222-222222222222
 
     //  USERS  (password: Password123!)
+    //   developer@platform.com (Developer, NO tenant — platform super-admin: provisioning only, no data access, no site rows)
     //   user.a@acme.com    (Viewer, Acme   — Mumbai + Delhi)
     //   admin@acme.com     (Admin,  Acme   — all 5 Acme sites: Mumbai, Delhi, Chennai, Pune, Kolkata)
     //   user.b@acme.com    (Viewer, Acme   — Chennai only)
@@ -33,7 +34,7 @@ public static class DbSeeder
     //   user.g@acme.com    (Viewer, Acme   — Pune + Kolkata)
     //   user.c@globex.com  (Viewer, Globex — Berlin only)
     //   admin@globex.com   (Admin,  Globex — both Globex sites: Berlin, Munich)
- 
+
     //  RECIPIENTS PER SITE (S-4 alert dropdown):
     //   Mumbai  → user.a, admin@acme, user.d, user.e, user.f  (5)
     //   Pune    → admin@acme, user.f, user.g                  (3)
@@ -43,6 +44,8 @@ public static class DbSeeder
 
 
     // ─────────────────────────────────────────────────────────────
+
+    private static readonly Guid DeveloperId = new("d1111111-1111-1111-1111-111111111111");
 
     private static readonly Guid AcmeId = new("11111111-1111-1111-1111-111111111111");
     private static readonly Guid GlobexId = new("22222222-2222-2222-2222-222222222222");
@@ -65,6 +68,7 @@ public static class DbSeeder
     private static readonly Guid GlobexUserC = new("c3333333-3333-3333-3333-333333333333");
     private static readonly Guid AdminGlobex = new("c5555555-5555-5555-5555-555555555555");
 
+
     public static async Task SeedAsync(AppDbContext db)
     {
         await db.Database.MigrateAsync();
@@ -76,10 +80,11 @@ public static class DbSeeder
 
         // ── Identity ───────────────────────────────────────────────
         var tenants = new[]
-        {
-            new Tenant { Id = AcmeId,   Name = "Acme Corp",  CreatedAt = now, IsActive = true },
-            new Tenant { Id = GlobexId, Name = "Globex Inc", CreatedAt = now, IsActive = true },
-        };
+   {
+            new Tenant { Id = AcmeId,   Name = "Acme Corp",  OrgDomain = "acme.com",   CreatedAt = now, IsActive = true },
+            new Tenant { Id = GlobexId, Name = "Globex Inc", OrgDomain = "globex.com", CreatedAt = now, IsActive = true },
+};
+
 
         var sites = new[]
         {
@@ -94,6 +99,7 @@ public static class DbSeeder
 
         var users = new[]
         {
+            new User { Id = DeveloperId, TenantId = null,     Email = "developer@platform.com", PasswordHash = hash, Role = "Developer", CreatedAt = now, IsActive = true },
             new User { Id = AcmeUserA,   TenantId = AcmeId,   Email = "user.a@acme.com",   PasswordHash = hash, Role = "Viewer", CreatedAt = now, IsActive = true },
             new User { Id = AdminAcme,   TenantId = AcmeId,   Email = "admin@acme.com",    PasswordHash = hash, Role = "Admin",  CreatedAt = now, IsActive = true },
             new User { Id = AcmeUserB,   TenantId = AcmeId,   Email = "user.b@acme.com",   PasswordHash = hash, Role = "Viewer", CreatedAt = now, IsActive = true },

@@ -4,12 +4,22 @@ namespace DocAnalytics.Domain.Entities;
 public class User
 {
     public Guid Id { get; set; }
-    public Guid TenantId { get; set; }
+
+    // NULLABLE now — a Developer (platform super-admin) belongs to no tenant.
+    public Guid? TenantId { get; set; }
+
     public string Email { get; set; } = null!;
     public string PasswordHash { get; set; } = null!;
-    public string Role { get; set; } = null!;     // Admin | Viewer
-    public DateTime CreatedAt { get; set; }
-    public bool IsActive { get; set; }
-    public Tenant Tenant { get; set; } = null!;
-    public ICollection<UserSiteAccess> SiteAccess { get; set; } = new List<UserSiteAccess>();
+
+    // Developer | Admin | Viewer
+    public string Role { get; set; } = null!;
+
+    // Provisioning fields (feature/roles-schema)
+    public bool MustChangePassword { get; set; }          // force reset on first login
+    public bool IsActive { get; set; } = true;            // soft-delete instead of hard delete
+    public Guid? CreatedBy { get; set; }                   // who provisioned this user
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public Tenant? Tenant { get; set; }                    // nullable to match TenantId
+    public List<UserSiteAccess> SiteAccess { get; set; } = new();
 }

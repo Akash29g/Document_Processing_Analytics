@@ -100,6 +100,20 @@ public class AppDbContext : DbContext
             e.HasOne(p => p.File).WithMany().HasForeignKey(p => p.FileId);
         });
 
+        // feature/roles-schema
+        b.Entity<Tenant>(e =>
+        {
+            e.Property(t => t.OrgDomain).HasMaxLength(100).IsRequired();
+            e.HasIndex(t => t.OrgDomain).IsUnique();
+        });
+
+        b.Entity<User>(e =>
+        {
+            // role whitelist at the DB level
+            e.ToTable(t => t.HasCheckConstraint(
+                "ck_users_role", "role IN ('Developer','Admin','Viewer')"));
+        });
+
 
         // ---- GLOBAL TENANT/SITE FILTER (every ITenantScoped entity) ----
         foreach (var et in b.Model.GetEntityTypes())

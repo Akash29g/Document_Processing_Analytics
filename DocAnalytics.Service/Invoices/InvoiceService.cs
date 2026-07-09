@@ -38,16 +38,32 @@ public sealed class InvoiceService : IInvoiceService
             })
             .ToListAsync(ct);
 
-        // 3. Compute totals over ALL lines (null-safe sum).
-        var grandTotal = items.Sum(i => i.LineTotal ?? 0m);
+        // 3. NEW — pull the invoice header (1:1 with the file)
+        var header = await _db.InvoiceHeaders.AsNoTracking()
+            .Where(h => h.FileId == fileId)
+            .Select(h => new InvoiceHeaderDto
+            {
+                InvoiceNumber = h.InvoiceNumber,
+                InvoiceDate = h.InvoiceDate,
+                Seller = h.Seller,
+                Buyer = h.Buyer,
+                Currency = h.Currency,
+                Subtotal = h.Subtotal,
+                Discount = h.Discount,
+                Tax = h.Tax,
+                Shipping = h.Shipping,
+                Total = h.Total,
+            })
+            .FirstOrDefaultAsync(ct);
 
-        // 4. Assemble the detail response.
+        var lineSum = items.Sum(i => i.LineTotal ?? 0m);
+
+        // 4. NEW — assemble with header; grand total = the REAL total (incl. shipping)
         return new InvoiceDetailDto
         {
-            FileId = fileId,
-            LineItemCount = items.Count,
-            GrandTotal = grandTotal,
-            Items = items
+            Header = header,
+            Items = items,
+            GrandTotal = header?.Total ?? lineSum,
         };
     }
 }

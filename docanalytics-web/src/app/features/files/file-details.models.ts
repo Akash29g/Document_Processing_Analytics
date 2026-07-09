@@ -37,7 +37,22 @@ export interface InvoiceLineItem {
   category_name: string | null;
 }
 
+export interface InvoiceHeader {
+  invoice_number: string | null;
+  invoice_date: string | null;
+  seller: string | null;
+  buyer: string | null;
+  currency: string | null;
+  subtotal: number | null;
+  discount: number | null;
+  tax: number | null;
+  shipping: number | null;
+  total: number | null;
+}
+
+
 export interface InvoiceDetail {
+  header: InvoiceHeader | null;
   grand_total: number;
   items: InvoiceLineItem[];
 }

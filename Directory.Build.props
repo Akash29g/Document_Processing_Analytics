@@ -1,0 +1,8 @@
+<Project>
+  <!-- Coverage gate: applies only to *.Tests projects -->
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
+    <Threshold>30</Threshold>
+    <ThresholdType>line</ThresholdType>
+    <ThresholdStat>total</ThresholdStat>
+  </PropertyGroup>
+</Project>

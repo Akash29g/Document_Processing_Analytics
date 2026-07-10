@@ -93,6 +93,40 @@ npm install        # one-time — installs dependencies (node_modules is git-ign
 ng serve -o        # serves at http://localhost:4200
 ```
 
+---
+
+## Code Coverage
+
+### Backend (coverlet + ReportGenerator)
+
+One-time setup:
+
+```powershell
+dotnet tool install -g dotnet-reportgenerator-globaltool
+```
+
+Run:
+
+```powershell
+.\coverage.ps1 -Open   # runs all test projects -> HTML report in ./coverage-report
+```
+
+Covered layers: **Controllers** (Api.Tests, ~100%), **Services with business logic** (Service.Tests),
+**tenant isolation** (Data.Tests), **Domain entities** (Domain.Tests).
+Excluded from coverage: EF migrations, seeding, DI extensions, and external integrations
+(S3, Bedrock, SignalR, SMTP) — these require integration tests, not unit tests.
+
+### Frontend (Vitest)
+
+```powershell
+cd docanalytics-web
+ng test --coverage --watch=false   # coverage table in terminal + report in ./coverage
+```
+
+Covered: guards, interceptors, core services, feature services and shared components (~76% lines).
+
+---
+
 
 ## Team
 - **Dev A** — Akash Goswami

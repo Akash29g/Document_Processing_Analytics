@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, untracked, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { BatchService } from './batch.service';
 import { SiteContextService } from '../../core/services/site-context.service';
@@ -9,6 +9,8 @@ import {
   ColumnDef, DataTableComponent, DtCellDirective, SortState,
 } from '../../shared/components/data-table/data-table.component';
 import { BatchListItem, BatchSortBy } from './batch.models';
+import { AuthService } from '../../core/services/auth.service';
+
 
 @Component({
   selector: 'app-batch-list',
@@ -28,6 +30,23 @@ export class BatchListComponent {
   private site = inject(SiteContextService);
   private destroyRef = inject(DestroyRef);
   private searchTimer?: ReturnType<typeof setTimeout>;
+
+  auth = inject(AuthService);
+  isAdmin = computed(() => this.auth.currentUser()?.role === 'Admin');
+
+  pendingDelete = signal<string | null>(null);
+
+  confirmDelete(id: string) { this.pendingDelete.set(id); }
+
+  doDelete() {
+    const id = this.pendingDelete();
+    if (!id) return;
+    this.svc.deleteBatch(id).subscribe({
+      next: () => { this.pendingDelete.set(null); this.svc.loadBatches(); },
+      error: () => this.pendingDelete.set(null),
+    });
+  }
+
 
   // Status filter — VALUE 'in_progress' stays (backend maps → Processing); LABEL reads "Processing".
   // 'queued' now supported after the backend MapStatusToState fix.
@@ -53,6 +72,8 @@ export class BatchListComponent {
     { key: 'source_system', header: 'Source', sortable: true },
     { key: 'submitted_at', header: 'Submitted', sortable: true },
     { key: 'last_updated', header: 'Updated', sortable: true, value: r => r.last_updated_at },
+    { key: 'actions', header: '', width: '52px' },
+
   ];
 
   constructor() {

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import JSZip from 'jszip';
 import { UploadService } from './upload.service';
 import { ToastService } from '../../core/services/toast.service';
+import { DuplicateDialogService } from './duplicate-dialog.service';
 
 @Component({
   selector: 'app-upload',
@@ -10,12 +11,15 @@ import { ToastService } from '../../core/services/toast.service';
   templateUrl: './upload.component.html',
   styleUrl: './upload.component.css',
 })
+
 export class UploadComponent {
   protected svc = inject(UploadService);
   private toast = inject(ToastService);
   protected dragging = signal(false);
   protected expanding = signal(false);
   protected fileNames = signal<string[]>([]);
+
+  dup = inject(DuplicateDialogService);
 
   protected onDrop(e: DragEvent): void {
     e.preventDefault();
@@ -48,6 +52,8 @@ export class UploadComponent {
     if (ok) this.toast.success(`${pdfs.length} invoice(s) uploaded — extracting now.`);
     else this.toast.error(this.svc.error() ?? 'Upload failed.');
   }
+
+
 
   /** Turn a mixed selection (PDFs + ZIPs) into a flat list of PDF Files. */
   private async expandToPdfs(files: File[]): Promise<File[]> {

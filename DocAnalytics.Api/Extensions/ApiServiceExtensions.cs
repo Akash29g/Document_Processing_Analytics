@@ -33,7 +33,8 @@ public static class ApiServiceExtensions
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = settings.Issuer,
                 ValidAudience = settings.Audience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.Key))
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.Key)),
+                RoleClaimType = "role"
             };
 
             o.MapInboundClaims = false;   // keep JWT claim names as-is ("role" stays "role")

@@ -1,7 +1,9 @@
 ﻿using DocAnalytics.Api.Common;
+using DocAnalytics.Domain.Common;
 using DocAnalytics.Service.Uploads;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DocAnalytics.Api.Controllers;
 
@@ -21,6 +23,10 @@ public sealed class UploadsController : ControllerBase
         {
             var result = await _uploads.CreateUploadAsync(req, ct);
             return Ok(ApiResponse<UploadUrlResponse>.Ok(result));
+        }
+        catch (DuplicateFileException ex)
+        {
+            return Conflict(ApiResponse<object>.Fail("DUPLICATE_FILE", ex.Message));
         }
         catch (InvalidOperationException ex)
         {
@@ -52,6 +58,40 @@ public sealed class UploadsController : ControllerBase
             return BadRequest(ApiResponse<object>.Fail("BATCH_REJECTED", ex.Message));
         }
     }
+
+    // POST /api/v1/files/batches/{id}/shrink — a planned file was skipped
+    [HttpPost("batches/{id:guid}/shrink")]
+    public async Task<IActionResult> ShrinkBatch(Guid id, CancellationToken ct)
+    {
+        var ok = await _uploads.ShrinkBatchAsync(id, ct);
+        return ok ? Ok(ApiResponse<object>.Ok(new { shrunk = true }))
+                  : NotFound(ApiResponse<object>.Fail("NOT_FOUND", "Batch not found."));
+    }
+
+    // DELETE /api/v1/files/batches/{id} — admin only
+    [HttpDelete("batches/{id:guid}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteBatch(Guid id, CancellationToken ct)
+    {
+        var ok = await _uploads.DeleteBatchAsync(id, ct);
+        return ok ? Ok(ApiResponse<object>.Ok(new { deleted = true }))
+                  : NotFound(ApiResponse<object>.Fail("NOT_FOUND", "Batch not found."));
+    }
+
+    // GET /api/v1/files/{id}/download-url — short-lived presigned S3 GET
+    [HttpGet("{id:guid}/download-url")]
+    public async Task<IActionResult> GetDownloadUrl(Guid id, CancellationToken ct)
+    {
+        var url = await _uploads.GetDownloadUrlAsync(id, ct);
+        return url is null
+            ? NotFound(ApiResponse<object>.Fail("NOT_FOUND", "File not found or has no stored document."))
+            : Ok(ApiResponse<object>.Ok(new { url }));
+    }
+
+
+
+
+
 
 
 }

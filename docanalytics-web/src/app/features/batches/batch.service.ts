@@ -80,7 +80,13 @@ export class BatchService {
   loadSources(): void {
     this.http.get<ApiResponse<string[]>>(`${this.base}/batches/sources`, this.silent)
       .subscribe({ next: (res) => this._sources.set(res.data ?? []) });
-  }                          
+  }
+
+  // ── Delete batch (admin only): removes RDS rows + S3 objects ──
+  deleteBatch(id: string) {
+    return this.http.delete<ApiResponse<unknown>>(`${this.base}/files/batches/${id}`);
+  }
+
 
   // ─────────────────────────────────────────────
   // Batch Detail + Files  (Dev B · FR-2.4)

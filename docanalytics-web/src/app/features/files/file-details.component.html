@@ -20,6 +20,9 @@
     <div class="fd-header-right">
       <app-status-badge [status]="fi.current_status" />
       <button class="fd-btn" (click)="svc.downloadLogs()">Download Logs</button>
+      <button type="button" class="fd-btn fd-btn-invoice" (click)="svc.downloadOriginal()">Download Invoice</button>
+
+
     </div>
   </header>
 

@@ -2,6 +2,7 @@
 using Amazon.S3.Model;
 using DocAnalytics.Service.Aws;
 using Microsoft.Extensions.Options;
+using System.Text.RegularExpressions;
 
 namespace DocAnalytics.Service.Storage;
 
@@ -16,8 +17,35 @@ public sealed class S3FileStorage : IFileStorage
         _opts = opts.Value;
     }
 
-    public string BuildKey(Guid tenantId, Guid siteId, Guid fileId) =>
-        $"tenants/{tenantId}/sites/{siteId}/files/{fileId}.pdf";
+    public string BuildKey(string tenantName, string siteName, DateTime dateUtc, string fileName)
+    => $"{Slug(tenantName)}/{Slug(siteName)}/{dateUtc:yyyy/MM/dd}/{SanitizeFileName(fileName)}";
+
+    public string GetDownloadUrl(string storageKey, string fileName, TimeSpan validFor)
+    {
+        var req = new GetPreSignedUrlRequest
+        {
+            BucketName = _opts.BucketName,
+            Key = storageKey,
+            Verb = HttpVerb.GET,
+            Expires = DateTime.UtcNow.Add(validFor),
+            // forces "Save as invoice_x.pdf" instead of opening a GUID-named tab
+            ResponseHeaderOverrides = new ResponseHeaderOverrides
+            {
+                ContentDisposition = $"attachment; filename=\"{fileName}\""
+            }
+        };
+        return _s3.GetPreSignedURL(req);
+    }
+
+    private static string Slug(string s) =>
+        Regex.Replace(s.Trim().ToLowerInvariant(), @"[^a-z0-9]+", "-").Trim('-');
+
+    private static string SanitizeFileName(string name) =>
+        Regex.Replace(name.Trim(), @"[^\w\s\.\-\(\)']", "_");   // keep letters/digits/space/._-()' 
+
+    public Task DeleteAsync(string storageKey, CancellationToken ct = default) =>
+    _s3.DeleteObjectAsync(_opts.BucketName, storageKey, ct);
+
 
     public Task<string> GetPresignedPutUrlAsync(string key, string contentType, TimeSpan ttl, CancellationToken ct = default)
     {

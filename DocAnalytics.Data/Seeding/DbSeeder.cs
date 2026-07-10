@@ -72,6 +72,35 @@ public static class DbSeeder
     public static async Task SeedAsync(AppDbContext db)
     {
         await db.Database.MigrateAsync();
+
+        // ── Backfill new error codes (runs even when the DB is already seeded) ──
+        var newCodes = new[]
+        {
+    new ErrorCatalog
+    {
+        Id = Guid.NewGuid(),
+        ErrorCode = "ERR_MALWARE_DETECTED",
+        Description = "Malware detected by security scan.",
+        RemediationMsg = "The file failed the malware scan and was removed. Verify the document source and upload a clean copy.",
+        UpdatedAt = DateTime.UtcNow
+    },
+    new ErrorCatalog
+    {
+        Id = Guid.NewGuid(),
+        ErrorCode = "ERR_INVALID_FILETYPE",
+        Description = "File content does not match its extension.",
+        RemediationMsg = "The uploaded file is not a genuine PDF. Re-export the document as PDF and upload again.",
+        UpdatedAt = DateTime.UtcNow
+    }
+};
+        foreach (var e in newCodes)
+        {
+            if (!await db.ErrorCatalog.AnyAsync(x => x.ErrorCode == e.ErrorCode))
+                db.Add(e);
+        }
+        await db.SaveChangesAsync();
+
+        
         if (await db.Tenants.AnyAsync()) return; // idempotent guard
 
         var now = DateTime.UtcNow;
@@ -170,6 +199,9 @@ public static class DbSeeder
             ("ERR_BEDROCK_LOWCONF",    "Extraction confidence below the accepted threshold.", "Re-upload a clearer PDF; verify totals.",          "Confidence 0.60 < 0.70 threshold."),
             ("ERR_UNREADABLE",         "Nova could not read core fields from the document.",  "Ensure the PDF isn't a blank/garbled scan.",       "Seller/total missing."),
             ("ERR_EXTRACTION_FAILED",  "The extraction step threw an unexpected error.",      "Retry; if it persists, check Bedrock access.",     "Bedrock call failed."),
+            ("ERR_MALWARE_DETECTED",   "Malware detected by security scan.",                   "The file failed the malware scan and was removed. Verify the document source and upload a clean copy.", "GuardDuty scan verdict: THREATS_FOUND."),
+            ("ERR_INVALID_FILETYPE",   "File content does not match its extension.",           "The uploaded file is not a genuine PDF. Re-export the document as PDF and upload again.",               "Magic-byte check failed: not a PDF."),
+
 
         };
         var errorCatalog = errorDefs

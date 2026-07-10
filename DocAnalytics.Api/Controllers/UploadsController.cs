@@ -3,7 +3,6 @@ using DocAnalytics.Domain.Common;
 using DocAnalytics.Service.Uploads;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 
 namespace DocAnalytics.Api.Controllers;
 

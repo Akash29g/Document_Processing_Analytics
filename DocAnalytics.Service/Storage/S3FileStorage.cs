@@ -37,6 +37,17 @@ public sealed class S3FileStorage : IFileStorage
         return _s3.GetPreSignedURL(req);
     }
 
+    public async Task<string?> GetMalwareScanStatusAsync(string storageKey, CancellationToken ct = default)
+    {
+        var res = await _s3.GetObjectTaggingAsync(new GetObjectTaggingRequest
+        {
+            BucketName = _opts.BucketName,
+            Key = storageKey
+        }, ct);
+        return res.Tagging.FirstOrDefault(t => t.Key == "GuardDutyMalwareScanStatus")?.Value;
+    }
+
+
     private static string Slug(string s) =>
         Regex.Replace(s.Trim().ToLowerInvariant(), @"[^a-z0-9]+", "-").Trim('-');
 

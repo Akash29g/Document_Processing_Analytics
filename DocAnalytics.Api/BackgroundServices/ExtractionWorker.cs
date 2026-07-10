@@ -72,6 +72,36 @@ public sealed class ExtractionWorker : BackgroundService
             var result = await extractor.ExtractAsync(bytes, ct);
             var v = validator.Validate(result);
 
+            // ── SECURITY GATE 1: GuardDuty malware verdict (tag is written async, poll briefly) ──
+            string? scan = null;
+            for (var attempt = 0; attempt < 12; attempt++)          // up to ~60s
+            {
+                scan = await storage.GetMalwareScanStatusAsync(file.StorageKey!, ct);
+                if (scan is not null) break;
+                await Task.Delay(TimeSpan.FromSeconds(5), ct);
+            }
+            if (scan == "THREATS_FOUND")
+            {
+                await storage.DeleteAsync(file.StorageKey!, ct);     // never servable again
+                file.StorageKey = null;                              // download-url → 404
+                await FailFileAsync(db, notifier, file, txn, now,
+                    "ERR_MALWARE_DETECTED", "Malware detected in uploaded file; the file has been removed.", ct);
+                return;
+            }
+
+            // ── SECURITY GATE 2: magic bytes — real PDFs start with %PDF- ──
+            if (bytes.Length < 5 || bytes[0] != 0x25 || bytes[1] != 0x50 ||
+                bytes[2] != 0x44 || bytes[3] != 0x46 || bytes[4] != 0x2D)
+            {
+                await storage.DeleteAsync(file.StorageKey!, ct);
+                file.StorageKey = null;
+                await FailFileAsync(db, notifier, file, txn, now,
+                    "ERR_INVALID_FILETYPE", "File content is not a valid PDF (extension spoofing suspected).", ct);
+                return;
+            }
+
+
+
             // ⚠️ GOTCHA #2: idempotent → clear existing line items first
             var old = await db.InvoiceLineItems.Where(i => i.FileId == file.Id).ToListAsync(ct);
             db.RemoveRange(old);
@@ -213,6 +243,53 @@ public sealed class ExtractionWorker : BackgroundService
             await db.SaveChangesAsync(ct);
         }
     }
+
+    private static async Task FailFileAsync(
+    AppDbContext db, IPipelineNotifier notifier,
+    FileRecord file, Transaction txn, DateTime startedAt,
+    string errorCode, string errorMessage, CancellationToken ct)
+    {
+        var done = DateTime.UtcNow;
+        file.Status = "Failed"; file.CurrentStep = "Extract"; file.ExtractionStatus = "Failed";
+        file.LastUpdatedAt = done;
+
+        db.Add(new FileStepHistory
+        {
+            Id = Guid.NewGuid(),
+            FileId = file.Id,
+            DocumentTypeId = file.DocumentTypeId,
+            StepName = "Extract",
+            Status = "Failed",
+            StartedAt = startedAt,
+            CompletedAt = done,
+            ErrorCode = errorCode,
+            ErrorMessage = errorMessage
+        });
+
+        txn.ProcessingCount = Math.Max(0, txn.ProcessingCount - 1);
+        txn.FailedCount += 1;
+        RecomputeState(txn, done);
+
+        db.Add(new ActivityLog
+        {
+            Id = Guid.NewGuid(),
+            TenantId = file.TenantId,
+            SiteId = file.SiteId,
+            EventType = "FILE_STATE_CHANGED",
+            EntityType = "File",
+            EntityId = file.Id,
+            EntityName = file.FileName,
+            OldState = "Processing",
+            NewState = "Failed",
+            TriggeredBy = "system",
+            CreatedAt = done
+        });
+
+        await db.SaveChangesAsync(ct);
+        await notifier.NotifyFileStateChangedAsync(file.SiteId,
+            new FileStateChangedNotification(file.Id, file.FileName, "Processing", "Failed", "Extract", done), ct);
+    }
+
 
     // DT-1 preserved: any file fails → batch Failed. But only finalize once ALL files are settled.
     private static void RecomputeState(Transaction t, DateTime at)

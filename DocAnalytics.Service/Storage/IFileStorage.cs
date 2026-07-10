@@ -15,4 +15,7 @@ public interface IFileStorage
 
     /// Worker reads the bytes back for extraction.
     Task<byte[]> DownloadAsync(string key, CancellationToken ct = default);
+
+    Task<string?> GetMalwareScanStatusAsync(string storageKey, CancellationToken ct = default);
+
 }

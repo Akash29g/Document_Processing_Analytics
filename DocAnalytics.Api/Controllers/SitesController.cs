@@ -8,7 +8,7 @@ namespace DocAnalytics.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/sites")]                   // note: /sites, NOT /auth/sites (per DT-2)
-[Authorize]
+[Authorize(Policy = "DataAccess")]   // ← was [Authorize]
 public class SitesController : ControllerBase
 {
     private readonly IAuthService _auth;

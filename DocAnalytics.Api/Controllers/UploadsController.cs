@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DocAnalytics.Api.Controllers;
 
-[Authorize]
+[Authorize(Policy = "DataAccess")]   // ← was [Authorize]
 [ApiController]
 [Route("api/v1/files")]
 public sealed class UploadsController : ControllerBase

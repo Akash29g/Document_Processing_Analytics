@@ -28,7 +28,7 @@ public class AppDbContext : DbContext
     public virtual DbSet<AlertRule> AlertRules => Set<AlertRule>();
 
 
-    public DbSet<InvoiceHeader> InvoiceHeaders => Set<InvoiceHeader>();
+    public virtual DbSet<InvoiceHeader> InvoiceHeaders => Set<InvoiceHeader>();
 
 
     protected override void OnModelCreating(ModelBuilder b)
@@ -98,6 +98,20 @@ public class AppDbContext : DbContext
             e.Property(p => p.Shipping).HasPrecision(12, 2);
             e.Property(p => p.Total).HasPrecision(12, 2);
             e.HasOne(p => p.File).WithMany().HasForeignKey(p => p.FileId);
+        });
+
+        // feature/roles-schema
+        b.Entity<Tenant>(e =>
+        {
+            e.Property(t => t.OrgDomain).HasMaxLength(100).IsRequired();
+            e.HasIndex(t => t.OrgDomain).IsUnique();
+        });
+
+        b.Entity<User>(e =>
+        {
+            // role whitelist at the DB level
+            e.ToTable(t => t.HasCheckConstraint(
+                "ck_users_role", "role IN ('Developer','Admin','Viewer')"));
         });
 
 

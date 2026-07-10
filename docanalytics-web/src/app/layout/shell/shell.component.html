@@ -13,6 +13,9 @@
       <a [routerLink]="link('errors')" routerLinkActive="active">Errors</a>
       <a [routerLink]="link('activity-log')" routerLinkActive="active">Activity Log</a>
       <a [routerLink]="link('alerts')" routerLinkActive="active">Alerts</a>
+      @if (isAdmin()) {
+      <a [routerLink]="link('admin')" routerLinkActive="active">Admin</a>
+      }
     </nav>
   </aside>
 

@@ -32,10 +32,26 @@ public class AuthService : IAuthService
         var token = _jwt.CreateToken(user);
 
         return new LoginResponse(
-            token,
-            new UserDto(user.Id, user.Email, user.Role),
-            sites);
+        token,
+        new UserDto(user.Id, user.Email, user.Role),
+        sites,
+        user.MustChangePassword);
     }
+
+    public async Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordRequest req, CancellationToken ct)
+    {
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId && u.IsActive, ct);
+        if (user is null) return false;
+
+        // must prove they know the current (temporary) password
+        if (!BCrypt.Net.BCrypt.Verify(req.CurrentPassword, user.PasswordHash)) return false;
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.NewPassword);
+        user.MustChangePassword = false;
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
+
 
     public async Task<MeResponse?> GetMeAsync(Guid userId, CancellationToken ct)
     {

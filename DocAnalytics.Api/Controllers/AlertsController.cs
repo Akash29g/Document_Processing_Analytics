@@ -8,7 +8,7 @@ using System.Security.Claims;
 namespace DocAnalytics.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Policy = "DataAccess")]   // ← was [Authorize]
 [Route("api/v1/alerts")]
 public sealed class AlertsController : ControllerBase
 {

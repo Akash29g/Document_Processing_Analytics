@@ -613,8 +613,18 @@ namespace DocAnalytics.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
+                    b.Property<string>("OrgDomain")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("org_domain");
+
                     b.HasKey("Id")
                         .HasName("pk_tenants");
+
+                    b.HasIndex("OrgDomain")
+                        .IsUnique()
+                        .HasDatabaseName("ix_tenants_org_domain");
 
                     b.ToTable("tenants", (string)null);
                 });
@@ -699,6 +709,10 @@ namespace DocAnalytics.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text")
@@ -707,6 +721,10 @@ namespace DocAnalytics.Data.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
+
+                    b.Property<bool>("MustChangePassword")
+                        .HasColumnType("boolean")
+                        .HasColumnName("must_change_password");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -718,7 +736,7 @@ namespace DocAnalytics.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("role");
 
-                    b.Property<Guid>("TenantId")
+                    b.Property<Guid?>("TenantId")
                         .HasColumnType("uuid")
                         .HasColumnName("tenant_id");
 
@@ -732,7 +750,10 @@ namespace DocAnalytics.Data.Migrations
                     b.HasIndex("TenantId")
                         .HasDatabaseName("ix_users_tenant_id");
 
-                    b.ToTable("users", (string)null);
+                    b.ToTable("users", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_users_role", "role IN ('Developer','Admin','Viewer')");
+                        });
                 });
 
             modelBuilder.Entity("DocAnalytics.Domain.Entities.UserSiteAccess", b =>
@@ -855,7 +876,6 @@ namespace DocAnalytics.Data.Migrations
                         .WithMany("Users")
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
                         .HasConstraintName("fk_users_tenants_tenant_id");
 
                     b.Navigation("Tenant");

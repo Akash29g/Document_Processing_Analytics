@@ -20,7 +20,9 @@ export interface LoginResponse {
   token: string;
   user: AuthUser;
   sites: SiteSummary[];
+  must_change_password: boolean;
 }
+
 
 // GET /auth/me → data
 export interface MeResponse {

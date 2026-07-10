@@ -27,7 +27,7 @@ public class JwtTokenService : IJwtTokenService
         var claims = new List<Claim>
         {
             new("userId",   user.Id.ToString()),
-            new("tenantId", user.TenantId.ToString()),
+            new("tenantId", user.TenantId?.ToString() ?? string.Empty),
             new("role",     user.Role),
         };
 

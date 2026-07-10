@@ -9,7 +9,7 @@ import { AuthService } from '../../core/services/auth.service';
   standalone: true,
   imports: [ReactiveFormsModule],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css',       
+  styleUrl: './login.component.css',
 })
 export class LoginComponent {
   private fb = inject(FormBuilder);
@@ -26,9 +26,9 @@ export class LoginComponent {
 
   constructor() {
     // If a valid session already exists (e.g. user hits /login with a live token),
-    // skip the form and go straight to their first site's dashboard.
+    // skip the form and route by role.
     this.auth.ensureSession().then((ok) => {
-      if (ok) this.goToFirstSite();
+      if (ok) this.routeByRole();
     });
   }
 
@@ -55,7 +55,14 @@ export class LoginComponent {
           this.errorMessage.set('Invalid email or password.');
           return;
         }
-        if (!this.goToFirstSite()) {
+
+        // Forced first-login password reset takes priority over everything.
+        if (res.data.must_change_password) {
+          this.router.navigate(['/change-password']);
+          return;
+        }
+
+        if (!this.routeByRole()) {
           this.errorMessage.set('Your account has no site access. Contact your administrator.');
           this.auth.logout();
         }
@@ -74,8 +81,12 @@ export class LoginComponent {
     });
   }
 
-  /** Navigate to the first authorized site's dashboard. Returns false if none. */
-  private goToFirstSite(): boolean {
+  /** Route by role: Developer → provisioning console; others → first site. Returns false if nowhere to go. */
+  private routeByRole(): boolean {
+    if (this.auth.currentUser()?.role === 'Developer') {
+      this.router.navigate(['/provision']);
+      return true;
+    }
     const sites = this.auth.sites();
     if (!sites.length) return false;
     this.router.navigate(['/site', sites[0].site_id, 'dashboard']);

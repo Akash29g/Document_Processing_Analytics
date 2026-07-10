@@ -39,4 +39,16 @@ public class AuthController : ControllerBase
         if (result is null) return Unauthorized();
         return Ok(ApiResponse<MeResponse>.Ok(result));
     }
+
+    // Forced first-login reset (and general password change)
+    [Authorize]
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest req, CancellationToken ct)
+    {
+        var ok = await _auth.ChangePasswordAsync(_currentUser.UserId, req, ct);
+        if (!ok)
+            return BadRequest(ApiResponse<object>.Fail(
+                "INVALID_PASSWORD", "Current password is incorrect."));
+        return Ok(ApiResponse<object>.Ok(new { changed = true }));
+    }
 }

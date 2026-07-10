@@ -4,12 +4,14 @@ import { Observable, firstValueFrom, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
 import { AuthUser, LoginResponse, MeResponse, SiteSummary } from '../models/auth.model';
+import { Router } from '@angular/router';
 
 const TOKEN_KEY = 'da_token';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
   private readonly baseUrl = `${environment.apiBase}/auth`;
 
   // --- writable signals (private) ---
@@ -75,6 +77,17 @@ export class AuthService {
   /** Used by siteAccessGuard (FR-5.3 client-side mirror). */
   hasSiteAccess(siteId: string): boolean {
     return this._sites().some((s) => s.site_id === siteId);
+  }
+
+  /** Where does this user land after auth? Developer → provisioning; others → first site. */
+  routeAfterLogin(): void {
+    const role = this._currentUser()?.role;
+    if (role === 'Developer') {
+      this.router.navigate(['/provision']);
+      return;
+    }
+    const first = this._sites()[0];
+    this.router.navigate(first ? ['/site', first.site_id] : ['/login']);
   }
 
   private setSession(token: string, user: AuthUser, sites: SiteSummary[]): void {

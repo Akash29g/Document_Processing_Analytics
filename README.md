@@ -127,6 +127,26 @@ Covered: guards, interceptors, core services, feature services and shared compon
 
 ---
 
+## Performance Tests (NFR-1, mocked)
+
+```powershell
+dotnet test DocAnalytics.Performance.Tests
+```
+
+In-memory simulation (no cloud infrastructure needed): seeds **100k files
+(2,000 batches x 50)** once via a shared xUnit fixture, then asserts the NFR-1 budgets:
+
+| Check | Budget | Measured (P90) |
+|---|---|---|
+| Dashboard summary | < 3s | ~3ms |
+| Paginated lists (50/page) | < 1s | ~260ms worst (error list) |
+| 10 concurrent users | no degradation | ~23ms |
+
+Concurrency is simulated with `Task.WhenAll` and a separate `DbContext` session per user.
+P50/P90 timings are written to `perf-results/perf-report.md` and `perf-results/perf-report.csv`.
+
+---
+
 
 ## Team
 - **Dev A** — Akash Goswami

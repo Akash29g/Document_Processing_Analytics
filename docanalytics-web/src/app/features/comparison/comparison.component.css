@@ -120,3 +120,15 @@
   .cmp-delta strong.down {
     color: var(--text-error, #d92d20);
   }
+
+.comparison-back {
+  display: inline-block;
+  margin-bottom: 28px;
+  color: #7da2ff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+  .comparison-back:hover {
+    text-decoration: underline;
+  }

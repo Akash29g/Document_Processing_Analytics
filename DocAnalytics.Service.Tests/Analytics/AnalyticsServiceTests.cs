@@ -92,4 +92,44 @@ public class AnalyticsServiceTests
         Assert.Equal(2, upload.SampleCount);
         Assert.InRange(upload.P50Seconds, 10, 20);
     }
+    [Fact]
+    public async Task GetThroughputAsync_applies_date_range_filter()
+    {
+        var d1 = new DateTime(2026, 5, 1, 10, 0, 0, DateTimeKind.Utc);
+        var d2 = new DateTime(2026, 5, 10, 10, 0, 0, DateTimeKind.Utc);
+        var result = await Sut(new[] { File("Completed", d1), File("Completed", d2) })
+            .GetThroughputAsync(new DateTime(2026, 5, 5, 0, 0, 0, DateTimeKind.Utc), null);
+        Assert.Single(result.Points);
+        Assert.Equal("2026-05-10", result.Points[0].Label);
+    }
+
+    [Fact]
+    public async Task GetTopErrorsAsync_clamps_topN_below_one()
+    {
+        var files = new[] { File("Failed", DateTime.UtcNow,
+        new FileStepHistory { Id = Guid.NewGuid(), StepName = "Validate", Status = "Failed", ErrorCode = "E1" }) };
+        Assert.Single((await Sut(files).GetTopErrorsAsync(0)).Points);
+    }
+
+    [Fact]
+    public async Task GetTopErrorsAsync_clamps_topN_above_twenty()
+    {
+        var files = new[] { File("Failed", DateTime.UtcNow,
+        new FileStepHistory { Id = Guid.NewGuid(), StepName = "Validate", Status = "Failed", ErrorCode = "E1" }) };
+        Assert.Single((await Sut(files).GetTopErrorsAsync(999)).Points);
+    }
+
+    [Fact]
+    public async Task GetErrorTrendAsync_applies_date_range()
+    {
+        var d1 = new DateTime(2026, 5, 1, 8, 0, 0, DateTimeKind.Utc);
+        var d2 = new DateTime(2026, 5, 20, 8, 0, 0, DateTimeKind.Utc);
+        var files = new[] { File("Failed", DateTime.UtcNow,
+        new FileStepHistory { Id = Guid.NewGuid(), StepName = "Validate", Status = "Failed", ErrorCode = "E1", StartedAt = d1 },
+        new FileStepHistory { Id = Guid.NewGuid(), StepName = "Load", Status = "Failed", ErrorCode = "E2", StartedAt = d2 }) };
+        var result = await Sut(files).GetErrorTrendAsync(new DateTime(2026, 5, 10, 0, 0, 0, DateTimeKind.Utc), null);
+        Assert.Single(result.Points);
+        Assert.Equal("2026-05-20", result.Points[0].Label);
+    }
+
 }

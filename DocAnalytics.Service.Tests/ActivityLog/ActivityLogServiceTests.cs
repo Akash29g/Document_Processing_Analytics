@@ -67,4 +67,27 @@ public class ActivityLogServiceTests
         Assert.Equal(5, result.TotalCount);
         Assert.Equal(2, result.Items.Count);
     }
+    [Fact]
+    public async Task GetActivityLogAsync_filters_by_entity_type()
+    {
+        var rows = new[] { Row("X", "Batch", DateTime.UtcNow), Row("Y", "File", DateTime.UtcNow) };
+        var ctx = MockDb.Create();
+        ctx.Setup(c => c.ActivityLog).Returns(rows.BuildMockDbSet().Object);
+
+        var result = await new ActivityLogService(ctx.Object).GetActivityLogAsync(new ActivityLogQuery { EntityType = "Batch" });
+        Assert.Equal(1, result.TotalCount);
+        Assert.Equal("Batch", result.Items[0].EntityType);
+    }
+
+    [Fact]
+    public async Task GetActivityLogAsync_sorts_by_event_type_ascending()
+    {
+        var rows = new[] { Row("Zeta", "File", DateTime.UtcNow), Row("Alpha", "File", DateTime.UtcNow) };
+        var ctx = MockDb.Create();
+        ctx.Setup(c => c.ActivityLog).Returns(rows.BuildMockDbSet().Object);
+
+        var result = await new ActivityLogService(ctx.Object).GetActivityLogAsync(new ActivityLogQuery { SortBy = "event_type", SortDir = "asc" });
+        Assert.Equal("Alpha", result.Items[0].EventType);
+    }
+
 }

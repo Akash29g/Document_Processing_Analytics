@@ -1,0 +1,32 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: DocAnalytics.Api/Dockerfile
+    environment:
+      # Development → triggers your Program.cs auto-migrate + seed + Swagger
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      # secrets come from the .env file (see Step 7). __ maps to : nesting
+      - ConnectionStrings__Default=${DB_CONN}
+      - Jwt__Key=${JWT_KEY}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - Aws__BucketName=${AWS_BUCKET}
+      - Aws__Region=${AWS_REGION}
+      - Aws__BedrockRegion=${AWS_BEDROCK_REGION}
+      - Aws__ModelId=${AWS_MODEL_ID}
+      - Aws__AccessKeyId=${AWS_ACCESS_KEY_ID}         
+      - Aws__SecretAccessKey=${AWS_SECRET_ACCESS_KEY} 
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+    ports:
+      - "5001:8080"          # optional: hit the API/Swagger directly at localhost:5001
+
+  web:
+    build:
+      context: ./docanalytics-web
+    depends_on:
+      - api
+    ports:
+      - "4200:80"            # open the app at http://localhost:4200

@@ -86,4 +86,46 @@ public class DashboardServiceTests
         Assert.Equal(5, result.TotalCount);
         Assert.Equal(2, result.Items.Count);
     }
+    [Fact]
+    public async Task GetRecentFailuresAsync_sorts_by_file_name()
+    {
+        var f1 = Guid.NewGuid(); var f2 = Guid.NewGuid();
+        var files = new[]
+        {
+        new FileRecord { Id = f1, FileName = "zebra.pdf" },
+        new FileRecord { Id = f2, FileName = "apple.pdf" },
+    };
+        var steps = new[]
+        {
+        new FileStepHistory { Id = Guid.NewGuid(), FileId = f1, StepName = "Validate", Status = "Failed", ErrorCode = "E1", CompletedAt = DateTime.UtcNow },
+        new FileStepHistory { Id = Guid.NewGuid(), FileId = f2, StepName = "Validate", Status = "Failed", ErrorCode = "E2", CompletedAt = DateTime.UtcNow },
+    };
+        var ctx = MockDb.Create();
+        ctx.Setup(c => c.Files).Returns(files.BuildMockDbSet().Object);
+        ctx.Setup(c => c.FileStepHistory).Returns(steps.BuildMockDbSet().Object);
+
+        var result = await new DashboardService(ctx.Object)
+            .GetRecentFailuresAsync(new RecentFailuresQuery { SortBy = "file_name", SortDir = "asc" });
+        Assert.Equal("apple.pdf", result.Items[0].FileName);
+    }
+
+    [Fact]
+    public async Task GetRecentFailuresAsync_sorts_by_failed_step()
+    {
+        var f1 = Guid.NewGuid();
+        var files = new[] { new FileRecord { Id = f1, FileName = "a.pdf" } };
+        var steps = new[]
+        {
+        new FileStepHistory { Id = Guid.NewGuid(), FileId = f1, StepName = "Validate", Status = "Failed", ErrorCode = "E1", CompletedAt = DateTime.UtcNow },
+        new FileStepHistory { Id = Guid.NewGuid(), FileId = f1, StepName = "Transform", Status = "Failed", ErrorCode = "E2", CompletedAt = DateTime.UtcNow },
+    };
+        var ctx = MockDb.Create();
+        ctx.Setup(c => c.Files).Returns(files.BuildMockDbSet().Object);
+        ctx.Setup(c => c.FileStepHistory).Returns(steps.BuildMockDbSet().Object);
+
+        var result = await new DashboardService(ctx.Object)
+            .GetRecentFailuresAsync(new RecentFailuresQuery { SortBy = "failed_step", SortDir = "asc" });
+        Assert.Equal("Transform", result.Items[0].FailedStep);
+    }
+
 }

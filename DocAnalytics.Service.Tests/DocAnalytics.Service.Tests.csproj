@@ -15,6 +15,7 @@
 		<PackageReference Include="MockQueryable.Moq" Version="7.0.3" />
 		<!-- NEW: Option A -->
 		<PackageReference Include="coverlet.collector" Version="6.0.4" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.9" />
 	</ItemGroup>
 
 	<ItemGroup>

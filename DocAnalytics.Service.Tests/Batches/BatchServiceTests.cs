@@ -113,4 +113,35 @@ public class BatchServiceTests
         Assert.Equal(3, result!.TotalCount);
         Assert.Equal(2, result.Items.Count);
     }
+
+    [Fact]
+    public async Task GetBatchesAsync_sorts_by_submitted_at_ascending()
+    {
+        var older = Txn("Completed", "SAP", new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+        var newer = Txn("Completed", "SAP", new DateTime(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc));
+        var result = await Sut(new[] { newer, older })
+            .GetBatchesAsync(new BatchListQuery { SortBy = "submitted_at", SortDir = "asc" });
+        Assert.Equal(older.Id, result.Items[0].TransactionId);
+    }
+
+    [Fact]
+    public async Task GetBatchesAsync_sorts_by_total_files_descending()
+    {
+        var small = Txn("Completed", "SAP", DateTime.UtcNow); small.TotalFiles = 1;
+        var big = Txn("Completed", "SAP", DateTime.UtcNow); big.TotalFiles = 9;
+        var result = await Sut(new[] { small, big })
+            .GetBatchesAsync(new BatchListQuery { SortBy = "total_files", SortDir = "desc" });
+        Assert.Equal(big.Id, result.Items[0].TransactionId);
+    }
+
+    [Fact]
+    public async Task GetBatchesAsync_sorts_by_state_ascending()
+    {
+        var completed = Txn("Completed", "SAP", DateTime.UtcNow);
+        var failed = Txn("Failed", "SAP", DateTime.UtcNow);
+        var result = await Sut(new[] { failed, completed })
+            .GetBatchesAsync(new BatchListQuery { SortBy = "state", SortDir = "asc" });
+        Assert.Equal("Completed", result.Items[0].State);
+    }
+
 }

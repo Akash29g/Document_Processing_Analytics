@@ -6,8 +6,8 @@
         <Configuration>
           <Format>cobertura</Format>
           <Exclude>[*.Tests]*,[*]*.Migrations.*</Exclude>
-          <ExcludeByAttribute>GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
-        </Configuration>
+			<ExcludeByAttribute>GeneratedCodeAttribute,ExcludeFromCodeCoverageAttribute</ExcludeByAttribute>
+		</Configuration>
       </DataCollector>
     </DataCollectors>
   </DataCollectionRunSettings>

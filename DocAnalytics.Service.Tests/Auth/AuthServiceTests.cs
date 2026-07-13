@@ -110,4 +110,34 @@ public class AuthServiceTests
         Assert.Single(result);
         Assert.Equal("Active", result[0].SiteName);
     }
+
+    [Fact]
+    public async Task ChangePasswordAsync_returns_false_when_user_missing()
+    {
+        var sut = new AuthService(Ctx(Array.Empty<User>(), Array.Empty<UserSiteAccess>(), Array.Empty<Site>()).Object, Mock.Of<IJwtTokenService>());
+        Assert.False(await sut.ChangePasswordAsync(Guid.NewGuid(), new ChangePasswordRequest("old", "newpassword12"), default));
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_returns_false_on_wrong_current_password()
+    {
+        var user = ActiveUser("a@org.com", "correct");
+        var sut = new AuthService(Ctx(new[] { user }, Array.Empty<UserSiteAccess>(), Array.Empty<Site>()).Object, Mock.Of<IJwtTokenService>());
+        Assert.False(await sut.ChangePasswordAsync(user.Id, new ChangePasswordRequest("wrong", "newpassword12"), default));
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_updates_hash_and_clears_flag()
+    {
+        var user = ActiveUser("a@org.com", "oldpassword");
+        user.MustChangePassword = true;
+        var sut = new AuthService(Ctx(new[] { user }, Array.Empty<UserSiteAccess>(), Array.Empty<Site>()).Object, Mock.Of<IJwtTokenService>());
+
+        var ok = await sut.ChangePasswordAsync(user.Id, new ChangePasswordRequest("oldpassword", "newpassword12"), default);
+
+        Assert.True(ok);
+        Assert.False(user.MustChangePassword);
+        Assert.True(BCrypt.Net.BCrypt.Verify("newpassword12", user.PasswordHash));
+    }
+
 }

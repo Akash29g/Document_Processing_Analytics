@@ -2,11 +2,13 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { FormsModule } from '@angular/forms';
 import { ComparisonService } from './comparison.service';
 import { ThroughputChartComponent } from '../dashboard/throughput-chart/throughput-chart.component';
+import { RouterLink } from '@angular/router';
+
 
 @Component({
   selector: 'app-comparison',
   standalone: true,
-  imports: [FormsModule, ThroughputChartComponent],
+  imports: [FormsModule, ThroughputChartComponent, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './comparison.component.html',
   styleUrl: './comparison.component.css',

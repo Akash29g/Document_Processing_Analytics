@@ -107,8 +107,8 @@ export class AlertsComponent {
   }
 
   // close the dropdown on outside click
-  @HostListener('document:click', ['$event'])
   onDocClick(e: MouseEvent): void {
-    if (this.menuOpen() && !this.host.nativeElement.contains(e.target)) this.menuOpen.set(false);
+    const target = e.target as HTMLElement;
+    if (this.menuOpen() && !target.closest('.me-menu')) this.menuOpen.set(false);
   }
 }

@@ -12,11 +12,12 @@
     <input class="al-in" name="name" placeholder="Rule name" [(ngModel)]="form.name" required />
 
     <!-- recipients multi-select dropdown -->
-    <div class="al-dd">
-      <button type="button" class="al-in al-dd-trigger" (click)="toggleMenu(); $event.stopPropagation()">
+    <div class="al-dd" (click)="$event.stopPropagation()">
+      <button type="button" class="al-in al-dd-trigger" (click)="toggleMenu($event)">
         <span>{{ selectedLabel() }}</span>
         <span class="al-dd-caret">▾</span>
       </button>
+
       @if (menuOpen()) {
       <div class="al-dd-panel">
         @if (svc.recipients().length === 0) {

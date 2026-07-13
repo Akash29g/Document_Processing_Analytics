@@ -93,6 +93,60 @@ npm install        # one-time — installs dependencies (node_modules is git-ign
 ng serve -o        # serves at http://localhost:4200
 ```
 
+---
+
+## Code Coverage
+
+### Backend (coverlet + ReportGenerator)
+
+One-time setup:
+
+```powershell
+dotnet tool install -g dotnet-reportgenerator-globaltool
+```
+
+Run:
+
+```powershell
+.\coverage.ps1 -Open   # runs all test projects -> HTML report in ./coverage-report
+```
+
+Covered layers: **Controllers** (Api.Tests, ~100%), **Services with business logic** (Service.Tests),
+**tenant isolation** (Data.Tests), **Domain entities** (Domain.Tests).
+Excluded from coverage: EF migrations, seeding, DI extensions, and external integrations
+(S3, Bedrock, SignalR, SMTP) — these require integration tests, not unit tests.
+
+### Frontend (Vitest)
+
+```powershell
+cd docanalytics-web
+ng test --coverage --watch=false   # coverage table in terminal + report in ./coverage
+```
+
+Covered: guards, interceptors, core services, feature services and shared components (~76% lines).
+
+---
+
+## Performance Tests (NFR-1, mocked)
+
+```powershell
+dotnet test DocAnalytics.Performance.Tests
+```
+
+In-memory simulation (no cloud infrastructure needed): seeds **100k files
+(2,000 batches x 50)** once via a shared xUnit fixture, then asserts the NFR-1 budgets:
+
+| Check | Budget | Measured (P90) |
+|---|---|---|
+| Dashboard summary | < 3s | ~3ms |
+| Paginated lists (50/page) | < 1s | ~260ms worst (error list) |
+| 10 concurrent users | no degradation | ~23ms |
+
+Concurrency is simulated with `Task.WhenAll` and a separate `DbContext` session per user.
+P50/P90 timings are written to `perf-results/perf-report.md` and `perf-results/perf-report.csv`.
+
+---
+
 
 ## Team
 - **Dev A** — Akash Goswami

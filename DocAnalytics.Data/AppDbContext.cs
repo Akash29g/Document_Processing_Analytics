@@ -3,6 +3,7 @@ using DocAnalytics.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Reflection.Emit;
 
 namespace DocAnalytics.Data;
 
@@ -26,6 +27,9 @@ public class AppDbContext : DbContext
     public virtual DbSet<InvoiceLineItem> InvoiceLineItems => Set<InvoiceLineItem>();
     public virtual DbSet<ItemCategory> ItemCategories => Set<ItemCategory>();
     public virtual DbSet<AlertRule> AlertRules => Set<AlertRule>();
+
+    public virtual DbSet<AlertNotification> AlertNotifications => Set<AlertNotification>();
+
 
 
     public virtual DbSet<InvoiceHeader> InvoiceHeaders => Set<InvoiceHeader>();
@@ -98,6 +102,22 @@ public class AppDbContext : DbContext
             e.Property(p => p.Shipping).HasPrecision(12, 2);
             e.Property(p => p.Total).HasPrecision(12, 2);
             e.HasOne(p => p.File).WithMany().HasForeignKey(p => p.FileId);
+        });
+
+        b.Entity<AlertNotification>(e =>
+        {
+            e.Property(x => x.RuleName).HasMaxLength(120).IsRequired();
+            e.Property(x => x.Message).HasMaxLength(500).IsRequired();
+            e.Property(x => x.Severity).HasMaxLength(20).IsRequired();
+
+            // Same index shape as your other tenant-scoped read tables:
+            // unread-first, newest-first, scoped to tenant+site.
+            e.HasIndex(x => new { x.TenantId, x.SiteId, x.IsRead, x.FiredAt })
+             .HasDatabaseName("ix_alert_notifications_tenant_site_read_fired");
+
+            // Tenant isolation — identical pattern to AlertRule/Transaction/File.
+            e.HasQueryFilter(x => x.TenantId == _currentUser.TenantId
+                               && x.SiteId == _currentUser.SiteId);
         });
 
         // feature/roles-schema

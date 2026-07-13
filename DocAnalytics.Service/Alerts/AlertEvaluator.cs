@@ -1,4 +1,5 @@
 using DocAnalytics.Data;
+using DocAnalytics.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -60,6 +61,25 @@ public sealed class AlertEvaluator : IAlertEvaluator
             try
             {
                 await _email.SendAsync(rule.Email, subject, body, ct);
+                // ── NEW: persist an in-app notification so it surfaces on next login ──
+                var severity = rate >= rule.ThresholdPercent * 1.5 ? "critical" : "warning";
+                _db.AlertNotifications.Add(new AlertNotification
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = rule.TenantId,     // rule is ITenantScoped → scope explicitly
+                    SiteId = rule.SiteId,
+                    AlertRuleId = rule.Id,
+                    RuleName = rule.Name,
+                    Message = $"Failure rate {rate:F1}% exceeded threshold "
+                                     + $"{rule.ThresholdPercent}% over the last {rule.WindowMinutes} min "
+                                     + $"({failed} of {total} files).",
+                    Severity = severity,
+                    ObservedPercent = Math.Round(rate, 2),
+                    ThresholdPercent = rule.ThresholdPercent,
+                    IsRead = false,
+                    FiredAt = now
+                });
+
                 rule.LastTriggeredAt = now;
                 await _db.SaveChangesAsync(ct);
                 _logger.LogInformation("Alert '{Name}' fired for site {Site} ({Rate:F1}%).",

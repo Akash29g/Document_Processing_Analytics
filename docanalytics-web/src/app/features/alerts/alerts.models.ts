@@ -26,3 +26,15 @@ export interface Recipient {
   role: string;
 }
 
+export interface AlertNotification {
+  id: string;
+  alert_rule_id: string;
+  rule_name: string;
+  message: string;
+  severity: 'info' | 'warning' | 'critical';
+  observed_percent: number;
+  threshold_percent: number;
+  is_read: boolean;
+  fired_at: string;
+  read_at: string | null;
+}

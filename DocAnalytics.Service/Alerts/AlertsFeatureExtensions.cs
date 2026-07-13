@@ -8,6 +8,7 @@ public static class AlertsFeatureExtensions
     {
         services.AddScoped<IAlertRuleService, AlertRuleService>();
         services.AddScoped<IAlertEvaluator, AlertEvaluator>();
+        services.AddScoped<IAlertNotificationService, AlertNotificationService>();
 
         // Dev default = log emails. For real email, comment this and use the SMTP line below.
         services.AddSingleton<IEmailSender, LoggingEmailSender>();

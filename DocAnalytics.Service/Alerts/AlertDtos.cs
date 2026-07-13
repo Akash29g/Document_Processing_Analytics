@@ -42,3 +42,17 @@ public sealed class UpdateAlertRuleRequest
     public int CooldownMinutes { get; set; } = 60;
     public bool IsEnabled { get; set; }
 }
+
+public sealed class AlertNotificationDto
+{
+    public Guid Id { get; set; }
+    public Guid AlertRuleId { get; set; }
+    public string RuleName { get; set; } = null!;
+    public string Message { get; set; } = null!;
+    public string Severity { get; set; } = null!;   // info | warning | critical
+    public double ObservedPercent { get; set; }
+    public double ThresholdPercent { get; set; }
+    public bool IsRead { get; set; }
+    public DateTime FiredAt { get; set; }
+    public DateTime? ReadAt { get; set; }
+}

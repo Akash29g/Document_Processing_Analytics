@@ -380,3 +380,125 @@ nav {
   .me-card-logout:hover {
     background: color-mix(in srgb, currentColor 8%, transparent);
   }
+
+/* bell wrapper is the positioning anchor */
+.al-dd {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.al-bell {
+  position: relative;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  color: #f5b301; /* golden yellow */
+}
+
+  .al-bell:hover { color: #d99a00; } /* one shade darker */
+
+  .al-bell .material-icons {
+    font-size: 22px;
+  }
+
+.al-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--text-danger, #d64545);
+  color: #fff;
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+  font-weight: 700;
+}
+
+/* ── the floating popover ── */
+.al-dd-panel {
+  position: absolute; /* ← this is what was missing */
+  top: calc(100% + 8px); /* drop just below the bell */
+  right: 0; /* align to the bell's right edge */
+  width: 340px;
+  max-height: 420px;
+  overflow-y: auto;
+  background: var(--white);
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  z-index: 1000; /* float above the page content */
+}
+
+.al-dd-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  font-weight: 700;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.al-dd-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.al-dd-item {
+  padding: 10px 12px;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 8%, transparent);
+}
+
+  .al-dd-item.unread {
+    background: color-mix(in srgb, var(--slate-blue, #4b6bfb) 8%, transparent);
+  }
+
+  .al-dd-item.critical {
+    border-left: 3px solid var(--text-danger, #d64545);
+  }
+
+.al-dd-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.al-dd-rule {
+  font-size: 13px;
+}
+
+.al-dd-time {
+  color: var(--text-muted, #777);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.al-dd-msg {
+  margin: 4px 0 6px;
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+
+.al-dd-link {
+  background: none;
+  border: 0;
+  color: var(--slate-blue, #4b6bfb);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+}
+
+.al-dd-empty {
+  padding: 18px 12px;
+  color: var(--text-muted, #777);
+  font-size: 13px;
+  text-align: center;
+}

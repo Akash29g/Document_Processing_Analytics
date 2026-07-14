@@ -486,3 +486,7 @@ TestResults/
 
 perf/results.jtl
 perf/jmeter-report/
+
+perf/html-report/
+results.jtl
+body.json

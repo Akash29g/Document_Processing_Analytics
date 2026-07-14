@@ -69,19 +69,26 @@ builder.Services.AddControllers().AddJsonOptions(o =>
 
 builder.Services.AddValidationBehavior();   // <- Piece B: bad input -> ApiResponse.Fail (400)
 
-builder.Services.AddCors(o => o.AddPolicy("frontend", p =>
-    p.WithOrigins("http://localhost:4200")
-     .AllowAnyHeader()     // allows Authorization + X-Site-Id
-     .AllowAnyMethod()));
 
 
 var app = builder.Build();
 var sec = app.Services.GetRequiredService<IOptions<SecurityOptions>>().Value;
 
-if (sec.ForwardedHeaders.Enabled) app.UseForwardedHeaders();     // FIRST, before anything scheme-aware
+// 1) Trust nginx's X-Forwarded-Proto FIRST — before anything scheme-aware.
+if (sec.ForwardedHeaders.Enabled) app.UseForwardedHeaders();
+
+// 2) Global exception envelope — outermost net so it wraps everything below.
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+// 3) HSTS at the public edge (prod only; Dev disables via env + config).
 if (!app.Environment.IsDevelopment() && sec.Hsts.Enabled) app.UseHsts();
-// app.UseHttpsRedirection();  // ❌ leave OFF in-container — nginx terminates TLS (redirect-loop otherwise)
-app.UseCors(CorsOptions.PolicyName);                             // before UseAuthentication/UseAuthorization
+// app.UseHttpsRedirection();  ❌ leave OFF in-container — nginx terminates TLS (redirect loop otherwise)
+
+// 4) Baseline security headers.
+app.UseSecurityHeaders();
+
+// 5) CORS (single, config-driven policy) — before auth.
+app.UseCors(CorsOptions.PolicyName);
 
 if (app.Environment.IsDevelopment())
 {
@@ -91,12 +98,12 @@ if (app.Environment.IsDevelopment())
     await DbSeeder.SeedAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>());
 }
 
-app.UseMiddleware<ExceptionHandlingMiddleware>();   // outermost net — catches everything below
-app.UseCors("frontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<TenantSiteMiddleware>();
+
 app.MapControllers();
-app.MapHub<PipelineHub>("/hubs/pipeline");   // ← S-1: SignalR endpoint
+app.MapHub<PipelineHub>("/hubs/pipeline");
 
 app.Run();
+

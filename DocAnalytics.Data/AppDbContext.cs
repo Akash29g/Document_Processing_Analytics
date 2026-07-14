@@ -4,10 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 
 namespace DocAnalytics.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext : DbContext, IDataProtectionKeyContext
 {
     private readonly ICurrentUser _currentUser;
 
@@ -29,6 +30,9 @@ public class AppDbContext : DbContext
     public virtual DbSet<AlertRule> AlertRules => Set<AlertRule>();
 
     public virtual DbSet<AlertNotification> AlertNotifications => Set<AlertNotification>();
+
+    public virtual DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
+
 
 
 

@@ -484,6 +484,8 @@ $RECYCLE.BIN/
 coverage-report/
 TestResults/
 
+coveragereport/
+**/TestResults/
 perf/results.jtl
 perf/jmeter-report/
 

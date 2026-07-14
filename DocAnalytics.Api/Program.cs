@@ -1,17 +1,19 @@
+using DocAnalytics.Api.Configuration;
 using DocAnalytics.Api.Extensions;
 using DocAnalytics.Api.Middleware;
+using DocAnalytics.Api.Realtime;
 using DocAnalytics.Api.Swagger;
 using DocAnalytics.Data;
 using DocAnalytics.Data.Seeding;
 using DocAnalytics.Service;
-using DocAnalytics.Service.Dashboard;
+using DocAnalytics.Service.Analytics;
 using DocAnalytics.Service.Auth;
 using DocAnalytics.Service.Batches;
+using DocAnalytics.Service.Dashboard;
 using DocAnalytics.Service.Health;
 using DocAnalytics.Service.Invoices;
-using DocAnalytics.Service.Analytics;
-using DocAnalytics.Api.Realtime;
 using DocAnalytics.Service.Realtime;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using System.Text.Json;
 
@@ -22,6 +24,8 @@ builder.Services.AddCurrentUser();                              // Api
 builder.Services.AddPersistence(builder.Configuration);         // Data
 builder.Services.AddApplicationServices();                      // Service
 builder.Services.AddJwtAuth(builder.Configuration);             // Api
+builder.Services.AddSecurityFoundation(builder.Configuration);   // 0.3
+builder.Services.AddPersistedDataProtection();                   // 0.4
 
 // Role-based policies (feature: provisioning roles)
 builder.Services.AddAuthorization(o =>
@@ -72,6 +76,12 @@ builder.Services.AddCors(o => o.AddPolicy("frontend", p =>
 
 
 var app = builder.Build();
+var sec = app.Services.GetRequiredService<IOptions<SecurityOptions>>().Value;
+
+if (sec.ForwardedHeaders.Enabled) app.UseForwardedHeaders();     // FIRST, before anything scheme-aware
+if (!app.Environment.IsDevelopment() && sec.Hsts.Enabled) app.UseHsts();
+// app.UseHttpsRedirection();  // ❌ leave OFF in-container — nginx terminates TLS (redirect-loop otherwise)
+app.UseCors(CorsOptions.PolicyName);                             // before UseAuthentication/UseAuthorization
 
 if (app.Environment.IsDevelopment())
 {

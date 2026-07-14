@@ -1,0 +1,13 @@
+title = "DocAnalytics gitleaks config"
+
+[extend]
+useDefault = true   # keep all built-in rules (AWS keys, JWTs, PATs, etc.)
+
+# Placeholders like SET_VIA_USER_SECRETS must never trip the scanner.
+[[rules]]
+id = "docanalytics-allow-placeholders"
+description = "Ignore our known non-secret placeholders"
+regex = '''SET_VIA_USER_SECRETS'''
+[rules.allowlist]
+regexTarget = "match"
+regexes = ['''SET_VIA_USER_SECRETS''']

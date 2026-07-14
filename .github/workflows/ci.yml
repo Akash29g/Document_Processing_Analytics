@@ -1,0 +1,74 @@
+name: CI
+
+# Runs on every PR (any target branch) + pushes to main.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Least-privilege token (status checks only need read).
+permissions:
+  contents: read
+
+# Fail-fast: cancel a superseded run when new commits land on the same ref.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ───────────────────────── Backend (.NET 10) ─────────────────────────
+  backend:
+    name: backend (build + test)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore DocAnalytics.slnx
+
+      - name: Build
+        run: dotnet build DocAnalytics.slnx --no-restore --configuration Release
+
+      # Fast gate = 4 correctness projects (Round 0 decision).
+      # Performance.Tests is intentionally EXCLUDED from the blocking gate.
+      # bash runs with -eo pipefail, so the first failing project stops the job (fail-fast).
+      - name: Test (correctness projects)
+        run: |
+          dotnet test DocAnalytics.Domain.Tests/DocAnalytics.Domain.Tests.csproj   --no-build --configuration Release
+          dotnet test DocAnalytics.Data.Tests/DocAnalytics.Data.Tests.csproj       --no-build --configuration Release
+          dotnet test DocAnalytics.Service.Tests/DocAnalytics.Service.Tests.csproj --no-build --configuration Release
+          dotnet test DocAnalytics.Api.Tests/DocAnalytics.Api.Tests.csproj         --no-build --configuration Release
+
+  # ──────────────────────── Frontend (Angular 22) ────────────────────────
+  # Runs in PARALLEL with `backend` (no `needs:` dependency between them).
+  frontend:
+    name: frontend (build + test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docanalytics-web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: docanalytics-web/package-lock.json
+
+      - name: Install (clean)
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Test (Vitest, single run)
+        run: npx ng test --watch=false

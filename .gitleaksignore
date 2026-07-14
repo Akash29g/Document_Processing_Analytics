@@ -1,0 +1,6 @@
+# Format: <commitSHA>:<filePath>:<ruleID>:<startLine>
+# Generate these with:  gitleaks detect --report-format json --report-path leaks.json
+# then copy each finding's "Fingerprint" field below. Example placeholders:
+
+b180ec34184bc6b76af9dfe6d79297487635ee56:DocAnalytics.Api/appsettings.json:aws-access-token:32
+b180ec34184bc6b76af9dfe6d79297487635ee56:DocAnalytics.Api/appsettings.json:generic-api-key:33

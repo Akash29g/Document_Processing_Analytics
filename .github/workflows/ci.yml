@@ -1,19 +1,14 @@
 # workflow bump: force refresh after removing setup-trivy
-
-
 name: CI
 
-# Runs on every PR (any target branch) + pushes to main.
 on:
   pull_request:
   push:
     branches: [main]
 
-# Least-privilege token (status checks only need read).
 permissions:
   contents: read
 
-# Fail-fast: cancel a superseded run when new commits land on the same ref.
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -38,9 +33,6 @@ jobs:
       - name: Build
         run: dotnet build DocAnalytics.slnx --no-restore --configuration Release
 
-      # Fast gate = 4 correctness projects (Round 0 decision).
-      # Performance.Tests is intentionally EXCLUDED from the blocking gate.
-      # bash runs with -eo pipefail, so the first failing project stops the job (fail-fast).
       - name: Test (correctness projects)
         run: |
           dotnet test DocAnalytics.Domain.Tests/DocAnalytics.Domain.Tests.csproj   --no-build --configuration Release
@@ -49,7 +41,6 @@ jobs:
           dotnet test DocAnalytics.Api.Tests/DocAnalytics.Api.Tests.csproj         --no-build --configuration Release
 
   # ──────────────────────── Frontend (Angular 22) ────────────────────────
-  # Runs in PARALLEL with `backend` (no `needs:` dependency between them).
   frontend:
     name: frontend (build + test)
     runs-on: ubuntu-latest
@@ -76,7 +67,8 @@ jobs:
       - name: Test (Vitest, single run)
         run: npx ng test --watch=false
 
-     devsecops:
+  # ──────────────────────── DevSecOps (scans) ────────────────────────
+  devsecops:
     name: devsecops (secrets + deps + image scan)
     runs-on: ubuntu-latest
     permissions:
@@ -85,9 +77,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # --------------------
-      # Secret scan (gitleaks) — SCAN WORKING TREE ONLY (no git history)
-      # --------------------
+      # Secret scan (gitleaks) — working tree only (no git history)
       - name: Gitleaks (working tree only)
         uses: gitleaks/gitleaks-action@v2
         with:
@@ -97,9 +87,7 @@ jobs:
             --redact
             --config=.gitleaks.toml
 
-      # --------------------
       # Backend dependency scan (.NET)
-      # --------------------
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -115,9 +103,7 @@ jobs:
             exit 1
           fi
 
-      # --------------------
       # Frontend dependency scan (npm)
-      # --------------------
       - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
@@ -129,9 +115,7 @@ jobs:
           npm ci
           npm audit --audit-level=high
 
-      # --------------------
-      # Container image scan (Trivy) — run via Docker (no setup-trivy action dependency)
-      # --------------------
+      # Container image scan (Trivy) — run via Docker (no setup-trivy dependency)
       - name: Build API image
         run: docker build -t docanalytics-api:${{ github.sha }} -f DocAnalytics.Api/Dockerfile .
 
@@ -153,4 +137,3 @@ jobs:
             aquasec/trivy:0.54.1 \
             image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
             docanalytics-web:${{ github.sha }}
-

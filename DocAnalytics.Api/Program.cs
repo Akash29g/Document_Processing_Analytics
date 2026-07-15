@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading.RateLimiting;
 using DocAnalytics.Api.Auth;      // JwtSettings
@@ -19,7 +18,6 @@ using DocAnalytics.Service.Invoices;
 using DocAnalytics.Service.Realtime;
 using Microsoft.Extensions.Options;
 
-[assembly: ExcludeFromCodeCoverage]
 
 
 var builder = WebApplication.CreateBuilder(args);

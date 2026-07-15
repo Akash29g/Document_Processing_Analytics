@@ -1,4 +1,3 @@
-# workflow bump: force refresh after removing setup-trivy
 name: CI
 
 on:
@@ -25,7 +24,7 @@ jobs:
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: "10.0.x"
 
       - name: Restore
         run: dotnet restore DocAnalytics.slnx
@@ -33,12 +32,10 @@ jobs:
       - name: Build
         run: dotnet build DocAnalytics.slnx --no-restore --configuration Release
 
-      - name: Test (correctness projects)
-        run: |
-          dotnet test DocAnalytics.Domain.Tests/DocAnalytics.Domain.Tests.csproj   --no-build --configuration Release
-          dotnet test DocAnalytics.Data.Tests/DocAnalytics.Data.Tests.csproj       --no-build --configuration Release
-          dotnet test DocAnalytics.Service.Tests/DocAnalytics.Service.Tests.csproj --no-build --configuration Release
-          dotnet test DocAnalytics.Api.Tests/DocAnalytics.Api.Tests.csproj         --no-build --configuration Release
+      - name: Test + coverage gate (per layer)
+        shell: bash
+        run: bash scripts/coverage-gate.sh
+
 
   # ──────────────────────── Frontend (Angular 22) ────────────────────────
   frontend:
@@ -54,7 +51,7 @@ jobs:
       - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
           cache: npm
           cache-dependency-path: docanalytics-web/package-lock.json
 
@@ -77,8 +74,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Secret scan (gitleaks) — working tree only (no git history)
       - name: Gitleaks (working tree only, via Docker)
+        shell: bash
         run: |
+          set -euo pipefail
           docker run --rm \
             -v "${{ github.workspace }}:/repo" \
             ghcr.io/gitleaks/gitleaks:v8.24.3 \
@@ -89,12 +89,11 @@ jobs:
             --config=/repo/.gitleaks.toml \
             --exit-code 1
 
-
       # Backend dependency scan (.NET)
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: "10.0.x"
 
       - name: dotnet list package --vulnerable (fail on any)
         shell: bash
@@ -102,7 +101,7 @@ jobs:
           set -euo pipefail
           dotnet list DocAnalytics.slnx package --vulnerable --include-transitive | tee dotnet-vuln.txt
           if grep -qi "has the following vulnerable packages" dotnet-vuln.txt; then
-            echo "❌ Vulnerable NuGet packages detected"
+            echo "Vulnerable NuGet packages detected"
             exit 1
           fi
 
@@ -110,20 +109,27 @@ jobs:
       - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
       - name: npm audit (HIGH+)
+        shell: bash
         working-directory: docanalytics-web
         run: |
+          set -euo pipefail
           npm ci
           npm audit --audit-level=high
 
       # Container image scan (Trivy) — run via Docker (no setup-trivy dependency)
       - name: Build API image
-        run: docker build -t docanalytics-api:${{ github.sha }} -f DocAnalytics.Api/Dockerfile .
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build -t docanalytics-api:${{ github.sha }} -f DocAnalytics.Api/Dockerfile .
 
       - name: Trivy scan (API image)
+        shell: bash
         run: |
+          set -euo pipefail
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
             aquasec/trivy:0.54.1 \
@@ -131,10 +137,15 @@ jobs:
             docanalytics-api:${{ github.sha }}
 
       - name: Build Web image
-        run: docker build -t docanalytics-web:${{ github.sha }} -f docanalytics-web/Dockerfile docanalytics-web
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build -t docanalytics-web:${{ github.sha }} -f docanalytics-web/Dockerfile docanalytics-web
 
       - name: Trivy scan (Web image)
+        shell: bash
         run: |
+          set -euo pipefail
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
             aquasec/trivy:0.54.1 \

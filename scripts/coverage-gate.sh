@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Floors (baseline - 2%). Keep these synced with docs/coverage-baseline.md.
+# Floors (baseline - 2%). Keep synced with docs/coverage-baseline.md.
 FLOOR_SERVICE=79
 FLOOR_DOMAIN=75
 FLOOR_DATA=23
@@ -11,7 +11,7 @@ ROOT="$(pwd)"
 OUT="$ROOT/coverage-out"
 mkdir -p "$OUT"
 
-echo "== Installing ReportGenerator (local tool) =="
+echo "== Restore local tools (ReportGenerator) =="
 dotnet tool restore
 
 run_test () {
@@ -29,13 +29,11 @@ run_test () {
     --logger "trx;LogFileName=$name.trx"
 }
 
-# Run tests (correctness only) and collect coverage
 run_test "DocAnalytics.Domain.Tests/DocAnalytics.Domain.Tests.csproj"   "domain"
 run_test "DocAnalytics.Data.Tests/DocAnalytics.Data.Tests.csproj"       "data"
 run_test "DocAnalytics.Service.Tests/DocAnalytics.Service.Tests.csproj" "service"
 run_test "DocAnalytics.Api.Tests/DocAnalytics.Api.Tests.csproj"         "api"
 
-# Find cobertura files produced by the collector
 find_cobertura () {
   local name="$1"
   find "$OUT/$name" -type f -name "coverage.cobertura.xml" | head -n 1
@@ -72,11 +70,9 @@ sum_data="$(gen_summary data "$cov_data")"
 sum_service="$(gen_summary service "$cov_service")"
 sum_api="$(gen_summary api "$cov_api")"
 
-# Extract "linecoverage" from Summary.json (0..100)
 extract_line () {
   local json="$1"
-  # JsonSummary structure contains: "summary": { "linecoverage": 81.1, ... }
-  echo "$json" | python - <<'PY'
+  echo "$json" | python3 - <<'PY'
 import json, sys
 doc = json.load(sys.stdin)
 print(doc["summary"]["linecoverage"])
@@ -95,7 +91,7 @@ printf "Data   : %s (floor %s)\n" "$lc_data"    "$FLOOR_DATA"
 printf "Api    : %s (floor %s)\n" "$lc_api"     "$FLOOR_API"
 
 fail=0
-python - <<PY || fail=1
+python3 - <<PY || fail=1
 import sys
 def below(val, floor): return float(val) + 1e-9 < float(floor)
 lc_service=float("$lc_service"); lc_domain=float("$lc_domain"); lc_data=float("$lc_data"); lc_api=float("$lc_api")

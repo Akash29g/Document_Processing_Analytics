@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-FLOOR_SERVICE=79
-FLOOR_DOMAIN=75
-FLOOR_DATA=23
-FLOOR_API=22
+FLOOR_SERVICE=82
+FLOOR_DOMAIN=72
+FLOOR_DATA=90
+FLOOR_API=44
 
 ROOT="$(pwd)"
 OUT="$ROOT/coverage-out"

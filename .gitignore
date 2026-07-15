@@ -3,6 +3,10 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
+# local gitleaks scan export
+.gitleaks-scan/
+repo-scan.tar
+
 # dotenv files
 .env
 

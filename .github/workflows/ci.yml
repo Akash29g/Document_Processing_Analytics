@@ -1,3 +1,4 @@
+# workflow bump: force refresh after removing setup-trivy
 name: CI
 
 on:
@@ -24,7 +25,7 @@ jobs:
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "10.0.x"
+          dotnet-version: '10.0.x'
 
       - name: Restore
         run: dotnet restore DocAnalytics.slnx
@@ -38,6 +39,7 @@ jobs:
       - name: Test + coverage gate (per layer)
         shell: bash
         run: bash scripts/coverage-gate.sh
+
 
   # ──────────────────────── Frontend (Angular 22) ────────────────────────
   frontend:
@@ -53,7 +55,7 @@ jobs:
       - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: '22'
           cache: npm
           cache-dependency-path: docanalytics-web/package-lock.json
 
@@ -80,9 +82,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Gitleaks (working tree only, via Docker)
-        shell: bash
         run: |
-          set -euo pipefail
           docker run --rm \
             -v "${{ github.workspace }}:/repo" \
             ghcr.io/gitleaks/gitleaks:v8.24.3 \
@@ -93,10 +93,12 @@ jobs:
             --config=/repo/.gitleaks.toml \
             --exit-code 1
 
+
+      # Backend dependency scan (.NET)
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "10.0.x"
+          dotnet-version: '10.0.x'
 
       - name: dotnet list package --vulnerable (fail on any)
         shell: bash
@@ -104,25 +106,41 @@ jobs:
           set -euo pipefail
           dotnet list DocAnalytics.slnx package --vulnerable --include-transitive | tee dotnet-vuln.txt
           if grep -qi "has the following vulnerable packages" dotnet-vuln.txt; then
-            echo "Vulnerable NuGet packages detected"
+            echo "❌ Vulnerable NuGet packages detected"
             exit 1
           fi
 
+      # Frontend dependency scan (npm)
       - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: '22'
 
       - name: npm audit (HIGH+)
-        shell: bash
         working-directory: docanalytics-web
         run: |
-          set -euo pipefail
           npm ci
           npm audit --audit-level=high
 
+      # Container image scan (Trivy) — run via Docker (no setup-trivy dependency)
       - name: Build API image
-        shell: bash
+        run: docker build -t docanalytics-api:${{ github.sha }} -f DocAnalytics.Api/Dockerfile .
+
+      - name: Trivy scan (API image)
         run: |
-          set -euo pipefail
-          docker build -t docanalytics-
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:0.54.1 \
+            image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
+            docanalytics-api:${{ github.sha }}
+
+      - name: Build Web image
+        run: docker build -t docanalytics-web:${{ github.sha }} -f docanalytics-web/Dockerfile docanalytics-web
+
+      - name: Trivy scan (Web image)
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:0.54.1 \
+            image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
+            docanalytics-web:${{ github.sha }}

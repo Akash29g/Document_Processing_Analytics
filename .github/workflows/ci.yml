@@ -72,3 +72,92 @@ jobs:
 
       - name: Test (Vitest, single run)
         run: npx ng test --watch=false
+
+  devsecops:
+    name: devsecops (secrets + deps + image scan)
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # --------------------
+      # Secret scan (gitleaks) — SCAN WORKING TREE ONLY (no git history)
+      # --------------------
+      - name: Gitleaks (working tree only)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_LICENSE: ""
+        with:
+          args: >
+            detect
+            --no-git
+            --redact
+            --config=.gitleaks.toml
+
+      # --------------------
+      # Backend dependency scan (.NET)
+      # --------------------
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: dotnet list package --vulnerable (fail on any)
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet list DocAnalytics.slnx package --vulnerable --include-transitive | tee dotnet-vuln.txt
+          # Fail if the command reports vulnerable packages
+          if grep -qi "has the following vulnerable packages" dotnet-vuln.txt; then
+            echo "❌ Vulnerable NuGet packages detected"
+            exit 1
+          fi
+
+      # --------------------
+      # Frontend dependency scan (npm)
+      # --------------------
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: npm audit (HIGH+)
+        working-directory: docanalytics-web
+        run: |
+          npm ci
+          npm audit --audit-level=high
+
+      # --------------------
+      # Container image scan (Trivy)
+      # Build images locally (no push), scan HIGH/CRITICAL
+      # --------------------
+      - name: Build API image
+        run: |
+          docker build -t docanalytics-api:${{ github.sha }} -f DocAnalytics.Api/Dockerfile .
+
+      - name: Trivy scan (API image)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: docanalytics-api:${{ github.sha }}
+          severity: 'HIGH,CRITICAL'
+          ignore-unfixed: true
+          format: 'table'
+          exit-code: '1'
+
+      - name: Build Web image
+        run: |
+          docker build -t docanalytics-web:${{ github.sha }} -f docanalytics-web/Dockerfile docanalytics-web
+
+      - name: Trivy scan (Web image)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: docanalytics-web:${{ github.sha }}
+          severity: 'HIGH,CRITICAL'
+          ignore-unfixed: true
+          format: 'table'
+          exit-code: '1'
+

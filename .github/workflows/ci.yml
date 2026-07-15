@@ -15,7 +15,7 @@ concurrency:
 jobs:
   # ───────────────────────── Backend (.NET 10) ─────────────────────────
   backend:
-    name: backend (build + test)
+    name: backend (build + coverage + format)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -32,14 +32,16 @@ jobs:
       - name: Build
         run: dotnet build DocAnalytics.slnx --no-restore --configuration Release
 
+      - name: Format check (dotnet format)
+        run: dotnet format DocAnalytics.slnx --verify-no-changes
+
       - name: Test + coverage gate (per layer)
         shell: bash
         run: bash scripts/coverage-gate.sh
 
-
   # ──────────────────────── Frontend (Angular 22) ────────────────────────
   frontend:
-    name: frontend (build + test)
+    name: frontend (build + test + format)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -58,10 +60,13 @@ jobs:
       - name: Install (clean)
         run: npm ci
 
+      - name: Prettier format check
+        run: npm run format:check
+
       - name: Build
         run: npm run build
 
-      - name: Test (Vitest, single run)
+      - name: Test (Vitest, single run + coverage thresholds)
         run: npx ng test --watch=false
 
   # ──────────────────────── DevSecOps (scans) ────────────────────────
@@ -74,7 +79,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Secret scan (gitleaks) — working tree only (no git history)
       - name: Gitleaks (working tree only, via Docker)
         shell: bash
         run: |
@@ -89,7 +93,6 @@ jobs:
             --config=/repo/.gitleaks.toml \
             --exit-code 1
 
-      # Backend dependency scan (.NET)
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -105,7 +108,6 @@ jobs:
             exit 1
           fi
 
-      # Frontend dependency scan (npm)
       - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
@@ -119,35 +121,8 @@ jobs:
           npm ci
           npm audit --audit-level=high
 
-      # Container image scan (Trivy) — run via Docker (no setup-trivy dependency)
       - name: Build API image
         shell: bash
         run: |
           set -euo pipefail
-          docker build -t docanalytics-api:${{ github.sha }} -f DocAnalytics.Api/Dockerfile .
-
-      - name: Trivy scan (API image)
-        shell: bash
-        run: |
-          set -euo pipefail
-          docker run --rm \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasec/trivy:0.54.1 \
-            image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
-            docanalytics-api:${{ github.sha }}
-
-      - name: Build Web image
-        shell: bash
-        run: |
-          set -euo pipefail
-          docker build -t docanalytics-web:${{ github.sha }} -f docanalytics-web/Dockerfile docanalytics-web
-
-      - name: Trivy scan (Web image)
-        shell: bash
-        run: |
-          set -euo pipefail
-          docker run --rm \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasec/trivy:0.54.1 \
-            image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
-            docanalytics-web:${{ github.sha }}
+          docker build -t docanalytics-

@@ -3,6 +3,8 @@ using DocAnalytics.Api.Extensions;
 using DocAnalytics.Api.Middleware;
 using DocAnalytics.Api.Realtime;
 using DocAnalytics.Api.Swagger;
+using DocAnalytics.Api.Auth;      // JwtSettings
+using DocAnalytics.Api.Common;    // ApiResponse<T>
 using DocAnalytics.Data;
 using DocAnalytics.Data.Seeding;
 using DocAnalytics.Service;
@@ -16,14 +18,34 @@ using DocAnalytics.Service.Realtime;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using System.Text.Json;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+var conn = builder.Configuration.GetConnectionString("Default");
+if (string.IsNullOrWhiteSpace(conn) ||
+    conn.Contains("SET_VIA_USER_SECRETS", StringComparison.OrdinalIgnoreCase))
+{
+    throw new InvalidOperationException(
+        "ConnectionStrings:Default is not configured. Set it via user-secrets or the ConnectionStrings__Default env var.");
+}
+
 
 builder.Services.AddCurrentUser();                              // Api
 builder.Services.AddPersistence(builder.Configuration);         // Data
 builder.Services.AddApplicationServices();                      // Service
 builder.Services.AddJwtAuth(builder.Configuration);             // Api
+
+builder.Services.AddOptions<JwtSettings>()
+    .Bind(builder.Configuration.GetSection("Jwt"))
+    .Validate(s => !string.IsNullOrWhiteSpace(s.Key) && s.Key != "SET_VIA_USER_SECRETS",
+        "Jwt:Key is missing — set via user-secrets (dev) or env var Jwt__Key (Docker/prod).")
+    .Validate(s => !string.IsNullOrEmpty(s.Key) && s.Key.Length >= 32,
+        "Jwt:Key must be at least 32 characters (256-bit) for HMAC-SHA256.")
+    .ValidateOnStart();
+
 builder.Services.AddSecurityFoundation(builder.Configuration);   // 0.3
 builder.Services.AddPersistedDataProtection();                   // 0.4
 
@@ -60,7 +82,40 @@ builder.Services.AddAdminUsersFeature();
 builder.Services.AddInvoicePipeline(builder.Configuration);
 builder.Services.AddHostedService<DocAnalytics.Api.BackgroundServices.ExtractionWorker>();
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
+    options.AddPolicy("login", httpContext =>
+    {
+        // Client IP is correct behind nginx because UseForwardedHeaders() runs first (R1).
+        var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        return RateLimitPartition.GetFixedWindowLimiter(ip, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 5,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+        });
+    });
+
+    options.OnRejected = async (context, token) =>
+    {
+        var res = context.HttpContext.Response;
+        res.StatusCode = StatusCodes.Status429TooManyRequests;
+        res.ContentType = "application/json";
+
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+            res.Headers.RetryAfter = ((int)retryAfter.TotalSeconds).ToString();
+
+        var body = ApiResponse<object>.Fail(
+            "RATE_LIMITED", "Too many login attempts. Please try again later.");
+        var json = JsonSerializer.Serialize(body,
+            new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower });
+
+        await res.WriteAsync(json, token);
+    };
+});
 
 builder.Services.AddControllers().AddJsonOptions(o =>
 {
@@ -89,6 +144,7 @@ app.UseSecurityHeaders();
 
 // 5) CORS (single, config-driven policy) — before auth.
 app.UseCors(CorsOptions.PolicyName);
+app.UseRateLimiter();          // ← NEW: throttle before auth work happens
 
 if (app.Environment.IsDevelopment())
 {

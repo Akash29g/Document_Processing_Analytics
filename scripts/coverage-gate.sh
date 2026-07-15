@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Floors (baseline - 2%). Keep synced with docs/coverage-baseline.md.
 FLOOR_SERVICE=79
 FLOOR_DOMAIN=75
 FLOOR_DATA=23
@@ -15,11 +14,8 @@ echo "== Restore local tools (ReportGenerator) =="
 dotnet tool restore
 
 run_test () {
-  local proj="$1"
-  local name="$2"
-  local dir="$OUT/$name"
+  local proj="$1"; local name="$2"; local dir="$OUT/$name"
   mkdir -p "$dir"
-
   echo "== dotnet test: $name =="
   dotnet test "$proj" \
     --configuration Release \
@@ -34,72 +30,40 @@ run_test "DocAnalytics.Data.Tests/DocAnalytics.Data.Tests.csproj"       "data"
 run_test "DocAnalytics.Service.Tests/DocAnalytics.Service.Tests.csproj" "service"
 run_test "DocAnalytics.Api.Tests/DocAnalytics.Api.Tests.csproj"         "api"
 
-find_cobertura () {
-  local name="$1"
-  find "$OUT/$name" -type f -name "coverage.cobertura.xml" | head -n 1
-}
-
-cov_domain="$(find_cobertura domain)"
-cov_data="$(find_cobertura data)"
-cov_service="$(find_cobertura service)"
-cov_api="$(find_cobertura api)"
-
-if [[ -z "${cov_domain:-}" || -z "${cov_data:-}" || -z "${cov_service:-}" || -z "${cov_api:-}" ]]; then
-  echo "ERROR: Could not find one or more coverage.cobertura.xml files."
-  exit 2
-fi
-
-echo "== ReportGenerator: JSON summary per layer =="
+find_cobertura () { find "$OUT/$1" -type f -name "coverage.cobertura.xml" | head -n 1; }
 
 gen_summary () {
-  local name="$1"
-  local cobertura="$2"
-  local target="$OUT/summary-$name"
+  local name="$1"; local cobertura="$2"; local target="$OUT/summary-$name"
   mkdir -p "$target"
-
   dotnet reportgenerator \
     "-reports:$cobertura" \
     "-targetdir:$target" \
-    "-reporttypes:JsonSummary"
-
-  cat "$target/Summary.json"
+    "-reporttypes:JsonSummary" \
+    "-verbosity:Error" >/dev/null
 }
 
-sum_domain="$(gen_summary domain "$cov_domain")"
-sum_data="$(gen_summary data "$cov_data")"
-sum_service="$(gen_summary service "$cov_service")"
-sum_api="$(gen_summary api "$cov_api")"
+for layer in domain data service api; do
+  cov="$(find_cobertura "$layer")"
+  if [[ -z "${cov:-}" ]]; then
+    echo "ERROR: no coverage.cobertura.xml for $layer"; exit 2
+  fi
+  gen_summary "$layer" "$cov"
+done
 
-extract_line () {
-  local json="$1"
-  echo "$json" | python3 - <<'PY'
-import json, sys
-doc = json.load(sys.stdin)
-print(doc["summary"]["linecoverage"])
+echo "== Coverage gate (line %) =="
+python3 - "$OUT" "$FLOOR_SERVICE" "$FLOOR_DOMAIN" "$FLOOR_DATA" "$FLOOR_API" <<'PY'
+import json, os, sys
+out = sys.argv[1]
+floors = {"service": float(sys.argv[2]), "domain": float(sys.argv[3]),
+          "data": float(sys.argv[4]), "api": float(sys.argv[5])}
+def line_cov(name):
+    with open(os.path.join(out, f"summary-{name}", "Summary.json")) as f:
+        return float(json.load(f)["summary"]["linecoverage"])
+fail = False
+for name, floor in floors.items():
+    lc = line_cov(name)
+    ok = lc + 1e-9 >= floor
+    if not ok: fail = True
+    print(f"{name:8} line={lc:6.2f}  floor={floor:5.1f}  -> {'OK' if ok else 'FAIL'}")
+sys.exit(1 if fail else 0)
 PY
-}
-
-lc_domain="$(extract_line "$sum_domain")"
-lc_data="$(extract_line "$sum_data")"
-lc_service="$(extract_line "$sum_service")"
-lc_api="$(extract_line "$sum_api")"
-
-echo "== Coverage (line %) =="
-printf "Service: %s (floor %s)\n" "$lc_service" "$FLOOR_SERVICE"
-printf "Domain : %s (floor %s)\n" "$lc_domain"  "$FLOOR_DOMAIN"
-printf "Data   : %s (floor %s)\n" "$lc_data"    "$FLOOR_DATA"
-printf "Api    : %s (floor %s)\n" "$lc_api"     "$FLOOR_API"
-
-fail=0
-python3 - <<PY || fail=1
-import sys
-def below(val, floor): return float(val) + 1e-9 < float(floor)
-lc_service=float("$lc_service"); lc_domain=float("$lc_domain"); lc_data=float("$lc_data"); lc_api=float("$lc_api")
-if below(lc_service, $FLOOR_SERVICE): print("FAIL: Service below floor"); sys.exit(1)
-if below(lc_domain,  $FLOOR_DOMAIN):  print("FAIL: Domain below floor");  sys.exit(1)
-if below(lc_data,    $FLOOR_DATA):    print("FAIL: Data below floor");    sys.exit(1)
-if below(lc_api,     $FLOOR_API):     print("FAIL: Api below floor");     sys.exit(1)
-print("PASS: Coverage floors met")
-PY
-
-exit $fail

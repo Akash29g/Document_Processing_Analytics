@@ -82,9 +82,18 @@
               "src/main.ts",
               "src/environments/**",
               "src/**/*.models.ts"
-            ]
+            ],
+            "coverageReporters": [
+              "text-summary",
+              "cobertura"
+            ],
+            "coverageThresholds": {
+              "lines": 73,
+              "branches": 68
+            }
           }
         }
+
       }
     }
   }

@@ -1,4 +1,4 @@
-﻿// Entities/InvoiceLineItem.cs  (NEW - table 11)
+// Entities/InvoiceLineItem.cs  (NEW - table 11)
 namespace DocAnalytics.Domain.Entities;
 
 using DocAnalytics.Domain.Common;

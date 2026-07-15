@@ -1,6 +1,5 @@
-using DocAnalytics.Service.Health;
-using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DocAnalytics.Service;
 

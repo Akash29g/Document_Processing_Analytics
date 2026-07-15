@@ -1,6 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using DocAnalytics.Api.Common;
-using System.Diagnostics.CodeAnalysis;
 
 
 namespace DocAnalytics.Api.Middleware;

@@ -1,6 +1,4 @@
-﻿// Entities/FileStepHistory.cs
-using System.Xml.Linq;
-
+// Entities/FileStepHistory.cs
 namespace DocAnalytics.Domain.Entities;
 
 public class FileStepHistory

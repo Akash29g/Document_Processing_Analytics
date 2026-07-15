@@ -1,4 +1,4 @@
-﻿using DocAnalytics.Data;               
+using DocAnalytics.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace DocAnalytics.Service.Auth;

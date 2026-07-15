@@ -1,4 +1,4 @@
-﻿using DocAnalytics.Service.Errors;
+using DocAnalytics.Service.Errors;
 
 namespace Microsoft.Extensions.DependencyInjection;   // matches your AddXxxFeature() pattern
 

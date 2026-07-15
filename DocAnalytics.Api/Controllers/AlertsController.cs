@@ -1,9 +1,9 @@
+using System.Security.Claims;
 using DocAnalytics.Api.Common;            // ApiResponse<T>
 using DocAnalytics.Domain.Common;         // ICurrentUser
 using DocAnalytics.Service.Alerts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace DocAnalytics.Api.Controllers;
 

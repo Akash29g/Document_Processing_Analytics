@@ -1,4 +1,4 @@
-﻿namespace DocAnalytics.Service.Errors;
+namespace DocAnalytics.Service.Errors;
 
 // query-string params (same naming style as BatchListQuery / RecentFailuresQuery)
 public sealed class ErrorListQuery

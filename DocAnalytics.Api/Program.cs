@@ -1,11 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using System.Threading.RateLimiting;
+using DocAnalytics.Api.Auth;      // JwtSettings
+using DocAnalytics.Api.Common;    // ApiResponse<T>
 using DocAnalytics.Api.Configuration;
 using DocAnalytics.Api.Extensions;
 using DocAnalytics.Api.Middleware;
 using DocAnalytics.Api.Realtime;
-using DocAnalytics.Api.Swagger;
-using DocAnalytics.Api.Auth;      // JwtSettings
-using DocAnalytics.Api.Common;    // ApiResponse<T>
 using DocAnalytics.Data;
 using DocAnalytics.Data.Seeding;
 using DocAnalytics.Service;
@@ -17,10 +18,6 @@ using DocAnalytics.Service.Health;
 using DocAnalytics.Service.Invoices;
 using DocAnalytics.Service.Realtime;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi;
-using System.Text.Json;
-using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.RateLimiting;
 
 [assembly: ExcludeFromCodeCoverage]
 

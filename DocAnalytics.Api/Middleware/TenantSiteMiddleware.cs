@@ -1,9 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Text.Json;
 using DocAnalytics.Api.Common;          // ApiResponse<T>
 using DocAnalytics.Data;                // AppDbContext
 using Microsoft.EntityFrameworkCore;    // AnyAsync
-using System.Diagnostics.CodeAnalysis;
 
 
 namespace DocAnalytics.Api.Middleware;

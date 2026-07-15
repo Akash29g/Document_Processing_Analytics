@@ -1,4 +1,4 @@
-﻿namespace DocAnalytics.Domain.Common;
+namespace DocAnalytics.Domain.Common;
 
 public interface ICurrentUser
 {

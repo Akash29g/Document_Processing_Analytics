@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
@@ -103,11 +103,11 @@ public sealed class NovaInvoiceExtractor : IInvoiceExtractor
             GetString(root, "invoice_date"),
             GetString(root, "seller"),
             GetString(root, "client"),
-            GetString(root, "currency"),      
-            GetDecimal(root, "subtotal"),    
-            GetDecimal(root, "discount"),     
-            GetDecimal(root, "tax"),          
-            GetDecimal(root, "shipping"),     
+            GetString(root, "currency"),
+            GetDecimal(root, "subtotal"),
+            GetDecimal(root, "discount"),
+            GetDecimal(root, "tax"),
+            GetDecimal(root, "shipping"),
             GetDecimal(root, "total"),
         items);
 

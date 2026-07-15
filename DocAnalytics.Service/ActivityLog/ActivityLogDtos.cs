@@ -1,4 +1,4 @@
-﻿namespace DocAnalytics.Service.ActivityLog;
+namespace DocAnalytics.Service.ActivityLog;
 
 // query-string params (FR-4.3 filters + paging/sort)
 public sealed class ActivityLogQuery

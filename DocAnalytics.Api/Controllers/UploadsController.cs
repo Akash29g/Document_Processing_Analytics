@@ -1,5 +1,4 @@
-﻿using DocAnalytics.Api.Common;
-using DocAnalytics.Domain.Common;
+using DocAnalytics.Api.Common;
 using DocAnalytics.Service.Uploads;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

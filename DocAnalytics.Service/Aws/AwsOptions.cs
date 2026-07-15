@@ -1,4 +1,4 @@
-﻿namespace DocAnalytics.Service.Aws;
+namespace DocAnalytics.Service.Aws;
 
 public sealed class AwsOptions
 {

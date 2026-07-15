@@ -1,4 +1,4 @@
-﻿// Entities/ActivityLog.cs
+// Entities/ActivityLog.cs
 namespace DocAnalytics.Domain.Entities;
 
 using DocAnalytics.Domain.Common;

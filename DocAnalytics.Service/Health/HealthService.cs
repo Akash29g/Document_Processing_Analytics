@@ -1,4 +1,4 @@
-﻿using DocAnalytics.Data;
+using DocAnalytics.Data;
 
 namespace DocAnalytics.Service.Health;
 

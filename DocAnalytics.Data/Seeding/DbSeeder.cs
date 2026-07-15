@@ -1,6 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
 using DocAnalytics.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics.CodeAnalysis;
 
 namespace DocAnalytics.Data.Seeding;
 
@@ -102,7 +102,7 @@ public static class DbSeeder
         }
         await db.SaveChangesAsync();
 
-        
+
         if (await db.Tenants.AnyAsync()) return; // idempotent guard
 
         var now = DateTime.UtcNow;

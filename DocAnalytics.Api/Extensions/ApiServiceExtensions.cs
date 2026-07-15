@@ -1,11 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using DocAnalytics.Api.Auth;
 using DocAnalytics.Api.Common;
 using DocAnalytics.Domain.Common;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using System.Diagnostics.CodeAnalysis;
 
 
 

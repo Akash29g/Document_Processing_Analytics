@@ -1,8 +1,7 @@
-﻿// Entities/FileRecord.cs  -> table "files"
+// Entities/FileRecord.cs  -> table "files"
 namespace DocAnalytics.Domain.Entities;
 
 using DocAnalytics.Domain.Common;
-using System.Xml.Linq;
 
 public class FileRecord : ITenantScoped
 {

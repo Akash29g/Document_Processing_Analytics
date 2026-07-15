@@ -1,4 +1,4 @@
-﻿namespace DocAnalytics.Service.Files;
+namespace DocAnalytics.Service.Files;
 
 // ── GET /api/v1/files/{id}/details : the nested DTO ──
 public sealed class FileDetailDto

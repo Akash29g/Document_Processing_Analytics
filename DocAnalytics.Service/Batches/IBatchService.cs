@@ -1,4 +1,4 @@
-﻿using DocAnalytics.Service.Common;
+using DocAnalytics.Service.Common;
 
 namespace DocAnalytics.Service.Batches;
 

@@ -1,4 +1,4 @@
-﻿using DocAnalytics.Domain.Common;
+using DocAnalytics.Domain.Common;
 
 namespace DocAnalytics.Api.Common;
 

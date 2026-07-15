@@ -2,7 +2,6 @@ using DocAnalytics.Domain.Entities;
 using DocAnalytics.Service.Batches;
 using DocAnalytics.Service.Tests.Support;
 using MockQueryable.Moq;
-using Moq;
 
 namespace DocAnalytics.Service.Tests.Batches;
 

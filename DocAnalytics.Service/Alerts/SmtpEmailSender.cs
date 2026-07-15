@@ -1,7 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Mail;
 using Microsoft.Extensions.Configuration;
-using System.Diagnostics.CodeAnalysis;
 
 namespace DocAnalytics.Service.Alerts;
 

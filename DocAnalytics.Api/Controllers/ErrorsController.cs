@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using DocAnalytics.Api.Common;            // ApiResponse<T>, Meta  (drop if global usings)
 using DocAnalytics.Service.Errors;
 using Microsoft.AspNetCore.Authorization;

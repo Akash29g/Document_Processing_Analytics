@@ -1,6 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.OpenApi;                    // ⚠️ 2.x: namespace COLLAPSED (was Microsoft.OpenApi.Models)
 using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Diagnostics.CodeAnalysis;
 
 
 namespace DocAnalytics.Api.Swagger;

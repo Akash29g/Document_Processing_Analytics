@@ -1,4 +1,4 @@
-﻿using DocAnalytics.Service.Files;
+using DocAnalytics.Service.Files;
 
 namespace Microsoft.Extensions.DependencyInjection;   // matches your AddXxxFeature() pattern
 

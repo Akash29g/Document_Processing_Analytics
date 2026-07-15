@@ -1,6 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
 using DocAnalytics.Service.Realtime;
 using Microsoft.AspNetCore.SignalR;
-using System.Diagnostics.CodeAnalysis;
 
 
 namespace DocAnalytics.Api.Realtime;

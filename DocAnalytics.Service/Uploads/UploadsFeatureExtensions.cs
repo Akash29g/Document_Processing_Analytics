@@ -1,4 +1,4 @@
-﻿using Amazon;
+using Amazon;
 using Amazon.BedrockRuntime;
 using Amazon.Runtime;
 using Amazon.S3;

@@ -1,9 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 using Amazon.S3;
 using Amazon.S3.Model;
 using DocAnalytics.Service.Aws;
 using Microsoft.Extensions.Options;
-using System.Text.RegularExpressions;
-using System.Diagnostics.CodeAnalysis;
 
 namespace DocAnalytics.Service.Storage;
 

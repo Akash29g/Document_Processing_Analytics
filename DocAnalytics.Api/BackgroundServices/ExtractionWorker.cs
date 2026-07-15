@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using DocAnalytics.Api.Common;
 using DocAnalytics.Data;
 using DocAnalytics.Domain.Common;
@@ -6,7 +7,6 @@ using DocAnalytics.Service.Extraction;
 using DocAnalytics.Service.Realtime;
 using DocAnalytics.Service.Storage;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics.CodeAnalysis;
 
 
 namespace DocAnalytics.Api.BackgroundServices;

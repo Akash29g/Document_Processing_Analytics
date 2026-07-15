@@ -1,5 +1,5 @@
-using DocAnalytics.Service.Alerts;
 using System.Diagnostics.CodeAnalysis;
+using DocAnalytics.Service.Alerts;
 
 
 namespace DocAnalytics.Api.BackgroundServices;

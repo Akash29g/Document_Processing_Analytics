@@ -1,4 +1,4 @@
-﻿namespace DocAnalytics.Service.Uploads;
+namespace DocAnalytics.Service.Uploads;
 
 public interface IUploadService
 {

@@ -1,7 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using DocAnalytics.Api.Common;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
-using System.Diagnostics.CodeAnalysis;
 
 
 namespace DocAnalytics.Api.Extensions;

@@ -1,4 +1,4 @@
-﻿namespace DocAnalytics.Service.Realtime;
+namespace DocAnalytics.Service.Realtime;
 
 // Abstraction so the Service layer can broadcast WITHOUT depending on SignalR.
 // The concrete SignalR implementation lives in the Api layer.

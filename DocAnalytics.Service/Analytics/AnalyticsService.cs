@@ -1,6 +1,6 @@
-﻿using DocAnalytics.Data;
-using Microsoft.EntityFrameworkCore;
+using DocAnalytics.Data;
 using DocAnalytics.Service.Common;
+using Microsoft.EntityFrameworkCore;
 
 namespace DocAnalytics.Service.Analytics;
 

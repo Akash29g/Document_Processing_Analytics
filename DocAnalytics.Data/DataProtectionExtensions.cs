@@ -1,6 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
-using System.Diagnostics.CodeAnalysis;
 
 namespace DocAnalytics.Data;
 

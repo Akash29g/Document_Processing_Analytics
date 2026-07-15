@@ -1,4 +1,4 @@
-﻿namespace DocAnalytics.Service.Health;
+namespace DocAnalytics.Service.Health;
 
 public interface IHealthService
 {

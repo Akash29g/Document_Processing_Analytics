@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using DocAnalytics.Api.Common;            // ApiResponse<T>  (adjust if your namespace differs)
 using DocAnalytics.Service.Files;
 using Microsoft.AspNetCore.Authorization;
@@ -35,5 +35,5 @@ public sealed class FilesController : ControllerBase
         return File(Encoding.UTF8.GetBytes(log.Content), "text/plain", log.FileName);
     }
 
-    
+
 }

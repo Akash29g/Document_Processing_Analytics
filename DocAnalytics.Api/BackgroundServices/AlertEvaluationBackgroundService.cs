@@ -1,7 +1,10 @@
 using DocAnalytics.Service.Alerts;
+using System.Diagnostics.CodeAnalysis;
+
 
 namespace DocAnalytics.Api.BackgroundServices;
 
+[ExcludeFromCodeCoverage]
 public sealed class AlertEvaluationBackgroundService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopes;

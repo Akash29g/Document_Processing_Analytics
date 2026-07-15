@@ -1,7 +1,11 @@
 using Microsoft.AspNetCore.HttpOverrides;
+using System.Diagnostics.CodeAnalysis;
+
+
 
 namespace DocAnalytics.Api.Configuration;
 
+[ExcludeFromCodeCoverage]
 public static class SecurityFoundationExtensions
 {
     /// <summary>

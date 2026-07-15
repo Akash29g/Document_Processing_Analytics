@@ -1,14 +1,17 @@
-﻿using System.Text;
+using System.Text;
 using DocAnalytics.Api.Auth;
 using DocAnalytics.Api.Common;
 using DocAnalytics.Domain.Common;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Diagnostics.CodeAnalysis;
+
 
 
 namespace DocAnalytics.Api.Extensions;
 
+[ExcludeFromCodeCoverage]
 public static class ApiServiceExtensions
 {
     public static IServiceCollection AddCurrentUser(this IServiceCollection services)

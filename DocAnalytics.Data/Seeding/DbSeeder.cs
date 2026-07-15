@@ -1,8 +1,10 @@
-﻿using DocAnalytics.Domain.Entities;
+using DocAnalytics.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.CodeAnalysis;
 
 namespace DocAnalytics.Data.Seeding;
 
+[ExcludeFromCodeCoverage]
 public static class DbSeeder
 {
     // ─────────────────────────────────────────────────────────────

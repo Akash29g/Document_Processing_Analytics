@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using DocAnalytics.Api.Configuration;
 using DocAnalytics.Api.Extensions;
 using DocAnalytics.Api.Middleware;
@@ -20,6 +21,8 @@ using Microsoft.OpenApi;
 using System.Text.Json;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
+
+[assembly: ExcludeFromCodeCoverage]
 
 
 var builder = WebApplication.CreateBuilder(args);

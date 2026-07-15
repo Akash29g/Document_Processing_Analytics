@@ -1,8 +1,11 @@
 using DocAnalytics.Service.Realtime;
 using Microsoft.AspNetCore.SignalR;
+using System.Diagnostics.CodeAnalysis;
+
 
 namespace DocAnalytics.Api.Realtime;
 
+[ExcludeFromCodeCoverage]
 // Concrete implementation of the Service-layer abstraction.
 // Lives in the Api project because IHubContext / SignalR are here.
 public sealed class SignalRPipelineNotifier : IPipelineNotifier

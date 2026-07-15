@@ -13,7 +13,7 @@ export class RefreshTimerService {
     );
     visible$
       .pipe(
-        switchMap(visible => (visible ? timer(0, intervalMs) : EMPTY)),
+        switchMap((visible) => (visible ? timer(0, intervalMs) : EMPTY)),
         takeUntilDestroyed(destroyRef),
       )
       .subscribe(() => onTick());

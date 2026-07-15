@@ -10,7 +10,9 @@ describe('BatchService', () => {
   const base = environment.apiBase;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     service = TestBed.inject(BatchService);
     httpMock = TestBed.inject(HttpTestingController);
   });
@@ -18,7 +20,7 @@ describe('BatchService', () => {
 
   it('loadBatches() sends default paging + sort params', () => {
     service.loadBatches();
-    const req = httpMock.expectOne(r => r.url === `${base}/batches`);
+    const req = httpMock.expectOne((r) => r.url === `${base}/batches`);
     expect(req.request.method).toBe('GET');
     expect(req.request.params.get('page')).toBe('1');
     expect(req.request.params.get('pageSize')).toBe('20');
@@ -28,10 +30,11 @@ describe('BatchService', () => {
 
   it('loadBatches() fills batches + meta on success', () => {
     service.loadBatches();
-    httpMock.expectOne(r => r.url === `${base}/batches`)
+    httpMock
+      .expectOne((r) => r.url === `${base}/batches`)
       .flush({
         data: [{ transaction_id: 'TID-1', state: 'Failed' }],
-        meta: { total_count: 1, page: 1, page_size: 20, total_pages: 1 }
+        meta: { total_count: 1, page: 1, page_size: 20, total_pages: 1 },
       });
     expect(service.batches().length).toBe(1);
     expect(service.meta()?.total_count).toBe(1);
@@ -39,7 +42,8 @@ describe('BatchService', () => {
 
   it('loadBatches() sets error signal on failure', () => {
     service.loadBatches();
-    httpMock.expectOne(r => r.url === `${base}/batches`)
+    httpMock
+      .expectOne((r) => r.url === `${base}/batches`)
       .flush('boom', { status: 500, statusText: 'Server Error' });
     expect(service.error()).toBeTruthy();
     expect(service.loading()).toBe(false);
@@ -47,7 +51,7 @@ describe('BatchService', () => {
 
   it('setSort() sends the new sort params', () => {
     service.setSort('submitted_at', 'asc');
-    const req = httpMock.expectOne(r => r.url === `${base}/batches`);
+    const req = httpMock.expectOne((r) => r.url === `${base}/batches`);
     expect(req.request.params.get('sortBy')).toBe('submitted_at');
     expect(req.request.params.get('sortDir')).toBe('asc');
     req.flush({ data: [], meta: null });
@@ -55,7 +59,7 @@ describe('BatchService', () => {
 
   it('loadSources() fills the sources signal', () => {
     service.loadSources();
-    const req = httpMock.expectOne(r => r.url === `${base}/batches/sources`);
+    const req = httpMock.expectOne((r) => r.url === `${base}/batches/sources`);
     req.flush({ data: ['S3', 'SFTP'] });
     expect(service.sources().length).toBe(2);
   });

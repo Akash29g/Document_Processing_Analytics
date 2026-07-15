@@ -1,30 +1,30 @@
 :root {
   /* ===== AVEVA Digital UI Palette (exact hex from style guide) ===== */
-  --aveva-purple: #3D1152; /* brand chrome ONLY: top bar, sidebar, active tab */
-  --purple: #6B04A8; /* marketing background fills only */
-  --bright-purple: #C530FF;
+  --aveva-purple: #3d1152; /* brand chrome ONLY: top bar, sidebar, active tab */
+  --purple: #6b04a8; /* marketing background fills only */
+  --bright-purple: #c530ff;
   /* Neutrals / "furniture" */
   --black: #000000;
-  --dark-gray: #363D42; /* DEFAULT TEXT (light mode) */
-  --dark-gray-3: #545C69; /* secondary text, eyebrow labels */
-  --cool-gray: #BECCD6; /* disabled, borders */
-  --light-gray: #F2F5F7;
-  --bg-light: #F6F8FA; /* page canvas (light) */
-  --bg-dark: #23282B; /* page canvas (dark mode) */
-  --white: #FFFFFF; /* card fill (light) */
+  --dark-gray: #363d42; /* DEFAULT TEXT (light mode) */
+  --dark-gray-3: #545c69; /* secondary text, eyebrow labels */
+  --cool-gray: #beccd6; /* disabled, borders */
+  --light-gray: #f2f5f7;
+  --bg-light: #f6f8fa; /* page canvas (light) */
+  --bg-dark: #23282b; /* page canvas (dark mode) */
+  --white: #ffffff; /* card fill (light) */
   /* Interactive — Slate Blue, NEVER purple */
-  --slate-blue: #4D5EE0;
-  --slate-blue-3: #78A1FC;
+  --slate-blue: #4d5ee0;
+  --slate-blue-3: #78a1fc;
   /* Status / Feedback (fill + icon ONLY) */
-  --status-neutral: #01A9F4;
+  --status-neutral: #01a9f4;
   --status-confirmed: #009848;
-  --status-warning: #F5A624;
-  --status-error: #DC0A0A;
+  --status-warning: #f5a624;
+  --status-error: #dc0a0a;
   /* Light-mode feedback TEXT colors */
-  --text-neutral: #363D42;
+  --text-neutral: #363d42;
   --text-confirmed: #217046;
-  --text-warning: #7D5D29;
-  --text-error: #8F2727;
+  --text-warning: #7d5d29;
+  --text-error: #8f2727;
   /* Typography */
   --font-display: 'Barlow', sans-serif;
   --font-body: 'Mulish', 'Muli', sans-serif;
@@ -41,7 +41,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   background: var(--bg-light);
@@ -54,7 +55,10 @@ body {
   line-height: 24px;
 }
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   font-family: var(--font-display);
   color: var(--dark-gray);
 }
@@ -64,34 +68,34 @@ a {
   text-decoration: none;
 }
 
-  a:hover {
-    text-decoration: underline;
-  }
+a:hover {
+  text-decoration: underline;
+}
 
 /* ===== S-2 Dark mode — Dev B, R5. Scoped overrides only; :root untouched. ===== */
-[data-theme="dark"] {
+[data-theme='dark'] {
   /* Surfaces */
-  --bg-light: #23282B; /* page canvas → reuses existing --bg-dark hue */
-  --white: #2C3338; /* cards / topbar / table fill */
-  --light-gray: #2C3338; /* raised fills / skeleton base */
+  --bg-light: #23282b; /* page canvas → reuses existing --bg-dark hue */
+  --white: #2c3338; /* cards / topbar / table fill */
+  --light-gray: #2c3338; /* raised fills / skeleton base */
   /* Text + borders (invert the greys) */
-  --dark-gray: #E6EAF0; /* primary text */
-  --dark-gray-3: #AEB8C4; /* secondary text / eyebrow */
-  --cool-gray: #3C454C; /* borders / dividers / skeleton highlight */
+  --dark-gray: #e6eaf0; /* primary text */
+  --dark-gray-3: #aeb8c4; /* secondary text / eyebrow */
+  --cool-gray: #3c454c; /* borders / dividers / skeleton highlight */
   /* Interactive — lift slate blue for contrast on dark */
-  --slate-blue: #78A1FC; /* = your existing --slate-blue-3 */
+  --slate-blue: #78a1fc; /* = your existing --slate-blue-3 */
   /* Feedback TEXT — brighten for legibility on dark bg */
-  --text-error: #FF9B9B;
-  --text-warning: #F0B95E;
-  --text-confirmed: #5FD08A;
-  --text-neutral: #C9D2DA;
+  --text-error: #ff9b9b;
+  --text-warning: #f0b95e;
+  --text-confirmed: #5fd08a;
+  --text-neutral: #c9d2da;
 }
 
 .dup-backdrop {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(0, 0, 0, .45);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -102,7 +106,7 @@ a {
   border-radius: 12px;
   padding: var(--space-3, 20px);
   width: min(440px, 90vw);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, .25);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
 }
 
 .dup-title {
@@ -114,7 +118,7 @@ a {
 
 .dup-msg {
   margin: 0 0 16px;
-  font-size: .88rem;
+  font-size: 0.88rem;
   color: var(--dark-gray-3);
   overflow-wrap: anywhere;
 }
@@ -130,23 +134,23 @@ a {
   border: none;
   border-radius: 8px;
   padding: 8px 14px;
-  font-size: .85rem;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
 }
 
-  .dup-btn.danger {
-    background: color-mix(in srgb, var(--text-error, #d33) 14%, transparent);
-    color: var(--text-error, #d33);
-  }
+.dup-btn.danger {
+  background: color-mix(in srgb, var(--text-error, #d33) 14%, transparent);
+  color: var(--text-error, #d33);
+}
 
-  .dup-btn.primary {
-    background: var(--slate-blue, #4b6bfb);
-    color: #fff;
-  }
+.dup-btn.primary {
+  background: var(--slate-blue, #4b6bfb);
+  color: #fff;
+}
 
-  .dup-btn.ghost {
-    background: transparent;
-    color: var(--dark-gray-3);
-    border: 1px solid var(--cool-gray, #d7dbe0);
-  }
+.dup-btn.ghost {
+  background: transparent;
+  color: var(--dark-gray-3);
+  border: 1px solid var(--cool-gray, #d7dbe0);
+}

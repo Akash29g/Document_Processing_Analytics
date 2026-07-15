@@ -4,133 +4,166 @@
 
   <!-- ─────────── File info header (FR-2.5) ─────────── -->
   @if (svc.detailLoading()) {
-  <div class="fd-card fd-state"><span class="spinner"></span> Loading file…</div>
+    <div class="fd-card fd-state"><span class="spinner"></span> Loading file…</div>
   } @else if (svc.detailError()) {
-  <div class="fd-card fd-state fd-error">
-    {{ svc.detailError() }}
-    <button class="fd-btn" (click)="svc.loadDetails()">Retry</button>
-  </div>
+    <div class="fd-card fd-state fd-error">
+      {{ svc.detailError() }}
+      <button class="fd-btn" (click)="svc.loadDetails()">Retry</button>
+    </div>
   } @else if (info(); as fi) {
-  <header class="fd-card fd-header">
-    <div>
-      <p class="fd-eyebrow">File</p>
-      <h1 class="fd-title">{{ fi.name }}</h1>
-      <p class="fd-sub">Current step: <strong>{{ fi.current_step }}</strong></p>
-    </div>
-    <div class="fd-header-right">
-      <app-status-badge [status]="fi.current_status" />
-      <button class="fd-btn" (click)="svc.downloadLogs()">Download Logs</button>
-      <button type="button" class="fd-btn fd-btn-invoice" (click)="svc.downloadOriginal()">Download Invoice</button>
+    <header class="fd-card fd-header">
+      <div>
+        <p class="fd-eyebrow">File</p>
+        <h1 class="fd-title">{{ fi.name }}</h1>
+        <p class="fd-sub">
+          Current step: <strong>{{ fi.current_step }}</strong>
+        </p>
+      </div>
+      <div class="fd-header-right">
+        <app-status-badge [status]="fi.current_status" />
+        <button class="fd-btn" (click)="svc.downloadLogs()">Download Logs</button>
+        <button type="button" class="fd-btn fd-btn-invoice" (click)="svc.downloadOriginal()">
+          Download Invoice
+        </button>
+      </div>
+    </header>
 
-
-    </div>
-  </header>
-
-  <!-- ─────────── Step timeline (FR-2.5) ─────────── -->
-  <div class="fd-card">
-    <h2 class="fd-h2">Processing timeline</h2>
-    @if (history().length === 0) {
-    <div class="fd-state">No steps recorded for this file.</div>
-    } @else {
-    <ol class="tl">
-      @for (s of history(); track $index) {
-      <li class="tl-item" [class.is-failed]="isFailed(s)">
-        <span class="tl-dot" [class]="'dot-' + stepClass(s)"></span>
-        <div class="tl-body">
-          <div class="tl-row">
-            <span class="tl-step">{{ s.step }}</span>
-            <span class="chip" [class]="'chip-' + stepClass(s)">{{ s.status }}</span>
-            <span class="tl-ts">{{ s.ts ? (s.ts | date: 'medium') : '—' }}</span>
-          </div>
-          @if (s.error; as e) {
-          <div class="tl-err">
-            <div><strong>{{ e.code }}</strong>{{ e.message ? ' — ' + e.message : '' }}</div>
-            @if (e.suggested_fix) {
-            <div class="tl-fix">💡 Suggested fix: {{ e.suggested_fix }}</div>
-            }
-          </div>
+    <!-- ─────────── Step timeline (FR-2.5) ─────────── -->
+    <div class="fd-card">
+      <h2 class="fd-h2">Processing timeline</h2>
+      @if (history().length === 0) {
+        <div class="fd-state">No steps recorded for this file.</div>
+      } @else {
+        <ol class="tl">
+          @for (s of history(); track $index) {
+            <li class="tl-item" [class.is-failed]="isFailed(s)">
+              <span class="tl-dot" [class]="'dot-' + stepClass(s)"></span>
+              <div class="tl-body">
+                <div class="tl-row">
+                  <span class="tl-step">{{ s.step }}</span>
+                  <span class="chip" [class]="'chip-' + stepClass(s)">{{ s.status }}</span>
+                  <span class="tl-ts">{{ s.ts ? (s.ts | date: 'medium') : '—' }}</span>
+                </div>
+                @if (s.error; as e) {
+                  <div class="tl-err">
+                    <div>
+                      <strong>{{ e.code }}</strong
+                      >{{ e.message ? ' — ' + e.message : '' }}
+                    </div>
+                    @if (e.suggested_fix) {
+                      <div class="tl-fix">💡 Suggested fix: {{ e.suggested_fix }}</div>
+                    }
+                  </div>
+                }
+              </div>
+            </li>
           }
-        </div>
-      </li>
+        </ol>
       }
-    </ol>
-    }
-  </div>
+    </div>
   }
 
   <!-- ─────────── Invoice ─────────── -->
   <div class="fd-card">
     <h2 class="fd-h2">Invoice</h2>
     @if (svc.invoiceLoading()) {
-    <div class="fd-state"><span class="spinner"></span> Loading invoice…</div>
+      <div class="fd-state"><span class="spinner"></span> Loading invoice…</div>
     } @else if (!svc.hasInvoice()) {
-    <div class="fd-state">This file could not be found.</div>
+      <div class="fd-state">This file could not be found.</div>
     } @else if (svc.invoiceError()) {
-    <div class="fd-state fd-error">
-      {{ svc.invoiceError() }}
-      <button class="fd-btn" (click)="svc.loadLineItems()">Retry</button>
-    </div>
+      <div class="fd-state fd-error">
+        {{ svc.invoiceError() }}
+        <button class="fd-btn" (click)="svc.loadLineItems()">Retry</button>
+      </div>
     } @else {
+      <!-- header info strip -->
+      @if (svc.invoice()?.header; as h) {
+        <div class="fd-inv-head">
+          <div>
+            <span class="k">Invoice #</span><span class="v">{{ h.invoice_number ?? '—' }}</span>
+          </div>
+          <div>
+            <span class="k">Date</span><span class="v">{{ h.invoice_date ?? '—' }}</span>
+          </div>
+          <div>
+            <span class="k">Seller</span><span class="v">{{ h.seller ?? '—' }}</span>
+          </div>
+          <div>
+            <span class="k">Buyer</span><span class="v">{{ h.buyer ?? '—' }}</span>
+          </div>
+          <div>
+            <span class="k">Currency</span><span class="v">{{ h.currency ?? '—' }}</span>
+          </div>
+        </div>
+      }
 
-    <!-- header info strip -->
-    @if (svc.invoice()?.header; as h) {
-    <div class="fd-inv-head">
-      <div><span class="k">Invoice #</span><span class="v">{{ h.invoice_number ?? '—' }}</span></div>
-      <div><span class="k">Date</span><span class="v">{{ h.invoice_date ?? '—' }}</span></div>
-      <div><span class="k">Seller</span><span class="v">{{ h.seller ?? '—' }}</span></div>
-      <div><span class="k">Buyer</span><span class="v">{{ h.buyer ?? '—' }}</span></div>
-      <div><span class="k">Currency</span><span class="v">{{ h.currency ?? '—' }}</span></div>
-    </div>
-    }
-
-    @if (items().length === 0) {
-    <div class="fd-state">No line items — this file has no extracted invoice items.</div>
-    } @else {
-    <div class="fd-scroll">
-      <table class="tbl">
-        <thead>
-          <tr>
-            <th class="r">#</th>
-            <th>Description</th>
-            <th>Category</th>
-            <th class="r">Qty</th>
-            <th class="r">Unit price</th>
-            <th class="r">Line total</th>
-            <th class="r">Confidence</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (li of items(); track li.line_number) {
-          <tr>
-            <td class="r">{{ li.line_number }}</td>
-            <td>{{ li.description }}</td>
-            <td>{{ li.category_name ?? 'Uncategorized' }}</td>
-            <td class="r">{{ num(li.quantity, 3) }}</td>
-            <td class="r">{{ num(li.unit_price, 2) }}</td>
-            <td class="r">{{ num(li.line_total, 2) }}</td>
-            <td class="r">{{ pct(li.confidence) }}</td>
-          </tr>
-          }
-        </tbody>
-        <tfoot>
-          @if (svc.invoice()?.header; as h) {
-          @if (h.discount) {
-          <tr><td colspan="5" class="r">Discount</td><td class="r">− {{ h.currency }} {{ num(h.discount, 2) }}</td><td></td></tr> }
-          @if (h.tax) {
-          <tr><td colspan="5" class="r">Tax</td><td class="r">{{ h.currency }} {{ num(h.tax, 2) }}</td><td></td></tr> }
-          @if (h.shipping) {
-          <tr><td colspan="5" class="r">Shipping</td><td class="r">{{ h.currency }} {{ num(h.shipping, 2) }}</td><td></td></tr> }
-          }
-          <tr>
-            <td colspan="5" class="r"><strong>Grand total</strong></td>
-            <td class="r"><strong>{{ svc.invoice()?.header?.currency }} {{ num(svc.invoice()?.grand_total ?? 0, 2) }}</strong></td>
-            <td></td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-    }
+      @if (items().length === 0) {
+        <div class="fd-state">No line items — this file has no extracted invoice items.</div>
+      } @else {
+        <div class="fd-scroll">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th class="r">#</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th class="r">Qty</th>
+                <th class="r">Unit price</th>
+                <th class="r">Line total</th>
+                <th class="r">Confidence</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (li of items(); track li.line_number) {
+                <tr>
+                  <td class="r">{{ li.line_number }}</td>
+                  <td>{{ li.description }}</td>
+                  <td>{{ li.category_name ?? 'Uncategorized' }}</td>
+                  <td class="r">{{ num(li.quantity, 3) }}</td>
+                  <td class="r">{{ num(li.unit_price, 2) }}</td>
+                  <td class="r">{{ num(li.line_total, 2) }}</td>
+                  <td class="r">{{ pct(li.confidence) }}</td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              @if (svc.invoice()?.header; as h) {
+                @if (h.discount) {
+                  <tr>
+                    <td colspan="5" class="r">Discount</td>
+                    <td class="r">− {{ h.currency }} {{ num(h.discount, 2) }}</td>
+                    <td></td>
+                  </tr>
+                }
+                @if (h.tax) {
+                  <tr>
+                    <td colspan="5" class="r">Tax</td>
+                    <td class="r">{{ h.currency }} {{ num(h.tax, 2) }}</td>
+                    <td></td>
+                  </tr>
+                }
+                @if (h.shipping) {
+                  <tr>
+                    <td colspan="5" class="r">Shipping</td>
+                    <td class="r">{{ h.currency }} {{ num(h.shipping, 2) }}</td>
+                    <td></td>
+                  </tr>
+                }
+              }
+              <tr>
+                <td colspan="5" class="r"><strong>Grand total</strong></td>
+                <td class="r">
+                  <strong
+                    >{{ svc.invoice()?.header?.currency }}
+                    {{ num(svc.invoice()?.grand_total ?? 0, 2) }}</strong
+                  >
+                </td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      }
     }
   </div>
-
 </section>

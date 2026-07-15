@@ -11,7 +11,9 @@ describe('FileDetailsService', () => {
   const id = 'file-1';
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     service = TestBed.inject(FileDetailsService);
     httpMock = TestBed.inject(HttpTestingController);
   });
@@ -19,10 +21,17 @@ describe('FileDetailsService', () => {
 
   it('loadDetails() fills the detail signal', () => {
     service.load(id);
-    const req = httpMock.expectOne(r => r.url === `${base}/files/${id}/details`);
-    req.flush({ data: { file_info: { id, name: 'a.pdf', current_status: 'Failed', current_step: 'Validate' }, history: [] } });
+    const req = httpMock.expectOne((r) => r.url === `${base}/files/${id}/details`);
+    req.flush({
+      data: {
+        file_info: { id, name: 'a.pdf', current_status: 'Failed', current_step: 'Validate' },
+        history: [],
+      },
+    });
     // drain the line-items call the load() also fires:
-    httpMock.expectOne(r => r.url === `${base}/files/${id}/line-items`).flush({ data: { grand_total: 0, items: [] } });
+    httpMock
+      .expectOne((r) => r.url === `${base}/files/${id}/line-items`)
+      .flush({ data: { grand_total: 0, items: [] } });
     expect(service.detail()?.file_info.name).toBe('a.pdf');
     expect(service.detailLoading()).toBe(false);
   });
@@ -34,9 +43,16 @@ describe('FileDetailsService', () => {
 
   it('404 on line-items sets hasInvoice=false (not an error)', () => {
     service.load(id);
-    httpMock.expectOne(r => r.url === `${base}/files/${id}/details`)
-      .flush({ data: { file_info: { id, name: 'a.pdf', current_status: 'Completed', current_step: 'Load' }, history: [] } });
-    httpMock.expectOne(r => r.url === `${base}/files/${id}/line-items`)
+    httpMock
+      .expectOne((r) => r.url === `${base}/files/${id}/details`)
+      .flush({
+        data: {
+          file_info: { id, name: 'a.pdf', current_status: 'Completed', current_step: 'Load' },
+          history: [],
+        },
+      });
+    httpMock
+      .expectOne((r) => r.url === `${base}/files/${id}/line-items`)
       .flush('nope', { status: 404, statusText: 'Not Found' });
     expect(service.hasInvoice()).toBe(false);
     expect(service.invoiceError()).toBeNull();
@@ -44,9 +60,16 @@ describe('FileDetailsService', () => {
 
   it('200 empty items keeps hasInvoice true with empty list', () => {
     service.load(id);
-    httpMock.expectOne(r => r.url === `${base}/files/${id}/details`)
-      .flush({ data: { file_info: { id, name: 'a.pdf', current_status: 'Completed', current_step: 'Load' }, history: [] } });
-    httpMock.expectOne(r => r.url === `${base}/files/${id}/line-items`)
+    httpMock
+      .expectOne((r) => r.url === `${base}/files/${id}/details`)
+      .flush({
+        data: {
+          file_info: { id, name: 'a.pdf', current_status: 'Completed', current_step: 'Load' },
+          history: [],
+        },
+      });
+    httpMock
+      .expectOne((r) => r.url === `${base}/files/${id}/line-items`)
       .flush({ data: { grand_total: 0, items: [] } });
     expect(service.hasInvoice()).toBe(true);
     expect(service.invoice()?.items).toEqual([]);
@@ -54,18 +77,29 @@ describe('FileDetailsService', () => {
 
   it('downloadLogs() requests the logs endpoint as a blob', () => {
     vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:fake');
-    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => { });
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
     const anchor = document.createElement('a');
-    vi.spyOn(anchor, 'click').mockImplementation(() => { });
+    vi.spyOn(anchor, 'click').mockImplementation(() => {});
     vi.spyOn(document, 'createElement').mockReturnValue(anchor);
 
     service.load(id);
-    httpMock.expectOne(r => r.url === `${base}/files/${id}/details`).flush({ data: { file_info: { id, name: 'a.pdf', current_status: 'Failed', current_step: 'Validate' }, history: [] } });
-    httpMock.expectOne(r => r.url === `${base}/files/${id}/line-items`).flush({ data: { grand_total: 0, items: [] } });
+    httpMock
+      .expectOne((r) => r.url === `${base}/files/${id}/details`)
+      .flush({
+        data: {
+          file_info: { id, name: 'a.pdf', current_status: 'Failed', current_step: 'Validate' },
+          history: [],
+        },
+      });
+    httpMock
+      .expectOne((r) => r.url === `${base}/files/${id}/line-items`)
+      .flush({ data: { grand_total: 0, items: [] } });
 
     service.downloadLogs();
-    const req = httpMock.expectOne(r => r.url === `${base}/files/${id}/logs`);
+    const req = httpMock.expectOne((r) => r.url === `${base}/files/${id}/logs`);
     expect(req.request.responseType).toBe('blob');
-    req.flush(new Blob(['log']), { headers: { 'content-disposition': 'attachment; filename="file_log.txt"' } });
+    req.flush(new Blob(['log']), {
+      headers: { 'content-disposition': 'attachment; filename="file_log.txt"' },
+    });
   });
 });

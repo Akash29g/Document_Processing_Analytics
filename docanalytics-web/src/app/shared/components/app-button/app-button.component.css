@@ -13,23 +13,23 @@
   cursor: pointer;
 }
 
-  .btn:hover:not(:disabled) {
-    background: #3f4fc4;
-  }
-  /* one shade darker */
-  .btn:disabled {
-    background: var(--cool-gray);
-    color: #fff;
-    cursor: not-allowed;
-  }
+.btn:hover:not(:disabled) {
+  background: #3f4fc4;
+}
+/* one shade darker */
+.btn:disabled {
+  background: var(--cool-gray);
+  color: #fff;
+  cursor: not-allowed;
+}
 
 .spinner {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255,255,255,.4);
+  border: 2px solid rgba(255, 255, 255, 0.4);
   border-top-color: #fff;
   border-radius: 50%;
-  animation: spin .6s linear infinite reverse; /* counter-clockwise */
+  animation: spin 0.6s linear infinite reverse; /* counter-clockwise */
 }
 
 @media (max-width: 1024px) {

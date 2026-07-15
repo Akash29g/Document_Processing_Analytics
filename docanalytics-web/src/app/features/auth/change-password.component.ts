@@ -12,7 +12,7 @@ import { AuthService } from '../../core/services/auth.service';
   standalone: true,
   imports: [FormsModule],
   templateUrl: './change-password.component.html',
-  styleUrls: ['./login.component.css'],   // reuse the login card styles
+  styleUrls: ['./login.component.css'], // reuse the login card styles
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChangePasswordComponent {
@@ -28,14 +28,23 @@ export class ChangePasswordComponent {
 
   protected async submit(): Promise<void> {
     this.error.set(null);
-    if (this.next.length < 10) { this.error.set('New password must be at least 10 characters.'); return; }
-    if (this.next !== this.confirm) { this.error.set('Passwords do not match.'); return; }
+    if (this.next.length < 10) {
+      this.error.set('New password must be at least 10 characters.');
+      return;
+    }
+    if (this.next !== this.confirm) {
+      this.error.set('Passwords do not match.');
+      return;
+    }
 
     this.loading.set(true);
     try {
-      await firstValueFrom(this.http.post<ApiResponse<unknown>>(
-        `${environment.apiBase}/auth/change-password`,
-        { current_password: this.current, new_password: this.next }));
+      await firstValueFrom(
+        this.http.post<ApiResponse<unknown>>(`${environment.apiBase}/auth/change-password`, {
+          current_password: this.current,
+          new_password: this.next,
+        }),
+      );
       // success → continue to wherever the role belongs
       this.auth.routeAfterLogin();
     } catch (e: any) {

@@ -5,22 +5,25 @@
       <span class="live-badge" [class.on]="realtime.connected()">
         <span class="dot"></span>{{ realtime.connected() ? 'Live' : 'Offline' }}
       </span>
-      <app-refresh-timer [lastUpdated]="dash.lastUpdated()"
-                         [intervalMs]="refreshMs"
-                         [busy]="busy()"
-                         (refresh)="dash.refreshAll()" />
+      <app-refresh-timer
+        [lastUpdated]="dash.lastUpdated()"
+        [intervalMs]="refreshMs"
+        [busy]="busy()"
+        (refresh)="dash.refreshAll()"
+      />
     </div>
   </div>
 
   <!-- FR-1.1 counters -->
   <div class="counters">
-    <app-stat-card title="Queued"      [value]="dash.summary()?.queued ?? 0"></app-stat-card>
+    <app-stat-card title="Queued" [value]="dash.summary()?.queued ?? 0"></app-stat-card>
     <app-stat-card title="In Progress" [value]="dash.summary()?.in_progress ?? 0"></app-stat-card>
-    <app-stat-card title="Completed"   [value]="dash.summary()?.completed ?? 0"></app-stat-card>
-    <app-stat-card title="Failed"      [value]="dash.summary()?.failed ?? 0"></app-stat-card>
+    <app-stat-card title="Completed" [value]="dash.summary()?.completed ?? 0"></app-stat-card>
+    <app-stat-card title="Failed" [value]="dash.summary()?.failed ?? 0"></app-stat-card>
   </div>
   @if (dash.summaryError()) {
-    <p class="inline-error">{{ dash.summaryError() }}
+    <p class="inline-error">
+      {{ dash.summaryError() }}
       <button type="button" (click)="dash.loadSummary()">Retry</button>
     </p>
   }
@@ -32,20 +35,23 @@
       [loading]="dash.throughputLoading()"
       [error]="dash.throughputError()"
       [compareLink]="compareLink()"
-      (retry)="dash.refreshAll()"/>
+      (retry)="dash.refreshAll()"
+    />
     <app-status-distribution-chart
       [data]="dash.statusDistribution()"
       [loading]="dash.distributionLoading()"
       [error]="dash.distributionError()"
-      (retry)="dash.refreshAll()" />
+      (retry)="dash.refreshAll()"
+    />
   </div>
 
-<!-- S-5: processing-time percentiles -->
-<app-step-percentiles
-  [data]="dash.percentiles()"
-  [loading]="dash.percentilesLoading()"
-  [error]="dash.percentilesError()"
-  (retry)="dash.loadPercentiles()" />
+  <!-- S-5: processing-time percentiles -->
+  <app-step-percentiles
+    [data]="dash.percentiles()"
+    [loading]="dash.percentilesLoading()"
+    [error]="dash.percentilesError()"
+    (retry)="dash.loadPercentiles()"
+  />
 
   <!-- FR-1.4 recent failures -->
   <h2 class="section-title">Recent Failures</h2>
@@ -64,11 +70,13 @@
     (sortChange)="onSort($event)"
     (pageChange)="dash.setFailuresPage($event)"
     (pageSizeChange)="dash.setFailuresPageSize($event)"
-    (retry)="dash.loadFailures()">
-
+    (retry)="dash.loadFailures()"
+  >
     <ng-template dtCell="error" let-row>
       <span class="err-code">{{ row.error_code || '—' }}</span>
-      @if (row.error_message) { <span class="err-msg"> — {{ row.error_message }}</span> }
+      @if (row.error_message) {
+        <span class="err-msg"> — {{ row.error_message }}</span>
+      }
     </ng-template>
 
     <ng-template dtCell="failed_at" let-row>

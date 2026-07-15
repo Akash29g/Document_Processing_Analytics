@@ -14,5 +14,5 @@ export class ChartCardComponent {
   error = input<string | null>(null);
   empty = input<boolean>(false);
   emptyMessage = input<string>('No data to display');
-  retry = output<void>();   // NEW
+  retry = output<void>(); // NEW
 }

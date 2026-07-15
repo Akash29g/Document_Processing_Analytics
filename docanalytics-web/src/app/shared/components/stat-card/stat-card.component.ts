@@ -9,6 +9,6 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 })
 export class StatCardComponent {
   title = input.required<string>();
-  value = input<string | number>('');   // was input.required — now optional for skeleton use
-  loading = input<boolean>(false);       // NEW
+  value = input<string | number>(''); // was input.required — now optional for skeleton use
+  loading = input<boolean>(false); // NEW
 }

@@ -34,10 +34,13 @@ export class ProvisioningComponent {
   // logout confirmation dialog
   protected showLogoutConfirm = signal(false);
 
-  constructor() { this.svc.loadTenants(); }
+  constructor() {
+    this.svc.loadTenants();
+  }
 
   protected select(t: TenantSummary): void {
-    this.formError.set(null); this.notice.set(null);
+    this.formError.set(null);
+    this.notice.set(null);
     this.svc.selectTenant(t);
   }
 
@@ -45,7 +48,11 @@ export class ProvisioningComponent {
     if (!this.tName.trim() || !this.tDomain.trim()) return;
     const err = await this.svc.createTenant(this.tName.trim(), this.tDomain.trim().toLowerCase());
     this.formError.set(err);
-    if (!err) { this.notice.set(`Company "${this.tName.trim()}" onboarded.`); this.tName = ''; this.tDomain = ''; }
+    if (!err) {
+      this.notice.set(`Company "${this.tName.trim()}" onboarded.`);
+      this.tName = '';
+      this.tDomain = '';
+    }
   }
 
   protected async addAdmin(): Promise<void> {
@@ -53,7 +60,11 @@ export class ProvisioningComponent {
     if (!t || !this.aFirst.trim() || !this.aLast.trim()) return;
     const err = await this.svc.createAdmin(t.id, this.aFirst.trim(), this.aLast.trim());
     this.formError.set(err);
-    if (!err) { this.notice.set('Admin created — credentials emailed.'); this.aFirst = ''; this.aLast = ''; }
+    if (!err) {
+      this.notice.set('Admin created — credentials emailed.');
+      this.aFirst = '';
+      this.aLast = '';
+    }
   }
 
   protected async remove(u: ProvisionedUser): Promise<void> {
@@ -68,7 +79,11 @@ export class ProvisioningComponent {
     if (!t || !this.sName.trim()) return;
     const err = await this.svc.createSite(t.id, this.sName.trim(), this.sLocation.trim());
     this.formError.set(err);
-    if (!err) { this.notice.set('Site added.'); this.sName = ''; this.sLocation = ''; }
+    if (!err) {
+      this.notice.set('Site added.');
+      this.sName = '';
+      this.sLocation = '';
+    }
   }
 
   protected async removeSite(siteId: string, name: string): Promise<void> {
@@ -79,8 +94,12 @@ export class ProvisioningComponent {
   }
 
   // ── logout flow with confirmation (mirrors the shell) ──
-  protected askLogout(): void { this.showLogoutConfirm.set(true); }
-  protected cancelLogout(): void { this.showLogoutConfirm.set(false); }
+  protected askLogout(): void {
+    this.showLogoutConfirm.set(true);
+  }
+  protected cancelLogout(): void {
+    this.showLogoutConfirm.set(false);
+  }
   protected confirmLogout(): void {
     this.showLogoutConfirm.set(false);
     this.auth.logout();

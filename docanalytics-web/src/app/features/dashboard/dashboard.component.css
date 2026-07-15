@@ -49,9 +49,9 @@
   font-size: 0.85rem;
 }
 
-  .inline-error button {
-    margin-left: 8px;
-  }
+.inline-error button {
+  margin-left: 8px;
+}
 
 .err-code {
   font-weight: 600;
@@ -77,19 +77,18 @@
   color: var(--dark-gray-3);
 }
 
-  .live-badge .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--cool-gray);
-  }
+.live-badge .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cool-gray);
+}
 
-  .live-badge.on {
-    color: var(--status-confirmed, #2e7d32);
-  }
+.live-badge.on {
+  color: var(--status-confirmed, #2e7d32);
+}
 
-    .live-badge.on .dot {
-      background: var(--status-confirmed, #2e7d32);
-      box-shadow: 0 0 0 3px rgba(46, 125, 50, .15);
-    }
-
+.live-badge.on .dot {
+  background: var(--status-confirmed, #2e7d32);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+}

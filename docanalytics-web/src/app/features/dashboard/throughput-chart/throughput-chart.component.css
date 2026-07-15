@@ -14,10 +14,9 @@
   white-space: nowrap;
 }
 
-  .tp-compare:hover {
-    text-decoration: underline;
-  }
-
+.tp-compare:hover {
+  text-decoration: underline;
+}
 
 .y-title {
   grid-column: 1;

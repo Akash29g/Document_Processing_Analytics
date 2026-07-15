@@ -2,57 +2,68 @@
   <header class="up-head">
     <p class="up-eyebrow">Invoices</p>
     <h2 class="up-title">Upload Invoices</h2>
-    <p class="up-sub">Drop one or more PDF invoices (or a ZIP of PDFs) — they're stored in S3 and extracted automatically as a single batch.</p>
+    <p class="up-sub">
+      Drop one or more PDF invoices (or a ZIP of PDFs) — they're stored in S3 and extracted
+      automatically as a single batch.
+    </p>
   </header>
 
-  <label class="up-drop"
-         [class.drag]="dragging()"
-         (dragover)="$event.preventDefault(); dragging.set(true)"
-         (dragleave)="dragging.set(false)"
-         (drop)="onDrop($event)">
+  <label
+    class="up-drop"
+    [class.drag]="dragging()"
+    (dragover)="$event.preventDefault(); dragging.set(true)"
+    (dragleave)="dragging.set(false)"
+    (drop)="onDrop($event)"
+  >
     <input type="file" accept="application/pdf,.zip" multiple hidden (change)="onPick($event)" />
 
     @if (expanding()) {
-    <span class="up-spinner"></span>
-    <span>Reading files…</span>
+      <span class="up-spinner"></span>
+      <span>Reading files…</span>
     } @else if (svc.uploading()) {
-    <span class="up-spinner"></span>
-    @if (svc.progress(); as p) {
-    <span>Uploading {{ p.done }} / {{ p.total }}…</span>
+      <span class="up-spinner"></span>
+      @if (svc.progress(); as p) {
+        <span>Uploading {{ p.done }} / {{ p.total }}…</span>
+      } @else {
+        <span>Uploading…</span>
+      }
     } @else {
-    <span>Uploading…</span>
-    }
-    } @else {
-    <span class="up-icon">⬆️</span>
-    <span><strong>Click to choose</strong> or drag PDFs / a ZIP here</span>
+      <span class="up-icon">⬆️</span>
+      <span><strong>Click to choose</strong> or drag PDFs / a ZIP here</span>
     }
   </label>
 
   @if (fileNames().length) {
-  <ul class="up-list">
-    @for (name of fileNames(); track name) {
-    <li>{{ name }}</li> }
-  </ul>
+    <ul class="up-list">
+      @for (name of fileNames(); track name) {
+        <li>{{ name }}</li>
+      }
+    </ul>
   }
 
   @if (svc.lastBatchId(); as id) {
-  <p class="up-done">✅ Uploaded. Your batch will appear under <strong>Batches</strong> (source: Manual_Upload) once extracted.</p>
+    <p class="up-done">
+      ✅ Uploaded. Your batch will appear under <strong>Batches</strong> (source: Manual_Upload)
+      once extracted.
+    </p>
   }
-  @if (svc.error()) { <p class="up-err">⚠️ {{ svc.error() }}</p> }
+  @if (svc.error()) {
+    <p class="up-err">⚠️ {{ svc.error() }}</p>
+  }
 
   @if (dup.pending(); as fileName) {
-  <div class="dup-backdrop">
-    <div class="dup-modal" role="dialog" aria-modal="true">
-      <h3 class="dup-title">Duplicate file</h3>
-      <p class="dup-msg">
-        <strong>{{ fileName }}</strong> was already uploaded today. What would you like to do?
-      </p>
-      <div class="dup-actions">
-        <button class="dup-btn danger" (click)="dup.choose('replace')">Replace existing</button>
-        <button class="dup-btn primary" (click)="dup.choose('rename')">Keep both</button>
-        <button class="dup-btn ghost" (click)="dup.choose('skip')">Skip this file</button>
+    <div class="dup-backdrop">
+      <div class="dup-modal" role="dialog" aria-modal="true">
+        <h3 class="dup-title">Duplicate file</h3>
+        <p class="dup-msg">
+          <strong>{{ fileName }}</strong> was already uploaded today. What would you like to do?
+        </p>
+        <div class="dup-actions">
+          <button class="dup-btn danger" (click)="dup.choose('replace')">Replace existing</button>
+          <button class="dup-btn primary" (click)="dup.choose('rename')">Keep both</button>
+          <button class="dup-btn ghost" (click)="dup.choose('skip')">Skip this file</button>
+        </div>
       </div>
     </div>
-  </div>
   }
 </section>

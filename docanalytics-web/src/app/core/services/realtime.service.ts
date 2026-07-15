@@ -3,7 +3,7 @@ import * as signalR from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
 import { SiteContextService } from './site-context.service';
 
-const TOKEN_KEY = 'da_token';   // must match AuthService / interceptor
+const TOKEN_KEY = 'da_token'; // must match AuthService / interceptor
 
 // Matches the backend FileStateChangedNotification (snake_case on the wire).
 export interface FileStateChanged {
@@ -47,7 +47,10 @@ export class RealtimeService {
       this.lastEvent.set(payload);
     });
 
-    this.conn.onreconnected(() => { this.connected.set(true); void this.rejoin(); });
+    this.conn.onreconnected(() => {
+      this.connected.set(true);
+      void this.rejoin();
+    });
     this.conn.onclose(() => this.connected.set(false));
 
     try {
@@ -55,7 +58,7 @@ export class RealtimeService {
       this.connected.set(true);
       await this.rejoin();
     } catch {
-      this.connected.set(false);   // dashboard's polling fallback still runs
+      this.connected.set(false); // dashboard's polling fallback still runs
     }
   }
 
@@ -66,16 +69,27 @@ export class RealtimeService {
       return;
     }
     if (this.joinedSite && this.joinedSite !== siteId) {
-      try { await this.conn.invoke('LeaveSite', this.joinedSite); } catch { /* ignore */ }
+      try {
+        await this.conn.invoke('LeaveSite', this.joinedSite);
+      } catch {
+        /* ignore */
+      }
     }
     this.joinedSite = siteId;
-    try { await this.conn.invoke('JoinSite', siteId); } catch { /* ignore */ }
+    try {
+      await this.conn.invoke('JoinSite', siteId);
+    } catch {
+      /* ignore */
+    }
   }
 
   private async rejoin(): Promise<void> {
-    if (this.conn && this.joinedSite &&
-      this.conn.state === signalR.HubConnectionState.Connected) {
-      try { await this.conn.invoke('JoinSite', this.joinedSite); } catch { /* ignore */ }
+    if (this.conn && this.joinedSite && this.conn.state === signalR.HubConnectionState.Connected) {
+      try {
+        await this.conn.invoke('JoinSite', this.joinedSite);
+      } catch {
+        /* ignore */
+      }
     }
   }
 

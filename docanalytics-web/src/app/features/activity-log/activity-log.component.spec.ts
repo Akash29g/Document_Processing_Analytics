@@ -8,19 +8,27 @@ import { SiteContextService } from '../../core/services/site-context.service';
 
 describe('ActivityLogComponent', () => {
   const svc = {
-    rows: signal([]), loading: signal(false), error: signal(null), meta: signal(null),
+    rows: signal([]),
+    loading: signal(false),
+    error: signal(null),
+    meta: signal(null),
     query: { sortBy: 'ts', sortDir: 'desc' },
-    load: vi.fn(), setPage: vi.fn(), setPageSize: vi.fn(),
-    setSort: vi.fn(), setFilters: vi.fn(), setSearch: vi.fn(),
+    load: vi.fn(),
+    setPage: vi.fn(),
+    setPageSize: vi.fn(),
+    setSort: vi.fn(),
+    setFilters: vi.fn(),
+    setSearch: vi.fn(),
   };
   const site = signal<string | null>('s1');
 
   beforeEach(async () => {
-    Object.values(svc).forEach(v => (v as any).mockClear?.());
+    Object.values(svc).forEach((v) => (v as any).mockClear?.());
     await TestBed.configureTestingModule({
       imports: [ActivityLogComponent],
       providers: [
-        provideHttpClient(), provideHttpClientTesting(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: ActivityLogService, useValue: svc },
         { provide: SiteContextService, useValue: { selectedSiteId: site } },
       ],
@@ -46,7 +54,7 @@ describe('ActivityLogComponent', () => {
 
   it('reloads when the selected site changes', () => {
     const fixture = TestBed.createComponent(ActivityLogComponent);
-    fixture.detectChanges();       // runs the effect once
+    fixture.detectChanges(); // runs the effect once
     svc.load.mockClear();
     site.set('s2');
     TestBed.tick();

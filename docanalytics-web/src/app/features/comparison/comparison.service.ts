@@ -24,20 +24,25 @@ export class ComparisonService {
   readonly rangeA = signal<RangeState>(blank());
   readonly rangeB = signal<RangeState>(blank());
 
-  loadA(from: string, to: string) { return this.load(this.rangeA, from, to); }
-  loadB(from: string, to: string) { return this.load(this.rangeB, from, to); }
+  loadA(from: string, to: string) {
+    return this.load(this.rangeA, from, to);
+  }
+  loadB(from: string, to: string) {
+    return this.load(this.rangeB, from, to);
+  }
 
   private async load(slot: WritableSignal<RangeState>, from: string, to: string): Promise<void> {
-    slot.update(s => ({ ...s, from, to, loading: true, error: null }));
+    slot.update((s) => ({ ...s, from, to, loading: true, error: null }));
     try {
       let params = new HttpParams();
-      if (from) params = params.set('from', from);   // ISO date (yyyy-MM-dd)
+      if (from) params = params.set('from', from); // ISO date (yyyy-MM-dd)
       if (to) params = params.set('to', to);
       const res = await firstValueFrom(
-        this.http.get<ApiResponse<ChartSeries>>(this.url, { params }));
-      slot.update(s => ({ ...s, points: res.data?.points ?? [], loading: false }));
+        this.http.get<ApiResponse<ChartSeries>>(this.url, { params }),
+      );
+      slot.update((s) => ({ ...s, points: res.data?.points ?? [], loading: false }));
     } catch {
-      slot.update(s => ({ ...s, loading: false, error: 'Could not load this range. Retry.' }));
+      slot.update((s) => ({ ...s, loading: false, error: 'Could not load this range. Retry.' }));
     }
   }
 

@@ -36,10 +36,10 @@
   font: inherit;
 }
 
-  .export-btn:disabled {
-    opacity: .55;
-    cursor: default;
-  }
+.export-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
 
 .inline-error {
   margin: 0;

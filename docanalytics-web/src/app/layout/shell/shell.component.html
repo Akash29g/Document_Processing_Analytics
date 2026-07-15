@@ -1,9 +1,23 @@
 <div class="shell">
   <aside class="sidebar">
     <div class="brand">
-      <img src="AVEVA_Logo_color_RGB.png" alt="AVEVA"
-           style="width: 130px; height: auto; display: block; filter: brightness(0) invert(1);" />
-      <div style="font-family: var(--font-body); font-size: 0.8rem; letter-spacing: .04em; color: #fff; opacity: .85; margin-top: 6px;">DocAnalytics</div>
+      <img
+        src="AVEVA_Logo_color_RGB.png"
+        alt="AVEVA"
+        style="width: 130px; height: auto; display: block; filter: brightness(0) invert(1)"
+      />
+      <div
+        style="
+          font-family: var(--font-body);
+          font-size: 0.8rem;
+          letter-spacing: 0.04em;
+          color: #fff;
+          opacity: 0.85;
+          margin-top: 6px;
+        "
+      >
+        DocAnalytics
+      </div>
     </div>
 
     <nav>
@@ -14,7 +28,7 @@
       <a [routerLink]="link('activity-log')" routerLinkActive="active">Activity Log</a>
       <a [routerLink]="link('alerts')" routerLinkActive="active">Alerts</a>
       @if (isAdmin()) {
-      <a [routerLink]="link('admin')" routerLinkActive="active">Admin</a>
+        <a [routerLink]="link('admin')" routerLinkActive="active">Admin</a>
       }
     </nav>
   </aside>
@@ -25,86 +39,106 @@
       <span class="ctx-sep" aria-hidden="true">›</span>
       <app-site-selector />
       <span class="spacer"></span>
-      <button class="theme-toggle" type="button" (click)="theme.toggle()"
-              [attr.aria-pressed]="theme.isDark()"
-              [attr.aria-label]="theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
-              title="Toggle theme">
+      <button
+        class="theme-toggle"
+        type="button"
+        (click)="theme.toggle()"
+        [attr.aria-pressed]="theme.isDark()"
+        [attr.aria-label]="theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+        title="Toggle theme"
+      >
         {{ theme.isDark() ? '☀️' : '🌙' }}
       </button>
 
       <!-- notifications bell -->
       <div class="al-dd">
-        <button type="button"
-                class="al-bell"
-                (click)="toggleBell(); $event.stopPropagation()"
-                [attr.aria-expanded]="bellOpen()"
-                aria-label="Notifications">
+        <button
+          type="button"
+          class="al-bell"
+          (click)="toggleBell(); $event.stopPropagation()"
+          [attr.aria-expanded]="bellOpen()"
+          aria-label="Notifications"
+        >
           <span class="material-icons" aria-hidden="true">notifications</span>
           @if (alerts.unreadCount() > 0) {
-          <span class="al-badge">{{ alerts.unreadCount() }}</span>
+            <span class="al-badge">{{ alerts.unreadCount() }}</span>
           }
         </button>
 
         @if (bellOpen()) {
-        <div class="al-dd-panel" role="dialog" aria-label="Alerts"
-             (click)="$event.stopPropagation()">
-          <header class="al-dd-head">
-            <span>Alerts</span>
-            @if (alerts.unreadCount() > 0) {
-            <button type="button" class="al-dd-link" (click)="onMarkAllRead()">
-              Mark all read
-            </button>
-            }
-          </header>
-
-          @if (!alerts.notifications().length) {
-          <p class="al-dd-empty">You're all caught up 🎉</p>
-          } @else {
-          <ul class="al-dd-list">
-            @for (n of alerts.notifications(); track n.id) {
-            <li class="al-dd-item"
-                [class.unread]="!n.is_read"
-                [class.critical]="n.severity === 'critical'">
-              <div class="al-dd-row">
-                <strong class="al-dd-rule">{{ n.rule_name }}</strong>
-                <span class="al-dd-time">{{ n.fired_at | date: 'short' }}</span>
-              </div>
-              <p class="al-dd-msg">{{ n.message }}</p>
-              @if (!n.is_read) {
-              <button type="button" class="al-dd-link" (click)="onMarkRead(n.id)">
-                Mark read
-              </button>
+          <div
+            class="al-dd-panel"
+            role="dialog"
+            aria-label="Alerts"
+            (click)="$event.stopPropagation()"
+          >
+            <header class="al-dd-head">
+              <span>Alerts</span>
+              @if (alerts.unreadCount() > 0) {
+                <button type="button" class="al-dd-link" (click)="onMarkAllRead()">
+                  Mark all read
+                </button>
               }
-            </li>
+            </header>
+
+            @if (!alerts.notifications().length) {
+              <p class="al-dd-empty">You're all caught up 🎉</p>
+            } @else {
+              <ul class="al-dd-list">
+                @for (n of alerts.notifications(); track n.id) {
+                  <li
+                    class="al-dd-item"
+                    [class.unread]="!n.is_read"
+                    [class.critical]="n.severity === 'critical'"
+                  >
+                    <div class="al-dd-row">
+                      <strong class="al-dd-rule">{{ n.rule_name }}</strong>
+                      <span class="al-dd-time">{{ n.fired_at | date: 'short' }}</span>
+                    </div>
+                    <p class="al-dd-msg">{{ n.message }}</p>
+                    @if (!n.is_read) {
+                      <button type="button" class="al-dd-link" (click)="onMarkRead(n.id)">
+                        Mark read
+                      </button>
+                    }
+                  </li>
+                }
+              </ul>
             }
-          </ul>
-          }
-        </div>
+          </div>
         }
       </div>
 
       <div class="me-menu">
-        <button type="button" class="me-trigger" [title]="user()?.email"
-                [attr.aria-expanded]="menuOpen()" (click)="toggleMenu(); $event.stopPropagation()">
+        <button
+          type="button"
+          class="me-trigger"
+          [title]="user()?.email"
+          [attr.aria-expanded]="menuOpen()"
+          (click)="toggleMenu(); $event.stopPropagation()"
+        >
           <div class="me-avatar">{{ initials() }}</div>
         </button>
 
         @if (menuOpen()) {
-        <div class="me-card">
-          @if (company()) { <div class="me-card-company">{{ company() }}</div> }
-          <div class="me-card-body">
-            <div class="me-avatar lg">{{ initials() }}</div>
-            <div class="me-card-id">
-              <span class="me-card-name">{{ displayName() }}</span>
-              <span class="me-card-email">{{ user()?.email }}</span>
-              <span class="me-role" [class.admin]="isAdmin()">{{ user()?.role }}</span>
+          <div class="me-card">
+            @if (company()) {
+              <div class="me-card-company">{{ company() }}</div>
+            }
+            <div class="me-card-body">
+              <div class="me-avatar lg">{{ initials() }}</div>
+              <div class="me-card-id">
+                <span class="me-card-name">{{ displayName() }}</span>
+                <span class="me-card-email">{{ user()?.email }}</span>
+                <span class="me-role" [class.admin]="isAdmin()">{{ user()?.role }}</span>
+              </div>
             </div>
+            <button class="me-card-logout" (click)="menuOpen.set(false); askLogout()">
+              Log out
+            </button>
           </div>
-          <button class="me-card-logout" (click)="menuOpen.set(false); askLogout()">Log out</button>
-        </div>
         }
       </div>
-
     </header>
     <main class="content"><router-outlet /></main>
   </div>
@@ -112,28 +146,35 @@
   <!-- global toast outlet -->
   <div class="toasts">
     @for (t of toast.toasts(); track t.id) {
-    <div class="toast"
-         [class.error]="t.type === 'error'"
-         [class.success]="t.type === 'success'"
-         [class.warning]="t.type === 'warning'">
-      <span class="material-icons" aria-hidden="true">{{ icon(t.type) }}</span>
-      <span class="toast-text">{{ t.text }}</span>
-      <button (click)="toast.dismiss(t.id)">×</button>
-    </div>
+      <div
+        class="toast"
+        [class.error]="t.type === 'error'"
+        [class.success]="t.type === 'success'"
+        [class.warning]="t.type === 'warning'"
+      >
+        <span class="material-icons" aria-hidden="true">{{ icon(t.type) }}</span>
+        <span class="toast-text">{{ t.text }}</span>
+        <button (click)="toast.dismiss(t.id)">×</button>
+      </div>
     }
   </div>
   <!-- logout confirmation dialog -->
   @if (showLogoutConfirm()) {
-  <div class="modal-backdrop" (click)="cancelLogout()">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="logout-title"
-         (click)="$event.stopPropagation()">
-      <h2 id="logout-title" class="modal-title">Log out?</h2>
-      <p class="modal-text">Are you sure you want to log out?</p>
-      <div class="modal-actions">
-        <button type="button" class="btn-cancel" (click)="cancelLogout()">No, stay</button>
-        <button type="button" class="btn-confirm" (click)="confirmLogout()">Yes, log out</button>
+    <div class="modal-backdrop" (click)="cancelLogout()">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="logout-title"
+        (click)="$event.stopPropagation()"
+      >
+        <h2 id="logout-title" class="modal-title">Log out?</h2>
+        <p class="modal-text">Are you sure you want to log out?</p>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="cancelLogout()">No, stay</button>
+          <button type="button" class="btn-confirm" (click)="confirmLogout()">Yes, log out</button>
+        </div>
       </div>
     </div>
-  </div>
   }
 </div>

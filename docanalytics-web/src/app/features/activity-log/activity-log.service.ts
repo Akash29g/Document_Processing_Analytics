@@ -26,12 +26,19 @@ export class ActivityLogService {
   readonly error = this._error.asReadonly();
 
   private _query: ActivityLogQuery = {
-    page: 1, pageSize: 20,
-    eventType: null, entityType: null, entity: null,
-    from: null, to: null,
-    sortBy: 'ts', sortDir: 'desc',           // newest first
+    page: 1,
+    pageSize: 20,
+    eventType: null,
+    entityType: null,
+    entity: null,
+    from: null,
+    to: null,
+    sortBy: 'ts',
+    sortDir: 'desc', // newest first
   };
-  get query(): ActivityLogQuery { return this._query; }
+  get query(): ActivityLogQuery {
+    return this._query;
+  }
 
   // lowercase-first keys — ASP.NET binding is case-insensitive; matches your batches code
   private buildParams(q: ActivityLogQuery): HttpParams {
@@ -74,10 +81,18 @@ export class ActivityLogService {
   setFilters(f: { eventType: string | null; from: string | null; to: string | null }): void {
     this.patch({ eventType: f.eventType, from: f.from, to: f.to });
   }
-  setEntitySearch(entity: string): void { this.patch({ entity: entity.trim() || null }); }
-  setSort(sortBy: ActivityLogSortBy, sortDir: SortDir): void { this.patch({ sortBy, sortDir }); }
-  setPage(page: number): void { this.patch({ page }, false); }
-  setPageSize(pageSize: number): void { this.patch({ pageSize }); }
+  setEntitySearch(entity: string): void {
+    this.patch({ entity: entity.trim() || null });
+  }
+  setSort(sortBy: ActivityLogSortBy, sortDir: SortDir): void {
+    this.patch({ sortBy, sortDir });
+  }
+  setPage(page: number): void {
+    this.patch({ page }, false);
+  }
+  setPageSize(pageSize: number): void {
+    this.patch({ pageSize });
+  }
 
   private msg(err: any, fallback: string): string {
     return err?.error?.error?.message ?? fallback;

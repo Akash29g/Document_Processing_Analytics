@@ -4,8 +4,8 @@
   [loading]="loading()"
   [error]="error()"
   [empty]="!loading() && !error() && data().length === 0"
-   (retry)="retry.emit()">
-
+  (retry)="retry.emit()"
+>
   <div class="bars">
     @for (row of rows(); track row.label) {
       <div class="row">

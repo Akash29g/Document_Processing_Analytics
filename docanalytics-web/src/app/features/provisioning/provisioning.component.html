@@ -2,47 +2,63 @@
   <header class="prov-head">
     <div class="brand-row">
       <div class="brand">
-        <img src="AVEVA_Logo_color_RGB.png" alt="AVEVA"
-             style="width: 130px; height: auto; display: block; filter: brightness(0) invert(1);" />
+        <img
+          src="AVEVA_Logo_color_RGB.png"
+          alt="AVEVA"
+          style="width: 130px; height: auto; display: block; filter: brightness(0) invert(1)"
+        />
         <div class="brand-sub">DocAnalytics</div>
       </div>
       <div class="titles">
         <p class="eyebrow">Platform provisioning</p>
         <h1 class="title">Developer Console</h1>
-        <p class="sub">Onboard companies, manage admins, users and sites. No business data access.</p>
+        <p class="sub">
+          Onboard companies, manage admins, users and sites. No business data access.
+        </p>
       </div>
     </div>
     <button type="button" class="ghost-btn" (click)="askLogout()">Log out</button>
-
   </header>
 
-
-
-  @if (notice()) { <p class="notice">{{ notice() }}</p> }
-  @if (formError()) { <p class="alert">{{ formError() }}</p> }
+  @if (notice()) {
+    <p class="notice">{{ notice() }}</p>
+  }
+  @if (formError()) {
+    <p class="alert">{{ formError() }}</p>
+  }
 
   <div class="grid">
     <!-- LEFT: tenants -->
     <section class="panel">
       <h2>Companies</h2>
-      @if (svc.loading()) { <p class="muted">Loading…</p> }
-      @else if (svc.error()) { <p class="alert">{{ svc.error() }}</p> }
-      @else {
-      <ul class="tenant-list">
-        @for (t of svc.tenants(); track t.id) {
-        <li [class.sel]="svc.selectedTenant()?.id === t.id" (click)="select(t)">
-          <strong>{{ t.name }}</strong>
-          <span class="muted">{{ t.org_domain }}</span>
-          <span class="counts">{{ t.site_count }} sites · {{ t.user_count }} users · {{ t.admin_count }} admins</span>
-        </li>
-        }
-      </ul>
+      @if (svc.loading()) {
+        <p class="muted">Loading…</p>
+      } @else if (svc.error()) {
+        <p class="alert">{{ svc.error() }}</p>
+      } @else {
+        <ul class="tenant-list">
+          @for (t of svc.tenants(); track t.id) {
+            <li [class.sel]="svc.selectedTenant()?.id === t.id" (click)="select(t)">
+              <strong>{{ t.name }}</strong>
+              <span class="muted">{{ t.org_domain }}</span>
+              <span class="counts"
+                >{{ t.site_count }} sites · {{ t.user_count }} users ·
+                {{ t.admin_count }} admins</span
+              >
+            </li>
+          }
+        </ul>
       }
 
       <h3>Onboard a company</h3>
       <form class="row-form" (ngSubmit)="addTenant()">
         <input name="tName" [(ngModel)]="tName" placeholder="Company name" required />
-        <input name="tDomain" [(ngModel)]="tDomain" placeholder="org domain e.g. initech.com" required />
+        <input
+          name="tDomain"
+          [(ngModel)]="tDomain"
+          placeholder="org domain e.g. initech.com"
+          required
+        />
         <button type="submit" class="btn">Add company</button>
       </form>
     </section>
@@ -50,73 +66,90 @@
     <!-- RIGHT: selected tenant detail -->
     <section class="panel">
       @if (svc.selectedTenant(); as t) {
-      <h2>{{ t.name }} <span class="muted">({{ t.org_domain }})</span></h2>
+        <h2>
+          {{ t.name }} <span class="muted">({{ t.org_domain }})</span>
+        </h2>
 
-      <h3>Users & Admins</h3>
-      <table class="tbl">
-        <thead><tr><th>Email</th><th>Role</th><th>Status</th><th></th></tr></thead>
-        <tbody>
-          @for (u of svc.users(); track u.id) {
-          <tr [class.inactive]="!u.is_active">
-            <td>{{ u.email }}</td>
-            <td>{{ u.role }}</td>
-            <td>{{ u.is_active ? 'Active' : 'Removed' }}</td>
-            <td>
-              @if (u.is_active) {
-              <button type="button" class="danger-btn" (click)="remove(u)">Remove</button>
-              }
-            </td>
-          </tr>
-          }
-        </tbody>
-      </table>
+        <h3>Users & Admins</h3>
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (u of svc.users(); track u.id) {
+              <tr [class.inactive]="!u.is_active">
+                <td>{{ u.email }}</td>
+                <td>{{ u.role }}</td>
+                <td>{{ u.is_active ? 'Active' : 'Removed' }}</td>
+                <td>
+                  @if (u.is_active) {
+                    <button type="button" class="danger-btn" (click)="remove(u)">Remove</button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
 
-      <form class="row-form" (ngSubmit)="addAdmin()">
-        <input name="aFirst" [(ngModel)]="aFirst" placeholder="Admin first name" required />
-        <input name="aLast" [(ngModel)]="aLast" placeholder="Admin last name" required />
-        <button type="submit" class="btn">Add admin</button>
-      </form>
+        <form class="row-form" (ngSubmit)="addAdmin()">
+          <input name="aFirst" [(ngModel)]="aFirst" placeholder="Admin first name" required />
+          <input name="aLast" [(ngModel)]="aLast" placeholder="Admin last name" required />
+          <button type="submit" class="btn">Add admin</button>
+        </form>
 
-      <h3>Sites</h3>
-      <table class="tbl">
-        <thead><tr><th>Name</th><th>Location</th><th>Status</th><th></th></tr></thead>
-        <tbody>
-          @for (s of svc.sitesList(); track s.id) {
-          <tr [class.inactive]="!s.is_active">
-            <td>{{ s.name }}</td>
-            <td>{{ s.location ?? '—' }}</td>
-            <td>{{ s.is_active ? 'Active' : 'Removed' }}</td>
-            <td>
-              @if (s.is_active) {
-              <button type="button" class="danger-btn" (click)="removeSite(s.id, s.name)">Remove</button>
-              }
-            </td>
-          </tr>
-          }
-        </tbody>
-      </table>
+        <h3>Sites</h3>
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Location</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of svc.sitesList(); track s.id) {
+              <tr [class.inactive]="!s.is_active">
+                <td>{{ s.name }}</td>
+                <td>{{ s.location ?? '—' }}</td>
+                <td>{{ s.is_active ? 'Active' : 'Removed' }}</td>
+                <td>
+                  @if (s.is_active) {
+                    <button type="button" class="danger-btn" (click)="removeSite(s.id, s.name)">
+                      Remove
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
 
-      <form class="row-form" (ngSubmit)="addSite()">
-        <input name="sName" [(ngModel)]="sName" placeholder="Site name" required />
-        <input name="sLocation" [(ngModel)]="sLocation" placeholder="Location (optional)" />
-        <button type="submit" class="btn">Add site</button>
-      </form>
+        <form class="row-form" (ngSubmit)="addSite()">
+          <input name="sName" [(ngModel)]="sName" placeholder="Site name" required />
+          <input name="sLocation" [(ngModel)]="sLocation" placeholder="Location (optional)" />
+          <button type="submit" class="btn">Add site</button>
+        </form>
       } @else {
-      <p class="muted">Select a company on the left to manage its admins, users and sites.</p>
+        <p class="muted">Select a company on the left to manage its admins, users and sites.</p>
       }
     </section>
   </div>
   @if (showLogoutConfirm()) {
-  <div class="modal-backdrop" (click)="cancelLogout()">
-    <div class="modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
-      <h2 class="modal-title">Log out?</h2>
-      <p class="modal-text">Are you sure you want to log out?</p>
-      <div class="modal-actions">
-        <button type="button" class="btn-cancel" (click)="cancelLogout()">No, stay</button>
-        <button type="button" class="btn-confirm" (click)="confirmLogout()">Yes, log out</button>
+    <div class="modal-backdrop" (click)="cancelLogout()">
+      <div class="modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <h2 class="modal-title">Log out?</h2>
+        <p class="modal-text">Are you sure you want to log out?</p>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="cancelLogout()">No, stay</button>
+          <button type="button" class="btn-confirm" (click)="confirmLogout()">Yes, log out</button>
+        </div>
       </div>
     </div>
-  </div>
   }
-
 </div>

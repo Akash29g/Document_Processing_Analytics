@@ -30,8 +30,8 @@ export class AlertsComponent {
 
   private adminDefaultAppliedForSite: string | null = null;
 
-  protected isAdmin = computed(() =>
-    (this.auth.currentUser()?.role ?? '').toLowerCase() === 'admin',
+  protected isAdmin = computed(
+    () => (this.auth.currentUser()?.role ?? '').toLowerCase() === 'admin',
   );
 
   // scalar form fields (template-driven ngModel)
@@ -160,9 +160,9 @@ export class AlertsComponent {
     const current = this.auth.currentUser();
     if (!current || (current.role ?? '').toLowerCase() !== 'admin') return;
 
-    const adminRecipient = this.svc.recipients().find(
-      (r) => r.email.toLowerCase() === current.email.toLowerCase(),
-    );
+    const adminRecipient = this.svc
+      .recipients()
+      .find((r) => r.email.toLowerCase() === current.email.toLowerCase());
 
     if (!adminRecipient) return;
 

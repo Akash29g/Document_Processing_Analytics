@@ -14,20 +14,30 @@ describe('BatchDetailComponent', () => {
       imports: [BatchDetailComponent],
       providers: [
         {
-          provide: BatchService, useValue: {
-            detail: signal(null), detailLoading: signal(false), detailError: signal(null),
-            files: signal([]), filesLoading: signal(false), filesError: signal(null),
-            filesMeta: signal(null), filesQuery: signal({ page: 1, pageSize: 20 }),
-            loadDetail: vi.fn(), loadFiles: vi.fn(),
-            setFilesPage: vi.fn(), setFilesPageSize: vi.fn(), setBatchId: vi.fn()
-          }
+          provide: BatchService,
+          useValue: {
+            detail: signal(null),
+            detailLoading: signal(false),
+            detailError: signal(null),
+            files: signal([]),
+            filesLoading: signal(false),
+            filesError: signal(null),
+            filesMeta: signal(null),
+            filesQuery: signal({ page: 1, pageSize: 20 }),
+            loadDetail: vi.fn(),
+            loadFiles: vi.fn(),
+            setFilesPage: vi.fn(),
+            setFilesPageSize: vi.fn(),
+            setBatchId: vi.fn(),
+          },
         },
         { provide: SiteContextService, useValue: { selectedSiteId: signal('s1') } },
         {
-          provide: ActivatedRoute, useValue: {
+          provide: ActivatedRoute,
+          useValue: {
             paramMap: of(convertToParamMap({ batchId: 'b1' })),
             snapshot: { paramMap: convertToParamMap({ batchId: 'b1' }) },
-          }
+          },
         },
 
         { provide: Router, useValue: { navigate: navSpy } },

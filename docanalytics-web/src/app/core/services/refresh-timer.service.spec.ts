@@ -7,7 +7,7 @@ describe('RefreshTimerService', () => {
   let destroyRef: DestroyRef;
 
   beforeEach(() => {
-    vi.useFakeTimers();                 // freeze time — we control the clock
+    vi.useFakeTimers(); // freeze time — we control the clock
     TestBed.configureTestingModule({});
     service = TestBed.inject(RefreshTimerService);
     // start() needs a real DestroyRef → grab one from an injection context
@@ -16,20 +16,20 @@ describe('RefreshTimerService', () => {
 
   afterEach(() => {
     vi.clearAllTimers();
-    vi.useRealTimers();                 // always restore real time
+    vi.useRealTimers(); // always restore real time
   });
 
   it('does not fire onTick until time advances', () => {
     const onTick = vi.fn();
     service.start(1000, onTick, destroyRef);
-    expect(onTick).not.toHaveBeenCalled();   // timer is async — nothing yet
+    expect(onTick).not.toHaveBeenCalled(); // timer is async — nothing yet
   });
 
   it('fires onTick on start and then on each interval', () => {
     const onTick = vi.fn();
     service.start(1000, onTick, destroyRef);
 
-    vi.advanceTimersByTime(3000);            // initial tick + ~3 intervals
+    vi.advanceTimersByTime(3000); // initial tick + ~3 intervals
 
     expect(onTick.mock.calls.length).toBeGreaterThanOrEqual(3);
   });

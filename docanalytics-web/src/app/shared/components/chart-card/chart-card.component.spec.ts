@@ -11,7 +11,7 @@ describe('ChartCardComponent', () => {
     }).compileComponents();
     fixture = TestBed.createComponent(ChartCardComponent);
     el = fixture.nativeElement as HTMLElement;
-    fixture.componentRef.setInput('title', 'My Chart');   // required input
+    fixture.componentRef.setInput('title', 'My Chart'); // required input
   });
 
   it('renders the title and subtitle', () => {

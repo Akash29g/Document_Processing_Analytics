@@ -19,12 +19,16 @@
           <span>To</span>
           <input type="date" [(ngModel)]="aTo" />
         </label>
-        <button type="button" class="cmp-btn" [disabled]="!aFrom || !aTo" (click)="runA()">Load A</button>
+        <button type="button" class="cmp-btn" [disabled]="!aFrom || !aTo" (click)="runA()">
+          Load A
+        </button>
       </div>
-      <app-throughput-chart [data]="svc.rangeA().points"
-                            [loading]="svc.rangeA().loading"
-                            [error]="svc.rangeA().error"
-                            (retry)="runA()" />
+      <app-throughput-chart
+        [data]="svc.rangeA().points"
+        [loading]="svc.rangeA().loading"
+        [error]="svc.rangeA().error"
+        (retry)="runA()"
+      />
     </div>
 
     <!-- Range B -->
@@ -39,23 +43,27 @@
           <span>To</span>
           <input type="date" [(ngModel)]="bTo" />
         </label>
-        <button type="button" class="cmp-btn" [disabled]="!bFrom || !bTo" (click)="runB()">Load B</button>
+        <button type="button" class="cmp-btn" [disabled]="!bFrom || !bTo" (click)="runB()">
+          Load B
+        </button>
       </div>
-      <app-throughput-chart [data]="svc.rangeB().points"
-                            [loading]="svc.rangeB().loading"
-                            [error]="svc.rangeB().error"
-                            (retry)="runB()" />
+      <app-throughput-chart
+        [data]="svc.rangeB().points"
+        [loading]="svc.rangeB().loading"
+        [error]="svc.rangeB().error"
+        (retry)="runB()"
+      />
     </div>
   </div>
 
   <!-- insight footer: totals + delta % (hidden until Range A has data) -->
   @if (delta() !== null) {
-  <p class="cmp-delta">
-    Range B is
-    <strong [class.up]="delta()! >= 0" [class.down]="delta()! < 0">
-      {{ delta()! >= 0 ? '▲ +' : '▼ ' }}{{ delta() }}%
-    </strong>
-    vs Range A · {{ totalA() }} → {{ totalB() }} files completed.
-  </p>
+    <p class="cmp-delta">
+      Range B is
+      <strong [class.up]="delta()! >= 0" [class.down]="delta()! < 0">
+        {{ delta()! >= 0 ? '▲ +' : '▼ ' }}{{ delta() }}%
+      </strong>
+      vs Range A · {{ totalA() }} → {{ totalB() }} files completed.
+    </p>
   }
 </section>

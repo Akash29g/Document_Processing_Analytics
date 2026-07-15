@@ -21,15 +21,17 @@ describe('DataTableComponent', () => {
     fixture.componentRef.setInput('sortBy', 'name');
     fixture.componentRef.setInput('sortDir', 'asc');
     fixture.detectChanges();
-    const spy = vi.fn(); comp.sortChange.subscribe(spy);
+    const spy = vi.fn();
+    comp.sortChange.subscribe(spy);
     comp.onHeaderClick(cols[0]);
     expect(spy).toHaveBeenCalledWith({ sortBy: 'name', sortDir: 'desc' });
   });
 
   it('does not emit sortChange for a non-sortable column', () => {
     fixture.detectChanges();
-    const spy = vi.fn(); comp.sortChange.subscribe(spy);
-    comp.onHeaderClick(cols[1]);   // age not sortable
+    const spy = vi.fn();
+    comp.sortChange.subscribe(spy);
+    comp.onHeaderClick(cols[1]); // age not sortable
     expect(spy).not.toHaveBeenCalled();
   });
 
@@ -37,10 +39,11 @@ describe('DataTableComponent', () => {
     fixture.componentRef.setInput('page', 1);
     fixture.componentRef.setInput('totalPages', 2);
     fixture.detectChanges();
-    const spy = vi.fn(); comp.pageChange.subscribe(spy);
-    comp.prev();                       // already on page 1 → no emit
+    const spy = vi.fn();
+    comp.pageChange.subscribe(spy);
+    comp.prev(); // already on page 1 → no emit
     expect(spy).not.toHaveBeenCalled();
-    comp.next();                       // → page 2
+    comp.next(); // → page 2
     expect(spy).toHaveBeenCalledWith(2);
   });
 
@@ -52,7 +55,8 @@ describe('DataTableComponent', () => {
     expect(comp.clickable()).toBe(false);
     fixture.componentRef.setInput('clickable', true);
     fixture.detectChanges();
-    const spy = vi.fn(); comp.rowClick.subscribe(spy);
+    const spy = vi.fn();
+    comp.rowClick.subscribe(spy);
     comp.rowClick.emit({ name: 'a', age: 1 });
     expect(spy).toHaveBeenCalled();
   });
@@ -60,7 +64,8 @@ describe('DataTableComponent', () => {
   it('emits retry from the error state', () => {
     fixture.componentRef.setInput('error', 'Boom');
     fixture.detectChanges();
-    const spy = vi.fn(); comp.retry.subscribe(spy);
+    const spy = vi.fn();
+    comp.retry.subscribe(spy);
     (fixture.nativeElement.querySelector('.retry') as HTMLButtonElement).click();
     expect(spy).toHaveBeenCalled();
   });

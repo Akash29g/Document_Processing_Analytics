@@ -24,16 +24,16 @@
   cursor: pointer;
 }
 
-  .btn:hover:not(:disabled) {
-    background: var(--slate-blue);
-    color: var(--white);
-  }
+.btn:hover:not(:disabled) {
+  background: var(--slate-blue);
+  color: var(--white);
+}
 
-  .btn:disabled {
-    color: var(--cool-gray);
-    border-color: var(--cool-gray);
-    cursor: default;
-  }
+.btn:disabled {
+  color: var(--cool-gray);
+  border-color: var(--cool-gray);
+  cursor: default;
+}
 
 .material-icons {
   font-size: 16px;

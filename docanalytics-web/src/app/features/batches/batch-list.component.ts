@@ -1,29 +1,47 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, untracked, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  computed,
+  effect,
+  inject,
+  untracked,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { BatchService } from './batch.service';
 import { SiteContextService } from '../../core/services/site-context.service';
-import { FilterBarComponent, FilterValues, FilterOption } from '../../shared/components/filter-bar/filter-bar.component';
+import {
+  FilterBarComponent,
+  FilterValues,
+  FilterOption,
+} from '../../shared/components/filter-bar/filter-bar.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import {
-  ColumnDef, DataTableComponent, DtCellDirective, SortState,
+  ColumnDef,
+  DataTableComponent,
+  DtCellDirective,
+  SortState,
 } from '../../shared/components/data-table/data-table.component';
 import { BatchListItem, BatchSortBy } from './batch.models';
 import { AuthService } from '../../core/services/auth.service';
-
 
 @Component({
   selector: 'app-batch-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    DatePipe, RouterLink, FilterBarComponent, StatusBadgeComponent,
-    DataTableComponent, DtCellDirective,
+    DatePipe,
+    RouterLink,
+    FilterBarComponent,
+    StatusBadgeComponent,
+    DataTableComponent,
+    DtCellDirective,
   ],
 
   templateUrl: './batch-list.component.html',
   styleUrl: './batch-list.component.css',
-
 })
 export class BatchListComponent {
   protected svc = inject(BatchService);
@@ -36,17 +54,21 @@ export class BatchListComponent {
 
   pendingDelete = signal<string | null>(null);
 
-  confirmDelete(id: string) { this.pendingDelete.set(id); }
+  confirmDelete(id: string) {
+    this.pendingDelete.set(id);
+  }
 
   doDelete() {
     const id = this.pendingDelete();
     if (!id) return;
     this.svc.deleteBatch(id).subscribe({
-      next: () => { this.pendingDelete.set(null); this.svc.loadBatches(); },
+      next: () => {
+        this.pendingDelete.set(null);
+        this.svc.loadBatches();
+      },
       error: () => this.pendingDelete.set(null),
     });
   }
-
 
   // Status filter — VALUE 'in_progress' stays (backend maps → Processing); LABEL reads "Processing".
   // 'queued' now supported after the backend MapStatusToState fix.
@@ -60,7 +82,7 @@ export class BatchListComponent {
 
   // built from the endpoint
   protected sourceOptions = computed<FilterOption[]>(() =>
-    this.svc.sources().map(s => ({ value: s, label: s })),
+    this.svc.sources().map((s) => ({ value: s, label: s })),
   );
 
   // Column keys = backend sort tokens. 'last_updated' is a sort token, so its
@@ -71,9 +93,8 @@ export class BatchListComponent {
     { key: 'total_files', header: 'Files', sortable: true, align: 'right' },
     { key: 'source_system', header: 'Source', sortable: true },
     { key: 'submitted_at', header: 'Submitted', sortable: true },
-    { key: 'last_updated', header: 'Updated', sortable: true, value: r => r.last_updated_at },
+    { key: 'last_updated', header: 'Updated', sortable: true, value: (r) => r.last_updated_at },
     { key: 'actions', header: '', width: '52px' },
-
   ];
 
   constructor() {
@@ -87,8 +108,12 @@ export class BatchListComponent {
     });
   }
 
-  onFilters(f: FilterValues) { this.svc.setFilters(f); }
-  onSort(s: SortState) { this.svc.setSort(s.sortBy as BatchSortBy, s.sortDir); }
+  onFilters(f: FilterValues) {
+    this.svc.setFilters(f);
+  }
+  onSort(s: SortState) {
+    this.svc.setSort(s.sortBy as BatchSortBy, s.sortDir);
+  }
 
   onSearch(e: Event) {
     const v = (e.target as HTMLInputElement).value;

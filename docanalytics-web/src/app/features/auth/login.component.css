@@ -52,13 +52,13 @@ input {
   transition: border-color 0.15s;
 }
 
-  input:focus {
-    border-color: var(--purple-500, #7c3aed);
-  }
+input:focus {
+  border-color: var(--purple-500, #7c3aed);
+}
 
-  input.invalid {
-    border-color: #d92d20;
-  }
+input.invalid {
+  border-color: #d92d20;
+}
 
 .hint {
   font-size: 0.78rem;
@@ -91,19 +91,19 @@ input {
   transition: background 0.15s;
 }
 
-  .btn:hover:not(:disabled) {
-    background: var(--purple-700, #5b2580);
-  }
+.btn:hover:not(:disabled) {
+  background: var(--purple-700, #5b2580);
+}
 
-  .btn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-  }
+.btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
 
 .spinner {
   width: 15px;
   height: 15px;
-  border: 2px solid rgba(255,255,255,0.5);
+  border: 2px solid rgba(255, 255, 255, 0.5);
   border-top-color: #fff;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;

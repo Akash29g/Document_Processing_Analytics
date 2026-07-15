@@ -61,10 +61,10 @@
   padding: 4px 12px;
 }
 
-  .cc-retry:hover {
-    background: var(--slate-blue);
-    color: #fff;
-  }
+.cc-retry:hover {
+  background: var(--slate-blue);
+  color: #fff;
+}
 
 .spinner {
   width: 16px;
@@ -72,7 +72,7 @@
   border: 2px solid var(--cool-gray);
   border-top-color: var(--slate-blue);
   border-radius: 50%;
-  animation: cc-spin .7s linear infinite;
+  animation: cc-spin 0.7s linear infinite;
 }
 
 @keyframes cc-spin {

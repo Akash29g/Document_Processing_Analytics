@@ -6,7 +6,11 @@ import { ApiResponse, Meta } from '../../core/models/api-response.model';
 import { SKIP_ERROR_TOAST } from '../../core/interceptors/error.interceptor';
 import { ChartSeries, SeriesPoint } from '../../core/models/dashboard.model';
 import {
-  DashboardSummary, FailuresSortBy, RecentFailure, RecentFailuresQuery, StepPercentile,
+  DashboardSummary,
+  FailuresSortBy,
+  RecentFailure,
+  RecentFailuresQuery,
+  StepPercentile,
 } from './dashboard.models';
 
 @Injectable({ providedIn: 'root' })
@@ -28,7 +32,8 @@ export class DashboardService {
   loadSummary(): void {
     this._summaryLoading.set(true);
     this._summaryError.set(null);
-    this.http.get<ApiResponse<DashboardSummary>>(`${this.base}/dashboard/summary`, this.silent)
+    this.http
+      .get<ApiResponse<DashboardSummary>>(`${this.base}/dashboard/summary`, this.silent)
       .pipe(finalize(() => this._summaryLoading.set(false)))
       .subscribe({
         next: (res) => this._summary.set(res.data),
@@ -42,7 +47,10 @@ export class DashboardService {
   private readonly _failuresLoading = signal(false);
   private readonly _failuresError = signal<string | null>(null);
   private readonly _failuresQuery = signal<RecentFailuresQuery>({
-    page: 1, pageSize: 10, sortBy: 'failed_at', sortDir: 'desc',
+    page: 1,
+    pageSize: 10,
+    sortBy: 'failed_at',
+    sortDir: 'desc',
   });
   readonly failures = this._failures.asReadonly();
   readonly failuresMeta = this._failuresMeta.asReadonly();
@@ -55,13 +63,21 @@ export class DashboardService {
     this._failuresLoading.set(true);
     this._failuresError.set(null);
     const params = new HttpParams()
-      .set('page', q.page).set('pageSize', q.pageSize)
-      .set('sortBy', q.sortBy).set('sortDir', q.sortDir);
-    this.http.get<ApiResponse<RecentFailure[]>>(
-      `${this.base}/dashboard/recent-failures`, { params, ...this.silent })
+      .set('page', q.page)
+      .set('pageSize', q.pageSize)
+      .set('sortBy', q.sortBy)
+      .set('sortDir', q.sortDir);
+    this.http
+      .get<ApiResponse<RecentFailure[]>>(`${this.base}/dashboard/recent-failures`, {
+        params,
+        ...this.silent,
+      })
       .pipe(finalize(() => this._failuresLoading.set(false)))
       .subscribe({
-        next: (res) => { this._failures.set(res.data ?? []); this._failuresMeta.set(res.meta ?? null); },
+        next: (res) => {
+          this._failures.set(res.data ?? []);
+          this._failuresMeta.set(res.meta ?? null);
+        },
         error: () => this._failuresError.set('Could not load recent failures.'),
       });
   }
@@ -99,7 +115,6 @@ export class DashboardService {
       });
   }
 
-
   // ───────── Dev B · Throughput + Status Distribution ─────────
   readonly throughput = signal<SeriesPoint[]>([]);
   readonly throughputLoading = signal(false);
@@ -111,7 +126,8 @@ export class DashboardService {
   loadThroughput(): void {
     this.throughputLoading.set(true);
     this.throughputError.set(null);
-    this.http.get<ApiResponse<ChartSeries>>(`${this.base}/dashboard/throughput`, this.silent)
+    this.http
+      .get<ApiResponse<ChartSeries>>(`${this.base}/dashboard/throughput`, this.silent)
       .pipe(finalize(() => this.throughputLoading.set(false)))
       .subscribe({
         next: (res) => this.throughput.set(res.data?.points ?? []),
@@ -122,7 +138,8 @@ export class DashboardService {
   loadStatusDistribution(): void {
     this.distributionLoading.set(true);
     this.distributionError.set(null);
-    this.http.get<ApiResponse<ChartSeries>>(`${this.base}/dashboard/status-distribution`, this.silent)
+    this.http
+      .get<ApiResponse<ChartSeries>>(`${this.base}/dashboard/status-distribution`, this.silent)
       .pipe(finalize(() => this.distributionLoading.set(false)))
       .subscribe({
         next: (res) => this.statusDistribution.set(res.data?.points ?? []),

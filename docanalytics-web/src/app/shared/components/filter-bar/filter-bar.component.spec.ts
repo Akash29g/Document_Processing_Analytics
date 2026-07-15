@@ -12,10 +12,11 @@ describe('FilterBarComponent', () => {
     fixture.detectChanges();
   });
 
-  const evt = (value: string) => ({ target: { value } } as unknown as Event);
+  const evt = (value: string) => ({ target: { value } }) as unknown as Event;
 
   it('emits changed on status select', () => {
-    const spy = vi.fn(); comp.changed.subscribe(spy);
+    const spy = vi.fn();
+    comp.changed.subscribe(spy);
     comp.onStatus(evt('failed'));
     expect(spy).toHaveBeenCalledWith(expect.objectContaining({ status: 'failed' }));
   });
@@ -27,7 +28,8 @@ describe('FilterBarComponent', () => {
   });
 
   it('clear() resets filters and emits', () => {
-    const spy = vi.fn(); comp.changed.subscribe(spy);
+    const spy = vi.fn();
+    comp.changed.subscribe(spy);
     comp.onStatus(evt('failed'));
     comp.clear();
     expect(comp.isDirty()).toBe(false);

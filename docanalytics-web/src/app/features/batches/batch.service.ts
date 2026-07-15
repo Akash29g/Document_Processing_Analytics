@@ -6,13 +6,24 @@ import { ApiResponse, Meta } from '../../core/models/api-response.model';
 import { SKIP_ERROR_TOAST } from '../../core/interceptors/error.interceptor';
 import { SortDir } from '../../shared/components/data-table/data-table.component';
 import {
-  BatchListItem, BatchListQuery, BatchSortBy,
-  BatchDetail, BatchFile, FilesQuery,
+  BatchListItem,
+  BatchListQuery,
+  BatchSortBy,
+  BatchDetail,
+  BatchFile,
+  FilesQuery,
 } from './batch.models';
 
 const DEFAULT_QUERY: BatchListQuery = {
-  page: 1, pageSize: 20, status: 'all', source: null,
-  from: null, to: null, search: null, sortBy: 'last_updated', sortDir: 'desc',
+  page: 1,
+  pageSize: 20,
+  status: 'all',
+  source: null,
+  from: null,
+  to: null,
+  search: null,
+  sortBy: 'last_updated',
+  sortDir: 'desc',
 };
 
 @Injectable({ providedIn: 'root' })
@@ -53,32 +64,55 @@ export class BatchService {
     this._loading.set(true);
     this._error.set(null);
 
-    this.http.get<ApiResponse<BatchListItem[]>>(`${this.base}/batches`, { params, ...this.silent })
+    this.http
+      .get<ApiResponse<BatchListItem[]>>(`${this.base}/batches`, { params, ...this.silent })
       .pipe(finalize(() => this._loading.set(false)))
       .subscribe({
-        next: (res) => { this._batches.set(res.data ?? []); this._meta.set(res.meta ?? null); },
+        next: (res) => {
+          this._batches.set(res.data ?? []);
+          this._meta.set(res.meta ?? null);
+        },
         error: () => this._error.set('Could not load batches. Please retry.'),
       });
   }
 
   private patch(p: Partial<BatchListQuery>, resetPage = true): void {
-    this._query.update(q => ({ ...q, ...p, page: resetPage ? 1 : (p.page ?? q.page) }));
+    this._query.update((q) => ({ ...q, ...p, page: resetPage ? 1 : (p.page ?? q.page) }));
     this.loadBatches();
   }
 
-  setFilters(f: { status: string; source: string | null; from: string | null; to: string | null }): void { this.patch(f); }
-  setSearch(search: string): void { this.patch({ search }); }
-  setSort(sortBy: BatchSortBy, sortDir: SortDir): void { this.patch({ sortBy, sortDir }, false); }
-  setPage(page: number): void { this.patch({ page }, false); }
-  setPageSize(pageSize: number): void { this.patch({ pageSize }); }
-  reset(): void { this._query.set({ ...DEFAULT_QUERY }); this.loadBatches(); }
+  setFilters(f: {
+    status: string;
+    source: string | null;
+    from: string | null;
+    to: string | null;
+  }): void {
+    this.patch(f);
+  }
+  setSearch(search: string): void {
+    this.patch({ search });
+  }
+  setSort(sortBy: BatchSortBy, sortDir: SortDir): void {
+    this.patch({ sortBy, sortDir }, false);
+  }
+  setPage(page: number): void {
+    this.patch({ page }, false);
+  }
+  setPageSize(pageSize: number): void {
+    this.patch({ pageSize });
+  }
+  reset(): void {
+    this._query.set({ ...DEFAULT_QUERY });
+    this.loadBatches();
+  }
 
   // ── Source options for the FilterBar (distinct SourceSystem for this site)
   private _sources = signal<string[]>([]);
   readonly sources = this._sources.asReadonly();
 
   loadSources(): void {
-    this.http.get<ApiResponse<string[]>>(`${this.base}/batches/sources`, this.silent)
+    this.http
+      .get<ApiResponse<string[]>>(`${this.base}/batches/sources`, this.silent)
       .subscribe({ next: (res) => this._sources.set(res.data ?? []) });
   }
 
@@ -86,7 +120,6 @@ export class BatchService {
   deleteBatch(id: string) {
     return this.http.delete<ApiResponse<unknown>>(`${this.base}/files/batches/${id}`);
   }
-
 
   // ─────────────────────────────────────────────
   // Batch Detail + Files  (Dev B · FR-2.4)
@@ -103,8 +136,10 @@ export class BatchService {
   loadDetail(): void {
     const id = this._batchId();
     if (!id) return;
-    this._detailLoading.set(true); this._detailError.set(null);
-    this.http.get<ApiResponse<BatchDetail>>(`${this.base}/batches/${id}`, this.silent)
+    this._detailLoading.set(true);
+    this._detailError.set(null);
+    this.http
+      .get<ApiResponse<BatchDetail>>(`${this.base}/batches/${id}`, this.silent)
       .pipe(finalize(() => this._detailLoading.set(false)))
       .subscribe({
         next: (res) => this._detail.set(res.data ?? null),
@@ -127,17 +162,28 @@ export class BatchService {
     const id = this._batchId();
     if (!id) return;
     const q = this._filesQuery();
-    this._filesLoading.set(true); this._filesError.set(null);
+    this._filesLoading.set(true);
+    this._filesError.set(null);
     const params = new HttpParams().set('page', q.page).set('pageSize', q.pageSize);
-    this.http.get<ApiResponse<BatchFile[]>>(`${this.base}/batches/${id}/files`, { params, ...this.silent })
+    this.http
+      .get<ApiResponse<BatchFile[]>>(`${this.base}/batches/${id}/files`, { params, ...this.silent })
       .pipe(finalize(() => this._filesLoading.set(false)))
       .subscribe({
-        next: (res) => { this._files.set(res.data ?? []); this._filesMeta.set(res.meta ?? null); },
+        next: (res) => {
+          this._files.set(res.data ?? []);
+          this._filesMeta.set(res.meta ?? null);
+        },
         error: () => this._filesError.set('Could not load files.'),
       });
   }
-  setFilesPage(page: number): void { this._filesQuery.update(q => ({ ...q, page })); this.loadFiles(); }
-  setFilesPageSize(pageSize: number): void { this._filesQuery.update(q => ({ ...q, pageSize, page: 1 })); this.loadFiles(); }
+  setFilesPage(page: number): void {
+    this._filesQuery.update((q) => ({ ...q, page }));
+    this.loadFiles();
+  }
+  setFilesPageSize(pageSize: number): void {
+    this._filesQuery.update((q) => ({ ...q, pageSize, page: 1 }));
+    this.loadFiles();
+  }
 
   load(batchId: string): void {
     this._batchId.set(batchId);

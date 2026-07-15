@@ -10,11 +10,11 @@
   -webkit-overflow-scrolling: touch;
 }
 
-  .dt-scroll table {
-    width: 100%;
-    min-width: 720px;
-    border-collapse: collapse;
-  }
+.dt-scroll table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+}
 
 table {
   width: 100%;
@@ -38,9 +38,9 @@ th.sortable {
   cursor: pointer;
 }
 
-  th.sortable:hover {
-    color: var(--slate-blue);
-  }
+th.sortable:hover {
+  color: var(--slate-blue);
+}
 
 .arrow {
   margin-left: 4px;
@@ -59,9 +59,9 @@ tbody tr.clickable {
   cursor: pointer;
 }
 
-  tbody tr.clickable:hover {
-    background: var(--bg-light);
-  }
+tbody tr.clickable:hover {
+  background: var(--bg-light);
+}
 
 .state {
   text-align: center;
@@ -69,9 +69,9 @@ tbody tr.clickable {
   color: var(--dark-gray-3);
 }
 
-  .state.error {
-    color: var(--text-error);
-  }
+.state.error {
+  color: var(--text-error);
+}
 
 .retry {
   margin-left: 10px;
@@ -114,19 +114,19 @@ tbody tr.clickable {
   gap: 10px;
 }
 
-  .pager button {
-    border: 1px solid var(--cool-gray);
-    background: var(--white);
-    border-radius: 6px;
-    padding: 4px 10px;
-    cursor: pointer;
-    color: var(--dark-gray);
-  }
+.pager button {
+  border: 1px solid var(--cool-gray);
+  background: var(--white);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  color: var(--dark-gray);
+}
 
-    .pager button:disabled {
-      opacity: 0.45;
-      cursor: default;
-    }
+.pager button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
 
 .psize select {
   margin-left: 4px;

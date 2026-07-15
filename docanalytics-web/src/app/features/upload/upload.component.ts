@@ -11,7 +11,6 @@ import { DuplicateDialogService } from './duplicate-dialog.service';
   templateUrl: './upload.component.html',
   styleUrl: './upload.component.css',
 })
-
 export class UploadComponent {
   protected svc = inject(UploadService);
   private toast = inject(ToastService);
@@ -47,13 +46,11 @@ export class UploadComponent {
       return;
     }
 
-    this.fileNames.set(pdfs.map(f => f.name));
-    const ok = await this.svc.uploadBatch(pdfs);        // 👈 same batch upload
+    this.fileNames.set(pdfs.map((f) => f.name));
+    const ok = await this.svc.uploadBatch(pdfs); // 👈 same batch upload
     if (ok) this.toast.success(`${pdfs.length} invoice(s) uploaded — extracting now.`);
     else this.toast.error(this.svc.error() ?? 'Upload failed.');
   }
-
-
 
   /** Turn a mixed selection (PDFs + ZIPs) into a flat list of PDF Files. */
   private async expandToPdfs(files: File[]): Promise<File[]> {
@@ -63,7 +60,7 @@ export class UploadComponent {
       if (lower.endsWith('.zip')) {
         const zip = await JSZip.loadAsync(f);
         for (const entry of Object.values(zip.files)) {
-          const name = entry.name.split('/').pop() ?? entry.name;   // strip folder path
+          const name = entry.name.split('/').pop() ?? entry.name; // strip folder path
           if (entry.dir) continue;
           if (name.startsWith('.') || entry.name.startsWith('__MACOSX')) continue; // skip junk
           if (!name.toLowerCase().endsWith('.pdf')) continue;

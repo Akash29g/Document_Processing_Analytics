@@ -1,7 +1,7 @@
 // The single response contract every endpoint returns (DT-2, NFR-5).
 export interface ApiResponse<T> {
   data: T | null;
-  meta?: Meta;        // present only on list endpoints
+  meta?: Meta; // present only on list endpoints
   error: ApiError | null;
 }
 

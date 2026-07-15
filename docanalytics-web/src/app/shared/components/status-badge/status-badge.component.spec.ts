@@ -29,8 +29,8 @@ describe('StatusBadgeComponent', () => {
     ['Failed', 'error', 'var(--text-error)'],
     ['Error', 'error', 'var(--text-error)'],
     ['Processing', 'pause_circle', 'var(--text-warning)'],
-    ['In Progress', 'pause_circle', 'var(--text-warning)'],   // space stripped
-    ['in_progress', 'pause_circle', 'var(--text-warning)'],   // underscore stripped
+    ['In Progress', 'pause_circle', 'var(--text-warning)'], // space stripped
+    ['in_progress', 'pause_circle', 'var(--text-warning)'], // underscore stripped
     ['Queued', 'schedule', 'var(--dark-gray-3)'],
   ])('maps "%s" → icon "%s"', (status, icon, fg) => {
     const style = styleFor(status);

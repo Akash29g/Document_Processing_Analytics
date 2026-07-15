@@ -1,5 +1,19 @@
-import { Component, ElementRef, HostListener, computed, inject, signal,effect } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  computed,
+  inject,
+  signal,
+  effect,
+} from '@angular/core';
+import {
+  ActivatedRoute,
+  Router,
+  RouterLink,
+  RouterLinkActive,
+  RouterOutlet,
+} from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 import { SiteContextService } from '../../core/services/site-context.service';
@@ -9,7 +23,6 @@ import { SiteSelectorComponent } from '../../shared/components/site-selector/sit
 import { ThemeService } from '../../core/services/theme.service';
 import { AlertsService } from '../../features/alerts/alerts.service';
 import { DatePipe } from '@angular/common';
-
 
 @Component({
   selector: 'app-shell',
@@ -27,12 +40,11 @@ export class ShellComponent {
   protected theme = inject(ThemeService);
   protected alerts = inject(AlertsService);
 
-
   // controls the logout confirmation dialog
   protected showLogoutConfirm = signal(false);
 
   // current :siteId from the URL, exposed as a signal for the template
-  siteId = toSignal(this.route.paramMap.pipe(map(p => p.get('siteId'))), { initialValue: null });
+  siteId = toSignal(this.route.paramMap.pipe(map((p) => p.get('siteId'))), { initialValue: null });
 
   // current logged-in user (signal from AuthService) — drives the role label
   readonly user = this.auth.currentUser;
@@ -40,11 +52,9 @@ export class ShellComponent {
   protected menuOpen = signal(false);
 
   protected bellOpen = signal(false);
-  private burstedForSite: string | null = null;   // toast critical alerts once per site
+  private burstedForSite: string | null = null; // toast critical alerts once per site
 
-
-  protected isAdmin = computed(() =>
-    (this.user()?.role ?? '').toLowerCase() === 'admin');
+  protected isAdmin = computed(() => (this.user()?.role ?? '').toLowerCase() === 'admin');
 
   // "admin@acme.com" → "AD", "user.a@acme.com" → "UA"
   protected initials = computed(() => {
@@ -63,15 +73,25 @@ export class ShellComponent {
   // "admin@acme.com" → "Admin", "user.a@acme.com" → "User A"
   protected displayName = computed(() =>
     ((this.user()?.email ?? '').split('@')[0] ?? '')
-      .split(/[.\-_]/).filter(Boolean)
-      .map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(' '));
+      .split(/[.\-_]/)
+      .filter(Boolean)
+      .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
+      .join(' '),
+  );
 
-  protected toggleMenu(): void { this.menuOpen.update((v) => !v); }
+  protected toggleMenu(): void {
+    this.menuOpen.update((v) => !v);
+  }
 
-  protected toggleBell(): void { this.bellOpen.update((v) => !v); }
-  protected onMarkRead(id: string): void { this.alerts.markRead(id); }
-  protected onMarkAllRead(): void { this.alerts.markAllRead(); }
-
+  protected toggleBell(): void {
+    this.bellOpen.update((v) => !v);
+  }
+  protected onMarkRead(id: string): void {
+    this.alerts.markRead(id);
+  }
+  protected onMarkAllRead(): void {
+    this.alerts.markAllRead();
+  }
 
   @HostListener('document:click', ['$event'])
   onDocClick(e: MouseEvent): void {
@@ -80,12 +100,11 @@ export class ShellComponent {
     if (this.bellOpen() && !target.closest('.al-dd')) this.bellOpen.set(false);
   }
 
-
   constructor() {
     // mirror the :siteId URL param into the global service (DT-3 design)
     this.route.paramMap
       .pipe(takeUntilDestroyed())
-      .subscribe(p => this.siteCtx.setSite(p.get('siteId')));
+      .subscribe((p) => this.siteCtx.setSite(p.get('siteId')));
 
     // Load fired alerts whenever a site becomes active (login OR site switch),
     // and toast-burst any critical unread ones — once per site.
@@ -127,10 +146,14 @@ export class ShellComponent {
 
   icon(type: string): string {
     switch (type) {
-      case 'success': return 'check_circle';
-      case 'warning': return 'warning';
-      case 'error': return 'error';
-      default: return 'info';
+      case 'success':
+        return 'check_circle';
+      case 'warning':
+        return 'warning';
+      case 'error':
+        return 'error';
+      default:
+        return 'info';
     }
   }
 }

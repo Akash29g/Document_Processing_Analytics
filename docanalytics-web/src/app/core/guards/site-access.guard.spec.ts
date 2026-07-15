@@ -8,18 +8,20 @@ describe('siteAccessGuard', () => {
     TestBed.configureTestingModule({
       providers: [
         {
-          provide: AuthService, useValue: {
+          provide: AuthService,
+          useValue: {
             ensureSession: vi.fn().mockResolvedValue(true),
             hasSiteAccess: (_id: string) => granted,
             sites: () => [{ site_id: 's9', site_name: 'Other' }],
-          }
+          },
         },
         {
-          provide: Router, useValue: {
-            parseUrl: (u: string) => ({ url: u } as unknown as UrlTree),
-            createUrlTree: (c: any[]) => ({ url: c.join('/') } as unknown as UrlTree),
+          provide: Router,
+          useValue: {
+            parseUrl: (u: string) => ({ url: u }) as unknown as UrlTree,
+            createUrlTree: (c: any[]) => ({ url: c.join('/') }) as unknown as UrlTree,
             navigate: vi.fn(),
-          }
+          },
         },
       ],
     });

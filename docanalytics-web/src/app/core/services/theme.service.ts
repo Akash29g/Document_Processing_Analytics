@@ -17,8 +17,12 @@ export class ThemeService {
     });
   }
 
-  toggle(): void { this._theme.update(t => (t === 'dark' ? 'light' : 'dark')); }
-  set(theme: Theme): void { this._theme.set(theme); }
+  toggle(): void {
+    this._theme.update((t) => (t === 'dark' ? 'light' : 'dark'));
+  }
+  set(theme: Theme): void {
+    this._theme.set(theme);
+  }
 
   private readInitial(): Theme {
     const saved = localStorage.getItem(STORAGE_KEY) as Theme | null;

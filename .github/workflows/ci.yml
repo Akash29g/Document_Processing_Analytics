@@ -140,7 +140,7 @@ jobs:
           docker build -t docanalytics-api:${{ github.sha }} -f DocAnalytics.Api/Dockerfile .
 
       - name: Trivy scan (API image)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.28.0
         with:
           image-ref: docanalytics-api:${{ github.sha }}
           severity: 'HIGH,CRITICAL'
@@ -153,7 +153,7 @@ jobs:
           docker build -t docanalytics-web:${{ github.sha }} -f docanalytics-web/Dockerfile docanalytics-web
 
       - name: Trivy scan (Web image)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.28.0
         with:
           image-ref: docanalytics-web:${{ github.sha }}
           severity: 'HIGH,CRITICAL'

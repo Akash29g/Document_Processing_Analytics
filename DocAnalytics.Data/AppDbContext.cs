@@ -1,4 +1,4 @@
-﻿using DocAnalytics.Domain.Common;
+using DocAnalytics.Domain.Common;
 using DocAnalytics.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -32,6 +32,8 @@ public class AppDbContext : DbContext, IDataProtectionKeyContext
     public virtual DbSet<AlertNotification> AlertNotifications => Set<AlertNotification>();
 
     public virtual DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
+
+    public virtual DbSet<LoginAttempt> LoginAttempts => Set<LoginAttempt>();
 
 
 
@@ -138,6 +140,15 @@ public class AppDbContext : DbContext, IDataProtectionKeyContext
                 "ck_users_role", "role IN ('Developer','Admin','Viewer')"));
         });
 
+        // ---- login brute-force tracker (pre-auth: NOT tenant-scoped) ----
+        b.Entity<LoginAttempt>(e =>
+        {
+            e.ToTable("login_attempts");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Email).HasMaxLength(400).IsRequired();
+            e.Property(x => x.Ip).HasMaxLength(64);
+            e.HasIndex(x => x.Email).IsUnique();   // one running counter per account
+        });
 
         // ---- GLOBAL TENANT/SITE FILTER (every ITenantScoped entity) ----
         foreach (var et in b.Model.GetEntityTypes())

@@ -2,6 +2,7 @@ using DocAnalytics.Api.Common;
 using DocAnalytics.Api.Controllers;
 using DocAnalytics.Domain.Common;
 using DocAnalytics.Service.Auth;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
@@ -9,6 +10,14 @@ namespace DocAnalytics.Api.Tests.Controllers;
 
 public class AuthControllerTests
 {
+    // Login touches HttpContext.Connection / Response — give the controller a real context.
+    private static AuthController NewController(
+        IAuthService auth, ICurrentUser user, ILoginLockoutService lockout)
+        => new(auth, user, lockout)
+        {
+            ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+        };
+
     [Fact]
     public async Task Login_returns_200_with_envelope_on_success()
     {
@@ -16,7 +25,7 @@ public class AuthControllerTests
         var auth = new Mock<IAuthService>();
         auth.Setup(a => a.LoginAsync(It.IsAny<LoginRequest>(), It.IsAny<CancellationToken>())).ReturnsAsync(response);
 
-        var result = await new AuthController(auth.Object, Mock.Of<ICurrentUser>())
+        var result = await NewController(auth.Object, Mock.Of<ICurrentUser>(), Mock.Of<ILoginLockoutService>())
             .Login(new LoginRequest("a@org.com", "pw"), default);
 
         var ok = Assert.IsType<OkObjectResult>(result);
@@ -30,12 +39,46 @@ public class AuthControllerTests
         var auth = new Mock<IAuthService>();
         auth.Setup(a => a.LoginAsync(It.IsAny<LoginRequest>(), It.IsAny<CancellationToken>())).ReturnsAsync((LoginResponse?)null);
 
-        var result = await new AuthController(auth.Object, Mock.Of<ICurrentUser>())
+        var result = await NewController(auth.Object, Mock.Of<ICurrentUser>(), Mock.Of<ILoginLockoutService>())
             .Login(new LoginRequest("a@org.com", "bad"), default);
 
         var unauth = Assert.IsType<UnauthorizedObjectResult>(result);
         var body = Assert.IsType<ApiResponse<object>>(unauth.Value);
         Assert.Equal("INVALID_CREDENTIALS", body.Error!.Code);
+    }
+
+    [Fact]
+    public async Task Login_returns_429_when_account_locked()
+    {
+        var auth = new Mock<IAuthService>();
+        var lockout = new Mock<ILoginLockoutService>();
+        lockout.Setup(l => l.IsLockedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+               .ReturnsAsync((true, 120));
+
+        var result = await NewController(auth.Object, Mock.Of<ICurrentUser>(), lockout.Object)
+            .Login(new LoginRequest("a@org.com", "pw"), default);
+
+        var obj = Assert.IsType<ObjectResult>(result);
+        Assert.Equal(429, obj.StatusCode);
+        var body = Assert.IsType<ApiResponse<object>>(obj.Value);
+        Assert.Equal("RATE_LIMITED", body.Error!.Code);
+        // Locked out BEFORE credentials are ever checked.
+        auth.Verify(a => a.LoginAsync(It.IsAny<LoginRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Login_registers_failure_on_bad_password()
+    {
+        var auth = new Mock<IAuthService>();
+        auth.Setup(a => a.LoginAsync(It.IsAny<LoginRequest>(), It.IsAny<CancellationToken>())).ReturnsAsync((LoginResponse?)null);
+        var lockout = new Mock<ILoginLockoutService>();
+        lockout.Setup(l => l.IsLockedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync((false, 0));
+
+        var result = await NewController(auth.Object, Mock.Of<ICurrentUser>(), lockout.Object)
+            .Login(new LoginRequest("a@org.com", "bad"), default);
+
+        Assert.IsType<UnauthorizedObjectResult>(result);
+        lockout.Verify(l => l.RegisterFailureAsync("a@org.com", It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -46,7 +89,7 @@ public class AuthControllerTests
         var auth = new Mock<IAuthService>();
         auth.Setup(a => a.GetMeAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync((MeResponse?)null);
 
-        var result = await new AuthController(auth.Object, currentUser.Object).Me(default);
+        var result = await NewController(auth.Object, currentUser.Object, Mock.Of<ILoginLockoutService>()).Me(default);
 
         Assert.IsType<UnauthorizedResult>(result);
     }
@@ -61,7 +104,7 @@ public class AuthControllerTests
         var auth = new Mock<IAuthService>();
         auth.Setup(a => a.GetMeAsync(userId, It.IsAny<CancellationToken>())).ReturnsAsync(me);
 
-        var result = await new AuthController(auth.Object, currentUser.Object).Me(default);
+        var result = await NewController(auth.Object, currentUser.Object, Mock.Of<ILoginLockoutService>()).Me(default);
 
         var ok = Assert.IsType<OkObjectResult>(result);
         var body = Assert.IsType<ApiResponse<MeResponse>>(ok.Value);

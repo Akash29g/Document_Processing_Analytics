@@ -1,8 +1,9 @@
-﻿using DocAnalytics.Api.Common;
+using DocAnalytics.Api.Common;
 using DocAnalytics.Domain.Common;
 using DocAnalytics.Service.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;   // ← NEW
 
 namespace DocAnalytics.Api.Controllers;
 
@@ -12,22 +13,43 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _auth;
     private readonly ICurrentUser _currentUser;
+    private readonly ILoginLockoutService _lockout;   // ← NEW
 
-    public AuthController(IAuthService auth, ICurrentUser currentUser)
+    public AuthController(IAuthService auth, ICurrentUser currentUser, ILoginLockoutService lockout)
     {
         _auth = auth;
         _currentUser = currentUser;
+        _lockout = lockout;
     }
 
-    [AllowAnonymous]                      // the only auth endpoint with no token
+    [AllowAnonymous]
     [HttpPost("login")]
+    [EnableRateLimiting("login")]          // ← IP throttle (Step 7)
     public async Task<IActionResult> Login([FromBody] LoginRequest req, CancellationToken ct)
     {
+        var email = req.Email ?? string.Empty;
+
+        // 1) Account-level lockout (survives restarts / spans multiple IPs).
+        var (locked, retryAfter) = await _lockout.IsLockedAsync(email, ct);
+        if (locked)
+        {
+            Response.Headers.RetryAfter = retryAfter.ToString();
+            return StatusCode(StatusCodes.Status429TooManyRequests, ApiResponse<object>.Fail(
+                "RATE_LIMITED", "Too many login attempts. Please try again later."));
+        }
+
+        // 2) Verify credentials.
         var result = await _auth.LoginAsync(req, ct);
         if (result is null)
+        {
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+            await _lockout.RegisterFailureAsync(email, ip, ct);   // count the miss (unknown emails too → no enumeration)
             return Unauthorized(ApiResponse<object>.Fail(
                 "INVALID_CREDENTIALS", "Email or password is incorrect."));
+        }
 
+        // 3) Success → clear the counter.
+        await _lockout.ResetAsync(email, ct);
         return Ok(ApiResponse<LoginResponse>.Ok(result));
     }
 
@@ -40,7 +62,6 @@ public class AuthController : ControllerBase
         return Ok(ApiResponse<MeResponse>.Ok(result));
     }
 
-    // Forced first-login reset (and general password change)
     [Authorize]
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest req, CancellationToken ct)

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DocAnalytics.Service.Auth;
 
@@ -8,6 +8,7 @@ public static class AuthFeatureExtensions
     {
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
+        services.AddScoped<ILoginLockoutService, LoginLockoutService>();   // ← the only new line
         return services;
     }
 }

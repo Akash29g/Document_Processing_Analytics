@@ -1,3 +1,6 @@
+# workflow bump: force refresh after removing setup-trivy
+
+
 name: CI
 
 # Runs on every PR (any target branch) + pushes to main.

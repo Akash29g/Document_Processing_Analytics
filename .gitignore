@@ -4,6 +4,7 @@
 ## Get latest from `dotnet new gitignore`
 
 # local gitleaks scan export
+gitleaks-report.json
 .gitleaks-scan/
 repo-scan.tar
 

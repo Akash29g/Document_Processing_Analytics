@@ -1,4 +1,4 @@
-﻿using DocAnalytics.Data;
+using DocAnalytics.Data;
 using DocAnalytics.Domain.Common;
 using DocAnalytics.Domain.Entities;
 using DocAnalytics.Service.Extraction;

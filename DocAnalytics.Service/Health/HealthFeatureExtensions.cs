@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 namespace DocAnalytics.Service.Health;
 
 public static class HealthFeatureExtensions

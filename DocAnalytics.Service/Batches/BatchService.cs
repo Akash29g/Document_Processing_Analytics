@@ -1,4 +1,4 @@
-﻿using DocAnalytics.Data;                 // ① AppDbContext lives here
+using DocAnalytics.Data;                 // ① AppDbContext lives here
 using DocAnalytics.Domain.Entities;      // ① the Transaction entity
 using DocAnalytics.Service.Common;
 using Microsoft.EntityFrameworkCore;

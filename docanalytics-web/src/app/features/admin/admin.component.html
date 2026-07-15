@@ -1,41 +1,59 @@
 <section class="admin">
   <header class="page-head">
     <h2 class="page-title">User &amp; Site Management</h2>
-    <p class="page-sub">Add users, control which sites they can see, and register new sites for your company.</p>
+    <p class="page-sub">
+      Add users, control which sites they can see, and register new sites for your company.
+    </p>
   </header>
 
-  @if (notice()) { <p class="notice">{{ notice() }}</p> }
-  @if (formError()) { <p class="alert">{{ formError() }}</p> }
-  @if (svc.error()) { <p class="alert">{{ svc.error() }}</p> }
+  @if (notice()) {
+    <p class="notice">{{ notice() }}</p>
+  }
+  @if (formError()) {
+    <p class="alert">{{ formError() }}</p>
+  }
+  @if (svc.error()) {
+    <p class="alert">{{ svc.error() }}</p>
+  }
 
   <div class="panels">
     <!-- USERS -->
     <div class="panel">
       <h3>Users</h3>
-      @if (svc.loading()) { <p class="muted">Loading…</p> }
-      @else {
-      <table class="tbl">
-        <thead><tr><th>Email</th><th>Sites</th><th>Status</th><th></th></tr></thead>
-        <tbody>
-          @for (u of svc.users(); track u.id) {
-          <tr [class.inactive]="!u.is_active">
-            <td>{{ u.email }}</td>
-            <td>
-              @for (sid of u.site_ids; track sid) {
-              <span class="chip">{{ siteName(sid) }}</span>
-              }
-            </td>
-            <td>{{ u.is_active ? 'Active' : 'Removed' }}</td>
-            <td class="actions">
-              @if (u.is_active) {
-              <button type="button" class="link-btn" (click)="startEdit(u)">Edit sites</button>
-              <button type="button" class="danger-btn" (click)="remove(u)">Remove</button>
-              }
-            </td>
-          </tr>
-          }
-        </tbody>
-      </table>
+      @if (svc.loading()) {
+        <p class="muted">Loading…</p>
+      } @else {
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Sites</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (u of svc.users(); track u.id) {
+              <tr [class.inactive]="!u.is_active">
+                <td>{{ u.email }}</td>
+                <td>
+                  @for (sid of u.site_ids; track sid) {
+                    <span class="chip">{{ siteName(sid) }}</span>
+                  }
+                </td>
+                <td>{{ u.is_active ? 'Active' : 'Removed' }}</td>
+                <td class="actions">
+                  @if (u.is_active) {
+                    <button type="button" class="link-btn" (click)="startEdit(u)">
+                      Edit sites
+                    </button>
+                    <button type="button" class="danger-btn" (click)="remove(u)">Remove</button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
       }
 
       <h4>Add a user</h4>
@@ -43,15 +61,22 @@
         <input name="uFirst" [(ngModel)]="uFirst" placeholder="First name" required />
         <input name="uLast" [(ngModel)]="uLast" placeholder="Last name" required />
       </form>
-      <p class="muted small">Email is auto-generated (first.last&#64;org.com) and a temporary password is emailed. Pick their sites:</p>
+      <p class="muted small">
+        Email is auto-generated (first.last&#64;org.com) and a temporary password is emailed. Pick
+        their sites:
+      </p>
       <div class="site-picks">
         @for (s of svc.sitesList(); track s.id) {
-        @if (s.is_active) {
-        <label class="pick">
-          <input type="checkbox" [checked]="uSites().has(s.id)" (change)="toggleNewUserSite(s.id)" />
-          {{ s.name }}
-        </label>
-        }
+          @if (s.is_active) {
+            <label class="pick">
+              <input
+                type="checkbox"
+                [checked]="uSites().has(s.id)"
+                (change)="toggleNewUserSite(s.id)"
+              />
+              {{ s.name }}
+            </label>
+          }
         }
       </div>
       <button type="button" class="btn" (click)="addUser()">Create user</button>
@@ -61,14 +86,20 @@
     <div class="panel">
       <h3>Sites</h3>
       <table class="tbl">
-        <thead><tr><th>Name</th><th>Location</th><th>Status</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Location</th>
+            <th>Status</th>
+          </tr>
+        </thead>
         <tbody>
           @for (s of svc.sitesList(); track s.id) {
-          <tr [class.inactive]="!s.is_active">
-            <td>{{ s.name }}</td>
-            <td>{{ s.location ?? '—' }}</td>
-            <td>{{ s.is_active ? 'Active' : 'Removed' }}</td>
-          </tr>
+            <tr [class.inactive]="!s.is_active">
+              <td>{{ s.name }}</td>
+              <td>{{ s.location ?? '—' }}</td>
+              <td>{{ s.is_active ? 'Active' : 'Removed' }}</td>
+            </tr>
           }
         </tbody>
       </table>
@@ -84,24 +115,28 @@
 
   <!-- edit-sites modal -->
   @if (editingUser(); as u) {
-  <div class="modal-backdrop" (click)="cancelEdit()">
-    <div class="modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
-      <h2 class="modal-title">Site access — {{ u.email }}</h2>
-      <div class="site-picks">
-        @for (s of svc.sitesList(); track s.id) {
-        @if (s.is_active) {
-        <label class="pick">
-          <input type="checkbox" [checked]="editSites().has(s.id)" (change)="toggleEditSite(s.id)" />
-          {{ s.name }}
-        </label>
-        }
-        }
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="btn-cancel" (click)="cancelEdit()">Cancel</button>
-        <button type="button" class="btn-confirm-primary" (click)="saveEdit()">Save</button>
+    <div class="modal-backdrop" (click)="cancelEdit()">
+      <div class="modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <h2 class="modal-title">Site access — {{ u.email }}</h2>
+        <div class="site-picks">
+          @for (s of svc.sitesList(); track s.id) {
+            @if (s.is_active) {
+              <label class="pick">
+                <input
+                  type="checkbox"
+                  [checked]="editSites().has(s.id)"
+                  (change)="toggleEditSite(s.id)"
+                />
+                {{ s.name }}
+              </label>
+            }
+          }
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="cancelEdit()">Cancel</button>
+          <button type="button" class="btn-confirm-primary" (click)="saveEdit()">Save</button>
+        </div>
       </div>
     </div>
-  </div>
   }
 </section>

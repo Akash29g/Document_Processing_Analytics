@@ -16,7 +16,7 @@ export class ThroughputChartComponent {
   data = input<SeriesPoint[]>([]);
   loading = input(false);
   error = input<string | null>(null);
-  compareLink = input<any[] | null>(null); 
+  compareLink = input<any[] | null>(null);
   retry = output<void>();
 
   readonly W = 600;
@@ -24,7 +24,7 @@ export class ThroughputChartComponent {
   private pad = { top: 16, right: 12, bottom: 20, left: 8 };
 
   // public so the template axis labels can read them
-  maxVal = computed(() => Math.max(1, ...this.data().map(p => p.value)));
+  maxVal = computed(() => Math.max(1, ...this.data().map((p) => p.value)));
   midVal = computed(() => Math.round(this.maxVal() / 2));
   firstLabel = computed(() => this.data()[0]?.label ?? '');
   lastLabel = computed(() => {
@@ -48,6 +48,6 @@ export class ThroughputChartComponent {
 
   gridLines = computed(() => {
     const innerH = this.H - this.pad.top - this.pad.bottom;
-    return [0, 0.25, 0.5, 0.75, 1].map(t => this.pad.top + innerH * t);
+    return [0, 0.25, 0.5, 0.75, 1].map((t) => this.pad.top + innerH * t);
   });
 }

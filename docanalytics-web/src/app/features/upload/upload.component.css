@@ -4,8 +4,8 @@
 
 .up-eyebrow {
   margin: 0;
-  font-size: .72rem;
-  letter-spacing: .08em;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--dark-gray-3);
 }
@@ -19,7 +19,7 @@
 .up-sub {
   margin: 4px 0 20px;
   color: var(--dark-gray-3);
-  font-size: .9rem;
+  font-size: 0.9rem;
 }
 
 .up-drop {
@@ -35,13 +35,13 @@
   cursor: pointer;
   color: var(--dark-gray-3);
   background: var(--surface, #fff);
-  transition: all .15s;
+  transition: all 0.15s;
 }
 
-  .up-drop.drag {
-    border-color: var(--slate-blue, #4b6bfb);
-    background: color-mix(in srgb, var(--slate-blue,#4b6bfb) 8%, transparent);
-  }
+.up-drop.drag {
+  border-color: var(--slate-blue, #4b6bfb);
+  background: color-mix(in srgb, var(--slate-blue, #4b6bfb) 8%, transparent);
+}
 
 .up-icon {
   font-size: 2rem;
@@ -50,22 +50,22 @@
 .up-done {
   margin-top: 16px;
   color: var(--status-success, #2e7d32);
-  font-size: .9rem;
+  font-size: 0.9rem;
 }
 
 .up-err {
   margin-top: 16px;
   color: var(--text-error, #c62828);
-  font-size: .9rem;
+  font-size: 0.9rem;
 }
 
 .up-spinner {
   width: 22px;
   height: 22px;
   border: 3px solid var(--cool-gray);
-  border-top-color: var(--slate-blue,#4b6bfb);
+  border-top-color: var(--slate-blue, #4b6bfb);
   border-radius: 50%;
-  animation: up-spin .7s linear infinite;
+  animation: up-spin 0.7s linear infinite;
 }
 
 @keyframes up-spin {
@@ -73,6 +73,3 @@
     transform: rotate(360deg);
   }
 }
-
-
-

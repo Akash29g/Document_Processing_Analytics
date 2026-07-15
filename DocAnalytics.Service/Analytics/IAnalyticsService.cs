@@ -1,4 +1,4 @@
-﻿namespace DocAnalytics.Service.Analytics;
+namespace DocAnalytics.Service.Analytics;
 
 public interface IAnalyticsService
 {

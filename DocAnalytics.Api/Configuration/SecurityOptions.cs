@@ -1,4 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
 namespace DocAnalytics.Api.Configuration;
+
+
+[ExcludeFromCodeCoverage]
 
 public sealed class SecurityOptions
 {

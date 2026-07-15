@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using DocAnalytics.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;

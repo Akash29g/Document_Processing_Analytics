@@ -16,7 +16,7 @@ concurrency:
 jobs:
   # ───────────────────────── Backend (.NET 10) ─────────────────────────
   backend:
-    name: backend (build + test)
+    name: backend (build + coverage + format)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,16 +33,17 @@ jobs:
       - name: Build
         run: dotnet build DocAnalytics.slnx --no-restore --configuration Release
 
-      - name: Test (correctness projects)
-        run: |
-          dotnet test DocAnalytics.Domain.Tests/DocAnalytics.Domain.Tests.csproj   --no-build --configuration Release
-          dotnet test DocAnalytics.Data.Tests/DocAnalytics.Data.Tests.csproj       --no-build --configuration Release
-          dotnet test DocAnalytics.Service.Tests/DocAnalytics.Service.Tests.csproj --no-build --configuration Release
-          dotnet test DocAnalytics.Api.Tests/DocAnalytics.Api.Tests.csproj         --no-build --configuration Release
+      - name: Format check (dotnet format)
+        run: dotnet format DocAnalytics.slnx --verify-no-changes
+
+      - name: Test + coverage gate (per layer)
+        shell: bash
+        run: bash scripts/coverage-gate.sh
+
 
   # ──────────────────────── Frontend (Angular 22) ────────────────────────
   frontend:
-    name: frontend (build + test)
+    name: frontend (build + test + format)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -61,10 +62,13 @@ jobs:
       - name: Install (clean)
         run: npm ci
 
+      - name: Prettier format check
+        run: npm run format:check
+
       - name: Build
         run: npm run build
 
-      - name: Test (Vitest, single run)
+      - name: Test (Vitest, single run + coverage thresholds)
         run: npx ng test --watch=false
 
   # ──────────────────────── DevSecOps (scans) ────────────────────────

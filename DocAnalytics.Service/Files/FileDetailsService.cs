@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using DocAnalytics.Data;                 // AppDbContext
 using Microsoft.EntityFrameworkCore;
 
@@ -115,5 +115,5 @@ public sealed class FileDetailsService : IFileDetailsService
     }
 
 
-    
+
 }

@@ -27,21 +27,19 @@ export class AlertsService {
   // ── login notifications (fired alerts) ──
   private _notifications = signal<AlertNotification[]>([]);
   readonly notifications = this._notifications.asReadonly();
-  readonly unreadCount = computed(() =>
-    this._notifications().filter((n) => !n.is_read).length,
-  );
-
+  readonly unreadCount = computed(() => this._notifications().filter((n) => !n.is_read).length);
 
   loadRecipients(): void {
-    this.http.get<ApiResponse<Recipient[]>>(`${this.base}/recipients`, this.silent)
+    this.http
+      .get<ApiResponse<Recipient[]>>(`${this.base}/recipients`, this.silent)
       .subscribe({ next: (res) => this._recipients.set(res.data ?? []) });
   }
-
 
   loadRules(): void {
     this._loading.set(true);
     this._error.set(null);
-    this.http.get<ApiResponse<AlertRule[]>>(this.base, this.silent)
+    this.http
+      .get<ApiResponse<AlertRule[]>>(this.base, this.silent)
       .pipe(finalize(() => this._loading.set(false)))
       .subscribe({
         next: (res) => this._rules.set(res.data ?? []),
@@ -51,14 +49,16 @@ export class AlertsService {
 
   create(payload: AlertRulePayload): void {
     this._saving.set(true);
-    this.http.post<ApiResponse<AlertRule>>(this.base, payload)
+    this.http
+      .post<ApiResponse<AlertRule>>(this.base, payload)
       .pipe(finalize(() => this._saving.set(false)))
       .subscribe({ next: () => this.loadRules() });
   }
 
   update(id: string, payload: AlertRulePayload): void {
     this._saving.set(true);
-    this.http.put<ApiResponse<AlertRule>>(`${this.base}/${id}`, payload)
+    this.http
+      .put<ApiResponse<AlertRule>>(`${this.base}/${id}`, payload)
       .pipe(finalize(() => this._saving.set(false)))
       .subscribe({ next: () => this.loadRules() });
   }
@@ -76,14 +76,13 @@ export class AlertsService {
   }
 
   remove(id: string): void {
-    this.http.delete<void>(`${this.base}/${id}`)
-      .subscribe({ next: () => this.loadRules() });
+    this.http.delete<void>(`${this.base}/${id}`).subscribe({ next: () => this.loadRules() });
   }
 
   /**
- * Load fired alerts (call on login / when the bell opens).
- * `onDone` lets the shell fire its critical-alert toast burst once loaded.
- */
+   * Load fired alerts (call on login / when the bell opens).
+   * `onDone` lets the shell fire its critical-alert toast burst once loaded.
+   */
   loadNotifications(unreadOnly = true, onDone?: () => void): void {
     const url = `${this.base}/notifications${unreadOnly ? '?unread=true' : ''}`;
     this.http.get<ApiResponse<AlertNotification[]>>(url, this.silent).subscribe({
@@ -95,30 +94,22 @@ export class AlertsService {
   }
 
   markRead(id: string): void {
-    this.http
-      .post<ApiResponse<unknown>>(`${this.base}/notifications/${id}/read`, {})
-      .subscribe({
-        next: () =>
-          this._notifications.update((list) =>
-            list.map((n) => (n.id === id ? { ...n, is_read: true } : n)),
-          ),
-      });
+    this.http.post<ApiResponse<unknown>>(`${this.base}/notifications/${id}/read`, {}).subscribe({
+      next: () =>
+        this._notifications.update((list) =>
+          list.map((n) => (n.id === id ? { ...n, is_read: true } : n)),
+        ),
+    });
   }
 
   markAllRead(): void {
-    this.http
-      .post<ApiResponse<unknown>>(`${this.base}/notifications/read-all`, {})
-      .subscribe({
-        next: () =>
-          this._notifications.update((list) =>
-            list.map((n) => ({ ...n, is_read: true })),
-          ),
-      });
+    this.http.post<ApiResponse<unknown>>(`${this.base}/notifications/read-all`, {}).subscribe({
+      next: () => this._notifications.update((list) => list.map((n) => ({ ...n, is_read: true }))),
+    });
   }
 
   /** Wipe on logout so the next user doesn't inherit the badge. */
   clear(): void {
     this._notifications.set([]);
   }
-
 }

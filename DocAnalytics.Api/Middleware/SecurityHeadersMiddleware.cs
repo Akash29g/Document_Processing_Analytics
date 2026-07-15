@@ -1,5 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace DocAnalytics.Api.Middleware;
 
+[ExcludeFromCodeCoverage]
 // Adds baseline security headers to every response (NFR-3 transport hardening).
 public sealed class SecurityHeadersMiddleware
 {

@@ -1,8 +1,11 @@
-﻿using System.Text.Json;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using DocAnalytics.Api.Common;
+
 
 namespace DocAnalytics.Api.Middleware;
 
+[ExcludeFromCodeCoverage]
 public class ExceptionHandlingMiddleware
 {
     // Reuse one options instance; matches the global snake_case JSON policy.

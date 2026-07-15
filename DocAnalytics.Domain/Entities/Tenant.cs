@@ -1,4 +1,4 @@
-﻿// Entities/Tenant.cs
+// Entities/Tenant.cs
 namespace DocAnalytics.Domain.Entities;
 
 public class Tenant

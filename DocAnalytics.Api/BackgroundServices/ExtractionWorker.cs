@@ -1,4 +1,5 @@
-﻿using DocAnalytics.Api.Common;
+using System.Diagnostics.CodeAnalysis;
+using DocAnalytics.Api.Common;
 using DocAnalytics.Data;
 using DocAnalytics.Domain.Common;
 using DocAnalytics.Domain.Entities;
@@ -7,8 +8,10 @@ using DocAnalytics.Service.Realtime;
 using DocAnalytics.Service.Storage;
 using Microsoft.EntityFrameworkCore;
 
+
 namespace DocAnalytics.Api.BackgroundServices;
 
+[ExcludeFromCodeCoverage]
 public sealed class ExtractionWorker : BackgroundService
 {
     private readonly IExtractionQueue _queue;

@@ -1,4 +1,4 @@
-﻿namespace DocAnalytics.Service.Dashboard;
+namespace DocAnalytics.Service.Dashboard;
 
 // FR-1.1 — status counters (snake_case'd globally → queued, in_progress, ...)
 public sealed class DashboardSummaryResponse

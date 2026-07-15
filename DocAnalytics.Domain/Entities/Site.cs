@@ -1,4 +1,4 @@
-﻿// Entities/Site.cs
+// Entities/Site.cs
 namespace DocAnalytics.Domain.Entities;
 
 public class Site

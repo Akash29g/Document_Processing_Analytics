@@ -29,7 +29,7 @@
 .fill {
   height: 100%;
   border-radius: 6px 0 0 6px;
-  transition: width .3s ease;
+  transition: width 0.3s ease;
 }
 
 .val {

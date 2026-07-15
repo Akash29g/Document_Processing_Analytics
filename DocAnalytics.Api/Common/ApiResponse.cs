@@ -1,4 +1,4 @@
-﻿namespace DocAnalytics.Api.Common;
+namespace DocAnalytics.Api.Common;
 
 public class ApiResponse<T>
 {

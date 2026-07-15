@@ -1,20 +1,21 @@
 .pct {
   width: 100%;
   border-collapse: collapse;
-  font-size: .85rem;
+  font-size: 0.85rem;
 }
 
-  .pct th, .pct td {
-    padding: 8px 10px;
-    border-bottom: 1px solid var(--cool-gray);
-    text-align: left;
-  }
+.pct th,
+.pct td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--cool-gray);
+  text-align: left;
+}
 
-  .pct th {
-    color: var(--dark-gray-3);
-    font-weight: 600;
-  }
+.pct th {
+  color: var(--dark-gray-3);
+  font-weight: 600;
+}
 
-  .pct .r {
-    text-align: right;
-  }
+.pct .r {
+  text-align: right;
+}

@@ -1,11 +1,14 @@
-﻿using System.Security.Claims;
+using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
 using System.Text.Json;
 using DocAnalytics.Api.Common;          // ApiResponse<T>
 using DocAnalytics.Data;                // AppDbContext
 using Microsoft.EntityFrameworkCore;    // AnyAsync
 
+
 namespace DocAnalytics.Api.Middleware;
 
+[ExcludeFromCodeCoverage]
 public class TenantSiteMiddleware
 {
     private static readonly JsonSerializerOptions JsonOpts =

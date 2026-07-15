@@ -1,6 +1,11 @@
 import { DatePipe } from '@angular/common';
 import {
-  ChangeDetectionStrategy, Component, computed, effect, inject, untracked,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  untracked,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -24,10 +29,9 @@ export class FileDetailsComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly site = inject(SiteContextService);
 
-  private readonly fileId = toSignal(
-    this.route.paramMap.pipe(map((p) => p.get('fileId'))),
-    { initialValue: this.route.snapshot.paramMap.get('fileId') },
-  );
+  private readonly fileId = toSignal(this.route.paramMap.pipe(map((p) => p.get('fileId'))), {
+    initialValue: this.route.snapshot.paramMap.get('fileId'),
+  });
 
   protected readonly info = computed(() => this.svc.detail()?.file_info ?? null);
   protected readonly history = computed<StepHistoryItem[]>(() => this.svc.detail()?.history ?? []);

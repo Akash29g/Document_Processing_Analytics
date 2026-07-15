@@ -1,11 +1,13 @@
-﻿using Amazon.S3;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
+using Amazon.S3;
 using Amazon.S3.Model;
 using DocAnalytics.Service.Aws;
 using Microsoft.Extensions.Options;
-using System.Text.RegularExpressions;
 
 namespace DocAnalytics.Service.Storage;
 
+[ExcludeFromCodeCoverage]
 public sealed class S3FileStorage : IFileStorage
 {
     private readonly IAmazonS3 _s3;

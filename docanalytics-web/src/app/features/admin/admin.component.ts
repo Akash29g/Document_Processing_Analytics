@@ -28,7 +28,9 @@ export class AdminComponent {
   protected formError = signal<string | null>(null);
   protected notice = signal<string | null>(null);
 
-  constructor() { this.svc.loadAll(); }
+  constructor() {
+    this.svc.loadAll();
+  }
 
   protected toggleNewUserSite(id: string): void {
     const s = new Set(this.uSites());
@@ -41,11 +43,15 @@ export class AdminComponent {
       this.formError.set('Fill in the name and pick at least one site.');
       return;
     }
-    const res = await this.svc.createUser(this.uFirst.trim(), this.uLast.trim(), [...this.uSites()]);
+    const res = await this.svc.createUser(this.uFirst.trim(), this.uLast.trim(), [
+      ...this.uSites(),
+    ]);
     this.formError.set(res.error);
     if (!res.error) {
       this.notice.set(`User ${res.email} created — credentials emailed.`);
-      this.uFirst = ''; this.uLast = ''; this.uSites.set(new Set());
+      this.uFirst = '';
+      this.uLast = '';
+      this.uSites.set(new Set());
     }
   }
 
@@ -63,13 +69,21 @@ export class AdminComponent {
   protected async saveEdit(): Promise<void> {
     const u = this.editingUser();
     if (!u) return;
-    if (this.editSites().size === 0) { this.formError.set('User must keep at least one site.'); return; }
+    if (this.editSites().size === 0) {
+      this.formError.set('User must keep at least one site.');
+      return;
+    }
     const err = await this.svc.updateUserSites(u.id, [...this.editSites()]);
     this.formError.set(err);
-    if (!err) { this.notice.set('Site access updated.'); this.editingUser.set(null); }
+    if (!err) {
+      this.notice.set('Site access updated.');
+      this.editingUser.set(null);
+    }
   }
 
-  protected cancelEdit(): void { this.editingUser.set(null); }
+  protected cancelEdit(): void {
+    this.editingUser.set(null);
+  }
 
   protected async remove(u: AdminUser): Promise<void> {
     if (!confirm(`Remove ${u.email}? They will no longer be able to log in.`)) return;
@@ -80,10 +94,14 @@ export class AdminComponent {
     if (!this.sName.trim()) return;
     const err = await this.svc.createSite(this.sName.trim(), this.sLocation.trim());
     this.formError.set(err);
-    if (!err) { this.notice.set('Site added.'); this.sName = ''; this.sLocation = ''; }
+    if (!err) {
+      this.notice.set('Site added.');
+      this.sName = '';
+      this.sLocation = '';
+    }
   }
 
   protected siteName(id: string): string {
-    return this.svc.sitesList().find(s => s.id === id)?.name ?? '?';
+    return this.svc.sitesList().find((s) => s.id === id)?.name ?? '?';
   }
 }

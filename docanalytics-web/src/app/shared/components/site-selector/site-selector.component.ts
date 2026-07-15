@@ -1,6 +1,4 @@
-import {
-  Component, ElementRef, HostListener, computed, inject, signal,
-} from '@angular/core';
+import { Component, ElementRef, HostListener, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { SiteContextService } from '../../../core/services/site-context.service';
@@ -25,14 +23,14 @@ export class SiteSelectorComponent {
 
   currentName = computed(() => {
     const id = this.currentSiteId();
-    return this.sites().find(s => s.site_id === id)?.site_name ?? 'Select site';
+    return this.sites().find((s) => s.site_id === id)?.site_name ?? 'Select site';
   });
 
   toggle(): void {
-    this.open.update(v => !v);
+    this.open.update((v) => !v);
     if (this.open()) {
       // start the keyboard highlight on the currently-selected row
-      const idx = this.sites().findIndex(s => s.site_id === this.currentSiteId());
+      const idx = this.sites().findIndex((s) => s.site_id === this.currentSiteId());
       this.activeIndex.set(idx >= 0 ? idx : 0);
     }
   }
@@ -55,7 +53,8 @@ export class SiteSelectorComponent {
   onKey(e: KeyboardEvent): void {
     if (!this.open()) {
       if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
-        e.preventDefault(); this.toggle();
+        e.preventDefault();
+        this.toggle();
       }
       return;
     }
@@ -63,11 +62,11 @@ export class SiteSelectorComponent {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        this.activeIndex.update(i => Math.min(i + 1, last));
+        this.activeIndex.update((i) => Math.min(i + 1, last));
         break;
       case 'ArrowUp':
         e.preventDefault();
-        this.activeIndex.update(i => Math.max(i - 1, 0));
+        this.activeIndex.update((i) => Math.max(i - 1, 0));
         break;
       case 'Enter':
         e.preventDefault();

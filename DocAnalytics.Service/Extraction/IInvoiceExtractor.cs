@@ -1,4 +1,4 @@
-﻿namespace DocAnalytics.Service.Extraction;
+namespace DocAnalytics.Service.Extraction;
 
 public interface IInvoiceExtractor
 {

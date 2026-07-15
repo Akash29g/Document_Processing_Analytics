@@ -6,8 +6,13 @@ import { ApiResponse } from '../../core/models/api-response.model';
 import { SKIP_ERROR_TOAST } from '../../core/interceptors/error.interceptor';
 import { DuplicateDialogService } from './duplicate-dialog.service';
 
-interface CreateBatchResponse { batch_id: string; }
-interface UploadUrlResponse { file_id: string; upload_url: string; }
+interface CreateBatchResponse {
+  batch_id: string;
+}
+interface UploadUrlResponse {
+  file_id: string;
+  upload_url: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class UploadService {
@@ -21,10 +26,18 @@ export class UploadService {
   readonly lastBatchId = signal<string | null>(null);
 
   private requestUrl(batchId: string, file: File, onDuplicate: string | null, ctx: HttpContext) {
-    return firstValueFrom(this.http.post<ApiResponse<UploadUrlResponse>>(
-      `${this.base}/files/upload-url`,
-      { batch_id: batchId, file_name: file.name, size_bytes: file.size, on_duplicate: onDuplicate },
-      { context: ctx }));
+    return firstValueFrom(
+      this.http.post<ApiResponse<UploadUrlResponse>>(
+        `${this.base}/files/upload-url`,
+        {
+          batch_id: batchId,
+          file_name: file.name,
+          size_bytes: file.size,
+          on_duplicate: onDuplicate,
+        },
+        { context: ctx },
+      ),
+    );
   }
 
   async uploadBatch(files: File[]): Promise<boolean> {
@@ -37,10 +50,13 @@ export class UploadService {
 
     try {
       // 1) open ONE batch for the whole upload
-      const batchRes = await firstValueFrom(this.http.post<ApiResponse<CreateBatchResponse>>(
-        `${this.base}/files/batches`,
-        { file_count: files.length },
-        { context: ctx }));
+      const batchRes = await firstValueFrom(
+        this.http.post<ApiResponse<CreateBatchResponse>>(
+          `${this.base}/files/batches`,
+          { file_count: files.length },
+          { context: ctx },
+        ),
+      );
       const batchId = batchRes.data!.batch_id;
 
       // 2) upload each file INTO that batch
@@ -52,14 +68,20 @@ export class UploadService {
           if (e?.error?.error?.code === 'DUPLICATE_FILE') {
             const choice = await this.dupDialog.ask(file.name);
             if (choice === 'skip') {
-              await firstValueFrom(this.http.post<ApiResponse<unknown>>(
-                `${this.base}/files/batches/${batchId}/shrink`, {}, { context: ctx }));
-              this.progress.update(p => p ? { done: p.done, total: p.total - 1 } : p);
+              await firstValueFrom(
+                this.http.post<ApiResponse<unknown>>(
+                  `${this.base}/files/batches/${batchId}/shrink`,
+                  {},
+                  { context: ctx },
+                ),
+              );
+              this.progress.update((p) => (p ? { done: p.done, total: p.total - 1 } : p));
               continue;
             }
             res = await this.requestUrl(batchId, file, choice, ctx);
-
-          } else { throw e; }
+          } else {
+            throw e;
+          }
         }
         const data = res.data!;
 
@@ -68,13 +90,20 @@ export class UploadService {
           method: 'PUT',
           headers: { 'Content-Type': 'application/pdf' },
           body: file,
-        }).then(r => { if (!r.ok) throw new Error(`S3 upload failed for ${file.name}`); });
+        }).then((r) => {
+          if (!r.ok) throw new Error(`S3 upload failed for ${file.name}`);
+        });
 
         // c) mark complete → enqueues extraction
-        await firstValueFrom(this.http.post<ApiResponse<unknown>>(
-          `${this.base}/files/${data.file_id}/complete`, {}, { context: ctx }));
+        await firstValueFrom(
+          this.http.post<ApiResponse<unknown>>(
+            `${this.base}/files/${data.file_id}/complete`,
+            {},
+            { context: ctx },
+          ),
+        );
 
-        this.progress.update(p => p ? { done: p.done + 1, total: p.total } : p);
+        this.progress.update((p) => (p ? { done: p.done + 1, total: p.total } : p));
       }
 
       this.lastBatchId.set(batchId);

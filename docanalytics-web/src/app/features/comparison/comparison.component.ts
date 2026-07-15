@@ -4,7 +4,6 @@ import { ComparisonService } from './comparison.service';
 import { ThroughputChartComponent } from '../dashboard/throughput-chart/throughput-chart.component';
 import { RouterLink } from '@angular/router';
 
-
 @Component({
   selector: 'app-comparison',
   standalone: true,
@@ -27,10 +26,14 @@ export class ComparisonComponent {
   protected readonly totalB = computed(() => this.svc.total(this.svc.rangeB().points));
   protected readonly delta = computed(() => {
     const a = this.totalA();
-    if (a === 0) return null;                       // avoid divide-by-zero → hide footer
+    if (a === 0) return null; // avoid divide-by-zero → hide footer
     return Math.round(((this.totalB() - a) / a) * 100);
   });
 
-  protected runA(): void { if (this.aFrom && this.aTo) this.svc.loadA(this.aFrom, this.aTo); }
-  protected runB(): void { if (this.bFrom && this.bTo) this.svc.loadB(this.bFrom, this.bTo); }
+  protected runA(): void {
+    if (this.aFrom && this.aTo) this.svc.loadA(this.aFrom, this.aTo);
+  }
+  protected runB(): void {
+    if (this.bFrom && this.bTo) this.svc.loadB(this.bFrom, this.bTo);
+  }
 }

@@ -1,4 +1,4 @@
-﻿namespace DocAnalytics.Service.Storage;
+namespace DocAnalytics.Service.Storage;
 
 public interface IFileStorage
 {

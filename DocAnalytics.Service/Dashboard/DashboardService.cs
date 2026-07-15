@@ -1,4 +1,4 @@
-﻿using DocAnalytics.Data;
+using DocAnalytics.Data;
 using DocAnalytics.Service.Common;
 using Microsoft.EntityFrameworkCore;
 

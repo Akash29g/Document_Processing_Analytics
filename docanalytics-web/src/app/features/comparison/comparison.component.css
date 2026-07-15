@@ -8,7 +8,7 @@
 .cmp-eyebrow {
   margin: 0;
   font-size: 0.72rem;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--dark-gray-3);
 }
@@ -77,19 +77,19 @@
   color: var(--dark-gray-3);
 }
 
-  .cmp-field input {
-    padding: 7px 10px;
-    border: 1px solid var(--cool-gray);
-    border-radius: 6px;
-    font: inherit;
-    color: var(--dark-gray);
-    background: var(--white);
-  }
+.cmp-field input {
+  padding: 7px 10px;
+  border: 1px solid var(--cool-gray);
+  border-radius: 6px;
+  font: inherit;
+  color: var(--dark-gray);
+  background: var(--white);
+}
 
-    .cmp-field input:focus {
-      outline: none;
-      border-color: var(--slate-blue);
-    }
+.cmp-field input:focus {
+  outline: none;
+  border-color: var(--slate-blue);
+}
 
 .cmp-btn {
   height: 34px;
@@ -102,10 +102,10 @@
   font: inherit;
 }
 
-  .cmp-btn:disabled {
-    opacity: .5;
-    cursor: default;
-  }
+.cmp-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
 
 .cmp-delta {
   margin: 0;
@@ -113,13 +113,13 @@
   color: var(--dark-gray-3);
 }
 
-  .cmp-delta strong.up {
-    color: var(--status-confirmed, #2e7d32);
-  }
+.cmp-delta strong.up {
+  color: var(--status-confirmed, #2e7d32);
+}
 
-  .cmp-delta strong.down {
-    color: var(--text-error, #d92d20);
-  }
+.cmp-delta strong.down {
+  color: var(--text-error, #d92d20);
+}
 
 .comparison-back {
   display: inline-block;
@@ -129,6 +129,6 @@
   font-weight: 500;
 }
 
-  .comparison-back:hover {
-    text-decoration: underline;
-  }
+.comparison-back:hover {
+  text-decoration: underline;
+}

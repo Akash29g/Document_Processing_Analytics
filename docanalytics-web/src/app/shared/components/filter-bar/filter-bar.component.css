@@ -19,7 +19,7 @@
   font-size: 0.72rem;
   color: var(--dark-gray-3);
   text-transform: uppercase;
-  letter-spacing: .04em;
+  letter-spacing: 0.04em;
 }
 
 .fb-input {
@@ -32,10 +32,10 @@
   background: var(--white);
 }
 
-  .fb-input:focus {
-    outline: none;
-    border-color: var(--slate-blue);
-  }
+.fb-input:focus {
+  outline: none;
+  border-color: var(--slate-blue);
+}
 
 .fb-clear {
   height: 34px;
@@ -48,7 +48,7 @@
   color: var(--dark-gray-3);
 }
 
-  .fb-clear:disabled {
-    opacity: .5;
-    cursor: default;
-  }
+.fb-clear:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

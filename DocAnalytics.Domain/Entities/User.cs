@@ -1,4 +1,4 @@
-﻿// Entities/User.cs
+// Entities/User.cs
 namespace DocAnalytics.Domain.Entities;
 
 public class User

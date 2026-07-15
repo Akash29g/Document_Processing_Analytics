@@ -1,9 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Mail;
 using Microsoft.Extensions.Configuration;
 
 namespace DocAnalytics.Service.Alerts;
 
+[ExcludeFromCodeCoverage]
 // Reads the "Email" section of appsettings. Uses built-in SmtpClient (no extra package).
 public sealed class SmtpEmailSender : IEmailSender
 {

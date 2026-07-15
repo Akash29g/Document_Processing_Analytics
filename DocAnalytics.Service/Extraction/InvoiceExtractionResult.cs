@@ -1,15 +1,15 @@
-﻿namespace DocAnalytics.Service.Extraction;
+namespace DocAnalytics.Service.Extraction;
 
 public sealed record InvoiceExtractionResult(
     string? InvoiceNumber,
     string? InvoiceDate,
     string? Seller,
     string? Client,
-    string? Currency,     
-    decimal? Subtotal,    
-    decimal? Discount,    
-    decimal? Tax,         
-    decimal? Shipping,    
+    string? Currency,
+    decimal? Subtotal,
+    decimal? Discount,
+    decimal? Tax,
+    decimal? Shipping,
     decimal? Total,
     List<ExtractedLineItem> LineItems);
 

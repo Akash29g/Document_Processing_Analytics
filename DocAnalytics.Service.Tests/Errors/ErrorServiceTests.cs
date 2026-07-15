@@ -1,10 +1,7 @@
-using DocAnalytics.Data;
 using DocAnalytics.Domain.Entities;
 using DocAnalytics.Service.Errors;
 using DocAnalytics.Service.Tests.Support;
 using MockQueryable.Moq;
-using Moq;
-using Xunit;
 
 namespace DocAnalytics.Service.Tests.Errors;
 

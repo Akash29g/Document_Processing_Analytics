@@ -7,7 +7,7 @@
 
 .bd-back {
   display: inline-block;
-  font-size: .85rem;
+  font-size: 0.85rem;
 }
 
 .head {
@@ -22,7 +22,7 @@
   margin: 0;
   font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: .04em;
+  letter-spacing: 0.04em;
   color: var(--dark-gray-3);
 }
 
@@ -64,13 +64,18 @@
   font-size: 0.85rem;
 }
 
-  .inline-error button {
-    margin-left: 8px;
-  }
+.inline-error button {
+  margin-left: 8px;
+}
 
 /* skeleton shimmer (tokens → auto-flips in dark) */
 .skel {
-  background: linear-gradient(90deg, var(--light-gray) 25%, var(--cool-gray) 37%, var(--light-gray) 63%);
+  background: linear-gradient(
+    90deg,
+    var(--light-gray) 25%,
+    var(--cool-gray) 37%,
+    var(--light-gray) 63%
+  );
   background-size: 400% 100%;
   animation: skel 1.4s ease infinite;
   border-radius: 4px;

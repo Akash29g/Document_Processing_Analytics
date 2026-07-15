@@ -23,7 +23,6 @@ export interface LoginResponse {
   must_change_password: boolean;
 }
 
-
 // GET /auth/me → data
 export interface MeResponse {
   user: AuthUser;

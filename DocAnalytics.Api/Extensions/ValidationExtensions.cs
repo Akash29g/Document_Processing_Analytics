@@ -1,9 +1,12 @@
-﻿using DocAnalytics.Api.Common;
-using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using DocAnalytics.Api.Common;
+using Microsoft.AspNetCore.Mvc;
+
 
 namespace DocAnalytics.Api.Extensions;
 
+[ExcludeFromCodeCoverage]
 public static class ValidationExtensions
 {
     // Replaces the framework's default 400 (ProblemDetails) with our ApiResponse.Fail envelope.

@@ -2,62 +2,72 @@
   <a class="bd-back" routerLink="..">← Back to batches</a>
 
   @if (batch.detailLoading()) {
-  <!-- header skeleton -->
-  <div class="head">
-    <div class="titles">
-      <div class="skel" style="height:11px;width:60px;"></div>
-      <div class="skel" style="height:20px;width:280px;margin-top:8px;"></div>
-      <div class="skel" style="height:13px;width:180px;margin-top:8px;"></div>
+    <!-- header skeleton -->
+    <div class="head">
+      <div class="titles">
+        <div class="skel" style="height: 11px; width: 60px"></div>
+        <div class="skel" style="height: 20px; width: 280px; margin-top: 8px"></div>
+        <div class="skel" style="height: 13px; width: 180px; margin-top: 8px"></div>
+      </div>
+      <div class="skel" style="height: 26px; width: 90px; border-radius: 13px"></div>
     </div>
-    <div class="skel" style="height:26px;width:90px;border-radius:13px;"></div>
-  </div>
-  <div class="counters">
-    <app-stat-card title="Uploaded" [loading]="true"></app-stat-card>
-    <app-stat-card title="Processing" [loading]="true"></app-stat-card>
-    <app-stat-card title="Completed" [loading]="true"></app-stat-card>
-    <app-stat-card title="Failed" [loading]="true"></app-stat-card>
-  </div>
-
+    <div class="counters">
+      <app-stat-card title="Uploaded" [loading]="true"></app-stat-card>
+      <app-stat-card title="Processing" [loading]="true"></app-stat-card>
+      <app-stat-card title="Completed" [loading]="true"></app-stat-card>
+      <app-stat-card title="Failed" [loading]="true"></app-stat-card>
+    </div>
   } @else if (batch.detailError()) {
-  <p class="inline-error">
-    {{ batch.detailError() }}
-    <button type="button" (click)="batch.loadDetail()">Retry</button>
-  </p>
-
+    <p class="inline-error">
+      {{ batch.detailError() }}
+      <button type="button" (click)="batch.loadDetail()">Retry</button>
+    </p>
   } @else if (batch.detail(); as d) {
-  <!-- summary header -->
-  <div class="head">
-    <div class="titles">
-      <p class="eyebrow">Batch</p>
-      <h1 class="page-title">{{ d.id }}</h1>
-      <p class="source">Source: {{ d.source }} · {{ d.total_files }} files</p>
+    <!-- summary header -->
+    <div class="head">
+      <div class="titles">
+        <p class="eyebrow">Batch</p>
+        <h1 class="page-title">{{ d.id }}</h1>
+        <p class="source">Source: {{ d.source }} · {{ d.total_files }} files</p>
+      </div>
+      <app-status-badge [status]="d.status" />
     </div>
-    <app-status-badge [status]="d.status" />
-  </div>
 
-  <!-- file_stats counters -->
-  <div class="counters">
-    <app-stat-card title="Uploaded" [value]="d.file_stats.uploaded"></app-stat-card>
-    <app-stat-card title="Processing" [value]="d.file_stats.processing"></app-stat-card>
-    <app-stat-card title="Completed" [value]="d.file_stats.completed"></app-stat-card>
-    <app-stat-card title="Failed" [value]="d.file_stats.failed"></app-stat-card>
-  </div>
-  <p class="times">
-    Submitted {{ d.times.submitted_at | date: 'short' }}
-    · Updated {{ d.times.last_updated_at | date: 'short' }}
-    @if (d.times.completed_at) { · Completed {{ d.times.completed_at | date: 'short' }} }
-  </p>
+    <!-- file_stats counters -->
+    <div class="counters">
+      <app-stat-card title="Uploaded" [value]="d.file_stats.uploaded"></app-stat-card>
+      <app-stat-card title="Processing" [value]="d.file_stats.processing"></app-stat-card>
+      <app-stat-card title="Completed" [value]="d.file_stats.completed"></app-stat-card>
+      <app-stat-card title="Failed" [value]="d.file_stats.failed"></app-stat-card>
+    </div>
+    <p class="times">
+      Submitted {{ d.times.submitted_at | date: 'short' }} · Updated
+      {{ d.times.last_updated_at | date: 'short' }}
+      @if (d.times.completed_at) {
+        · Completed {{ d.times.completed_at | date: 'short' }}
+      }
+    </p>
   }
 
   <!-- nested files table (Akash's DataTable) — pagination only, no sort -->
   <h2 class="section-title">Files</h2>
-  <app-data-table [columns]="fileColumns" [rows]="batch.files()" [clickable]="true" [rowId]="fileRowId"
-                  [loading]="batch.filesLoading()" [error]="batch.filesError()"
-                  emptyMessage="No files in this batch"
-                  [page]="batch.filesQuery().page" [pageSize]="batch.filesQuery().pageSize"
-                  [totalCount]="batch.filesMeta()?.total_count ?? 0" [totalPages]="batch.filesMeta()?.total_pages ?? 1"
-                  (pageChange)="batch.setFilesPage($event)" (pageSizeChange)="batch.setFilesPageSize($event)"
-                  (retry)="batch.loadFiles()" (rowClick)="openFile($event)">
+  <app-data-table
+    [columns]="fileColumns"
+    [rows]="batch.files()"
+    [clickable]="true"
+    [rowId]="fileRowId"
+    [loading]="batch.filesLoading()"
+    [error]="batch.filesError()"
+    emptyMessage="No files in this batch"
+    [page]="batch.filesQuery().page"
+    [pageSize]="batch.filesQuery().pageSize"
+    [totalCount]="batch.filesMeta()?.total_count ?? 0"
+    [totalPages]="batch.filesMeta()?.total_pages ?? 1"
+    (pageChange)="batch.setFilesPage($event)"
+    (pageSizeChange)="batch.setFilesPageSize($event)"
+    (retry)="batch.loadFiles()"
+    (rowClick)="openFile($event)"
+  >
     <ng-template dtCell="status" let-row><app-status-badge [status]="row.status" /></ng-template>
     <ng-template dtCell="created_at" let-row>{{ row.created_at | date: 'short' }}</ng-template>
   </app-data-table>

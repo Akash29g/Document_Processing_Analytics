@@ -1,4 +1,4 @@
-﻿// Entities/ItemCategory.cs  (NEW - table 12, master catalog, global)
+// Entities/ItemCategory.cs  (NEW - table 12, master catalog, global)
 namespace DocAnalytics.Domain.Entities;
 
 public class ItemCategory

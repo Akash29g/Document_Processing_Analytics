@@ -1,4 +1,4 @@
-﻿// Entities/UserSiteAccess.cs
+// Entities/UserSiteAccess.cs
 namespace DocAnalytics.Domain.Entities;
 
 public class UserSiteAccess

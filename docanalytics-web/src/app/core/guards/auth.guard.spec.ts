@@ -4,19 +4,19 @@ import { authGuard } from './auth.guard';
 import { AuthService } from '../services/auth.service';
 
 describe('authGuard', () => {
-  const run = () =>
-    TestBed.runInInjectionContext(() => authGuard({} as any, {} as any));
+  const run = () => TestBed.runInInjectionContext(() => authGuard({} as any, {} as any));
 
   function setup(auth: Partial<AuthService>) {
     TestBed.configureTestingModule({
       providers: [
         { provide: AuthService, useValue: auth },
         {
-          provide: Router, useValue: {
-            parseUrl: (u: string) => ({ url: u } as unknown as UrlTree),
-            createUrlTree: (c: any[]) => ({ url: c.join('/') } as unknown as UrlTree),
+          provide: Router,
+          useValue: {
+            parseUrl: (u: string) => ({ url: u }) as unknown as UrlTree,
+            createUrlTree: (c: any[]) => ({ url: c.join('/') }) as unknown as UrlTree,
             navigate: vi.fn(),
-          }
+          },
         },
       ],
     });
@@ -24,7 +24,7 @@ describe('authGuard', () => {
 
   it('redirects to /login when there is no token', async () => {
     setup({ token: () => null, ensureSession: vi.fn().mockResolvedValue(false) } as any);
-    expect(await run()).not.toBe(true);      // UrlTree → redirect
+    expect(await run()).not.toBe(true); // UrlTree → redirect
   });
 
   it('allows navigation when a session exists', async () => {

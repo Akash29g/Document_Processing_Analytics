@@ -1,8 +1,11 @@
-﻿using Microsoft.OpenApi;                    // ⚠️ 2.x: namespace COLLAPSED (was Microsoft.OpenApi.Models)
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.OpenApi;                    // ⚠️ 2.x: namespace COLLAPSED (was Microsoft.OpenApi.Models)
 using Swashbuckle.AspNetCore.SwaggerGen;
+
 
 namespace DocAnalytics.Api.Swagger;
 
+[ExcludeFromCodeCoverage]
 // Adds an optional "X-Site-Id" header box to EVERY endpoint in Swagger UI,
 // so tenant-scoped requests can pass the site the middleware looks for.
 public sealed class SiteHeaderOperationFilter : IOperationFilter

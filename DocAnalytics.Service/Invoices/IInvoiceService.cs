@@ -1,4 +1,4 @@
-﻿namespace DocAnalytics.Service.Invoices;
+namespace DocAnalytics.Service.Invoices;
 
 public interface IInvoiceService
 {

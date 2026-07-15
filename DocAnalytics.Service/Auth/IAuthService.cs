@@ -1,4 +1,4 @@
-﻿namespace DocAnalytics.Service.Auth;
+namespace DocAnalytics.Service.Auth;
 
 public interface IAuthService
 {

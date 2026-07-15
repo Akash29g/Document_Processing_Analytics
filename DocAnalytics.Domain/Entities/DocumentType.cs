@@ -1,4 +1,4 @@
-﻿// Entities/DocumentType.cs  (global catalog)
+// Entities/DocumentType.cs  (global catalog)
 namespace DocAnalytics.Domain.Entities;
 
 public class DocumentType

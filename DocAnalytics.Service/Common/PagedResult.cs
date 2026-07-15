@@ -1,4 +1,4 @@
-﻿namespace DocAnalytics.Service.Common;
+namespace DocAnalytics.Service.Common;
 
 public sealed class PagedResult<T>
 {

@@ -1,12 +1,13 @@
-<app-chart-card title="Throughput"
-                subtitle="Documents processed per day"
-                [loading]="loading()"
-                [error]="error()"
-                [empty]="!loading() && !error() && data().length === 0"
-                (retry)="retry.emit()">
-
+<app-chart-card
+  title="Throughput"
+  subtitle="Documents processed per day"
+  [loading]="loading()"
+  [error]="error()"
+  [empty]="!loading() && !error() && data().length === 0"
+  (retry)="retry.emit()"
+>
   @if (compareLink()) {
-  <a card-actions class="tp-compare" [routerLink]="compareLink()">Compare ↗</a>
+    <a card-actions class="tp-compare" [routerLink]="compareLink()">Compare ↗</a>
   }
 
   <div class="tp">
@@ -21,10 +22,15 @@
     </div>
 
     <!-- the plot -->
-    <svg class="chart" [attr.viewBox]="'0 0 ' + W + ' ' + H"
-         preserveAspectRatio="none" role="img" aria-label="Documents processed per day">
+    <svg
+      class="chart"
+      [attr.viewBox]="'0 0 ' + W + ' ' + H"
+      preserveAspectRatio="none"
+      role="img"
+      aria-label="Documents processed per day"
+    >
       @for (gl of gridLines(); track gl) {
-      <line class="grid" x1="0" [attr.y1]="gl" [attr.x2]="W" [attr.y2]="gl" />
+        <line class="grid" x1="0" [attr.y1]="gl" [attr.x2]="W" [attr.y2]="gl" />
       }
       <polyline class="line" [attr.points]="linePoints()" />
     </svg>

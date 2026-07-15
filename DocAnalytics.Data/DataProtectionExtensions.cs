@@ -1,8 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DocAnalytics.Data;
 
+[ExcludeFromCodeCoverage]
 public static class DataProtectionExtensions
 {
     /// <summary>

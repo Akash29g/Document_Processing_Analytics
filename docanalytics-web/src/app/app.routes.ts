@@ -3,37 +3,33 @@ import { authGuard } from './core/guards/auth.guard';
 import { siteAccessGuard } from './core/guards/site-access.guard';
 import { roleGuard } from './core/guards/role.guard';
 
-
 export const routes: Routes = [
   {
     path: 'login',
-    loadComponent: () =>
-      import('./features/auth/login.component').then((m) => m.LoginComponent),
+    loadComponent: () => import('./features/auth/login.component').then((m) => m.LoginComponent),
   },
   {
     // Everything under a site is guarded + rendered inside Shubh's App shell.
     path: 'site/:siteId',
     canActivate: [authGuard, siteAccessGuard],
-    loadComponent: () =>
-      import('./layout/shell/shell.component').then((m) => m.ShellComponent),
+    loadComponent: () => import('./layout/shell/shell.component').then((m) => m.ShellComponent),
     children: [
       {
         path: 'dashboard',
         loadComponent: () =>
-          import('./features/dashboard/dashboard.component').then(
-            (m) => m.DashboardComponent,
-          ),
+          import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
       },
 
       {
         path: 'batches',
         loadComponent: () =>
-          import('./features/batches/batch-list.component').then(m => m.BatchListComponent),
+          import('./features/batches/batch-list.component').then((m) => m.BatchListComponent),
       },
 
       {
-        path: 'upload', loadComponent: () =>
-          import('./features/upload/upload.component').then(m => m.UploadComponent)
+        path: 'upload',
+        loadComponent: () =>
+          import('./features/upload/upload.component').then((m) => m.UploadComponent),
       },
 
       {
@@ -45,7 +41,9 @@ export const routes: Routes = [
       {
         path: 'activity-log',
         loadComponent: () =>
-          import('./features/activity-log/activity-log.component').then((m) => m.ActivityLogComponent),
+          import('./features/activity-log/activity-log.component').then(
+            (m) => m.ActivityLogComponent,
+          ),
       },
 
       {
@@ -87,8 +85,6 @@ export const routes: Routes = [
           import('./features/admin/admin.component').then((m) => m.AdminComponent),
       },
 
-
-     
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
     ],
   },
@@ -98,8 +94,8 @@ export const routes: Routes = [
   {
     path: 'change-password',
     canActivate: [authGuard],
-    loadComponent: () => import('./features/auth/change-password.component')
-      .then(m => m.ChangePasswordComponent),
+    loadComponent: () =>
+      import('./features/auth/change-password.component').then((m) => m.ChangePasswordComponent),
   },
   {
     path: 'provision',

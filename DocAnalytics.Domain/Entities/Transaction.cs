@@ -1,4 +1,4 @@
-﻿// Entities/Transaction.cs  (the "TId" / batch)
+// Entities/Transaction.cs  (the "TId" / batch)
 namespace DocAnalytics.Domain.Entities;
 
 using DocAnalytics.Domain.Common;

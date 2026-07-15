@@ -15,7 +15,7 @@
 .al-eyebrow {
   margin: 0;
   font-size: 0.72rem;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--dark-gray-3);
 }
@@ -37,10 +37,10 @@
   background: var(--white);
 }
 
-  .al-search:focus {
-    outline: none;
-    border-color: var(--slate-blue);
-  }
+.al-search:focus {
+  outline: none;
+  border-color: var(--slate-blue);
+}
 
 .al-evt {
   font-weight: 600;

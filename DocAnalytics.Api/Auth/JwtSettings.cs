@@ -1,4 +1,4 @@
-﻿namespace DocAnalytics.Api.Auth;
+namespace DocAnalytics.Api.Auth;
 
 public class JwtSettings
 {

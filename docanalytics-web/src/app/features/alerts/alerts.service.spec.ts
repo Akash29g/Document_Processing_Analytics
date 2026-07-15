@@ -16,13 +16,11 @@ describe('AlertsService — notifications', () => {
     httpMock = TestBed.inject(HttpTestingController);
   });
 
-  afterEach(() => httpMock.verify());   // no leftover/unexpected requests
+  afterEach(() => httpMock.verify()); // no leftover/unexpected requests
 
   it('loads unread notifications and computes badge count', async () => {
     service.loadNotifications(true);
-    const req = httpMock.expectOne(
-      `${environment.apiBase}/alerts/notifications?unread=true`,
-    );
+    const req = httpMock.expectOne(`${environment.apiBase}/alerts/notifications?unread=true`);
     req.flush({
       data: [
         { id: '1', is_read: false, severity: 'critical', rule_name: 'R', message: 'm' },
@@ -36,15 +34,13 @@ describe('AlertsService — notifications', () => {
   it('markRead optimistically flips the flag', () => {
     // seed two unread first
     service.loadNotifications(true);
-    httpMock
-      .expectOne(`${environment.apiBase}/alerts/notifications?unread=true`)
-      .flush({
-        data: [
-          { id: '1', is_read: false, severity: 'critical', rule_name: 'R', message: 'm' },
-          { id: '2', is_read: false, severity: 'warning', rule_name: 'R', message: 'm' },
-        ],
-        error: null,
-      });
+    httpMock.expectOne(`${environment.apiBase}/alerts/notifications?unread=true`).flush({
+      data: [
+        { id: '1', is_read: false, severity: 'critical', rule_name: 'R', message: 'm' },
+        { id: '2', is_read: false, severity: 'warning', rule_name: 'R', message: 'm' },
+      ],
+      error: null,
+    });
     expect(service.unreadCount()).toBe(2);
 
     service.markRead('1');

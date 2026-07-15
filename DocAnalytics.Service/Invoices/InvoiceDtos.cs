@@ -1,4 +1,4 @@
-﻿namespace DocAnalytics.Service.Invoices;
+namespace DocAnalytics.Service.Invoices;
 
 // The whole response: one file's invoice line items + computed totals.
 public sealed class InvoiceDetailDto

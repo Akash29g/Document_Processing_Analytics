@@ -1,4 +1,6 @@
 <button class="btn" [disabled]="disabled() || loading()" (click)="clicked.emit()">
-  @if (loading()) { <span class="spinner"></span> }
+  @if (loading()) {
+    <span class="spinner"></span>
+  }
   <ng-content />
 </button>

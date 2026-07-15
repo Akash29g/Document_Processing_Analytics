@@ -5,10 +5,15 @@ import { ActivityLogItem, ActivityLogSortBy } from './activity-log.models';
 import { SiteContextService } from '../../core/services/site-context.service';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import {
-  FilterBarComponent, FilterOption, FilterValues,
+  FilterBarComponent,
+  FilterOption,
+  FilterValues,
 } from '../../shared/components/filter-bar/filter-bar.component';
 import {
-  ColumnDef, DataTableComponent, DtCellDirective, SortState,
+  ColumnDef,
+  DataTableComponent,
+  DtCellDirective,
+  SortState,
 } from '../../shared/components/data-table/data-table.component';
 
 @Component({
@@ -16,7 +21,11 @@ import {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    DatePipe, StatusBadgeComponent, FilterBarComponent, DataTableComponent, DtCellDirective,
+    DatePipe,
+    StatusBadgeComponent,
+    FilterBarComponent,
+    DataTableComponent,
+    DtCellDirective,
   ],
 
   templateUrl: './activity-log.component.html',
@@ -61,11 +70,13 @@ export class ActivityLogComponent {
     });
   }
 
-  protected eventLabel(t: string): string { return ActivityLogComponent.EVENT_LABELS[t] ?? t; }
+  protected eventLabel(t: string): string {
+    return ActivityLogComponent.EVENT_LABELS[t] ?? t;
+  }
 
   protected onFilters(f: FilterValues): void {
     this.svc.setFilters({
-      eventType: f.status === 'all' ? null : f.status,   // first field repurposed as Event type
+      eventType: f.status === 'all' ? null : f.status, // first field repurposed as Event type
       from: f.from,
       to: f.to,
     });
@@ -78,6 +89,6 @@ export class ActivityLogComponent {
   protected onSearch(e: Event): void {
     const v = (e.target as HTMLInputElement).value;
     clearTimeout(this.searchTimer);
-    this.searchTimer = setTimeout(() => this.svc.setEntitySearch(v), 300);  // debounce
+    this.searchTimer = setTimeout(() => this.svc.setEntitySearch(v), 300); // debounce
   }
 }

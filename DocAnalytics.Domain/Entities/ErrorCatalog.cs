@@ -1,4 +1,4 @@
-﻿// Entities/ErrorCatalog.cs  (global)
+// Entities/ErrorCatalog.cs  (global)
 namespace DocAnalytics.Domain.Entities;
 
 public class ErrorCatalog

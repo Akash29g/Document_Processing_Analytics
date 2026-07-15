@@ -1,4 +1,4 @@
-﻿using DocAnalytics.Api.Common;            // ApiResponse<T>, Meta
+using DocAnalytics.Api.Common;            // ApiResponse<T>, Meta
 using DocAnalytics.Service.ActivityLog;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

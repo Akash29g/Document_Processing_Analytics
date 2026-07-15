@@ -3,70 +3,78 @@
     <thead>
       <tr>
         @for (col of columns(); track col.key) {
-        <th [style.width]="col.width"
+          <th
+            [style.width]="col.width"
             [class.sortable]="col.sortable"
             [style.text-align]="col.align || 'left'"
-            (click)="onHeaderClick(col)">
-          <span>{{ col.header }}</span>
-          @if (col.sortable && sortBy() === col.key) {
-          <span class="arrow">{{ sortDir() === 'asc' ? '▲' : '▼' }}</span>
-          }
-        </th>
+            (click)="onHeaderClick(col)"
+          >
+            <span>{{ col.header }}</span>
+            @if (col.sortable && sortBy() === col.key) {
+              <span class="arrow">{{ sortDir() === 'asc' ? '▲' : '▼' }}</span>
+            }
+          </th>
         }
       </tr>
     </thead>
 
     <tbody>
       @if (error()) {
-      <tr>
-        <td [attr.colspan]="columns().length" class="state error">
-          <span>{{ error() }}</span>
-          <button type="button" class="retry" (click)="retry.emit()">Retry</button>
-        </td>
-      </tr>
+        <tr>
+          <td [attr.colspan]="columns().length" class="state error">
+            <span>{{ error() }}</span>
+            <button type="button" class="retry" (click)="retry.emit()">Retry</button>
+          </td>
+        </tr>
       } @else if (loading()) {
-      @for (r of skeletonRows; track r) {
-      <tr class="skeleton">
-        @for (col of columns(); track col.key) {
-        <td><span class="bar"></span></td> }
-      </tr>
-      }
-      } @else if (!rows().length) {
-      <tr><td [attr.colspan]="columns().length" class="state empty">{{ emptyMessage() }}</td></tr>
-      } @else {
-      @for (row of rows(); track key(row, $index)) {
-      <tr (click)="rowClick.emit(row)" [class.clickable]="clickable()">
-        @for (col of columns(); track col.key) {
-        <td [style.text-align]="col.align || 'left'">
-          @if (cellTemplates().get(col.key); as tpl) {
-          <ng-container [ngTemplateOutlet]="tpl"
-                        [ngTemplateOutletContext]="{ $implicit: row, row }" />
-          } @else {
-          {{ display(row, col) }}
-          }
-        </td>
+        @for (r of skeletonRows; track r) {
+          <tr class="skeleton">
+            @for (col of columns(); track col.key) {
+              <td><span class="bar"></span></td>
+            }
+          </tr>
         }
-      </tr>
-      }
+      } @else if (!rows().length) {
+        <tr>
+          <td [attr.colspan]="columns().length" class="state empty">{{ emptyMessage() }}</td>
+        </tr>
+      } @else {
+        @for (row of rows(); track key(row, $index)) {
+          <tr (click)="rowClick.emit(row)" [class.clickable]="clickable()">
+            @for (col of columns(); track col.key) {
+              <td [style.text-align]="col.align || 'left'">
+                @if (cellTemplates().get(col.key); as tpl) {
+                  <ng-container
+                    [ngTemplateOutlet]="tpl"
+                    [ngTemplateOutletContext]="{ $implicit: row, row }"
+                  />
+                } @else {
+                  {{ display(row, col) }}
+                }
+              </td>
+            }
+          </tr>
+        }
       }
     </tbody>
   </table>
 
   @if (!loading() && !error() && rows().length) {
-  <div class="dt-footer">
-    <span class="count">{{ totalCount() }} records</span>
-    <div class="pager">
-      <label class="psize">
-        Rows:
-        <select [value]="pageSize()" (change)="onPageSize($event)">
-          @for (n of pageSizeOptions(); track n) {
-          <option [value]="n" [selected]="n === pageSize()">{{ n }}</option> }
-        </select>
-      </label>
-      <button type="button" [disabled]="page() <= 1" (click)="prev()">‹ Prev</button>
-      <span class="page-info">Page {{ page() }} of {{ totalPages() }}</span>
-      <button type="button" [disabled]="page() >= totalPages()" (click)="next()">Next ›</button>
+    <div class="dt-footer">
+      <span class="count">{{ totalCount() }} records</span>
+      <div class="pager">
+        <label class="psize">
+          Rows:
+          <select [value]="pageSize()" (change)="onPageSize($event)">
+            @for (n of pageSizeOptions(); track n) {
+              <option [value]="n" [selected]="n === pageSize()">{{ n }}</option>
+            }
+          </select>
+        </label>
+        <button type="button" [disabled]="page() <= 1" (click)="prev()">‹ Prev</button>
+        <span class="page-info">Page {{ page() }} of {{ totalPages() }}</span>
+        <button type="button" [disabled]="page() >= totalPages()" (click)="next()">Next ›</button>
+      </div>
     </div>
-  </div>
   }
 </div>

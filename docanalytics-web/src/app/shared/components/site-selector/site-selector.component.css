@@ -20,19 +20,19 @@
   cursor: pointer;
 }
 
-  .dd-trigger:focus {
-    outline: none;
-    border-color: var(--slate-blue);
-  }
+.dd-trigger:focus {
+  outline: none;
+  border-color: var(--slate-blue);
+}
 
-  .dd-trigger.open {
-    border-color: var(--slate-blue);
-  }
+.dd-trigger.open {
+  border-color: var(--slate-blue);
+}
 
 .chevron {
   font-size: 20px;
   color: var(--dark-gray-3);
-  transition: transform .15s;
+  transition: transform 0.15s;
 }
 
 .dd-trigger.open .chevron {
@@ -52,24 +52,24 @@
   background: var(--white);
   border: 1px solid var(--cool-gray);
   border-radius: 4px;
-  box-shadow: 0 4px 16px 0 rgba(0,0,0,.08);
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08);
   max-height: 280px;
   overflow-y: auto;
 }
 
-  .dd-list li {
-    font-family: var(--font-body);
-    font-size: 16px;
-    color: var(--dark-gray);
-    padding: 10px 12px;
-    cursor: pointer;
-  }
-    /* AVEVA spec: hovered/active row = light gray */
-    .dd-list li.active {
-      background: var(--light-gray);
-    }
-    /* selected row = light gray + emphasis (no native blue) */
-    .dd-list li.selected {
-      background: var(--light-gray);
-      font-weight: 600;
-    }
+.dd-list li {
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--dark-gray);
+  padding: 10px 12px;
+  cursor: pointer;
+}
+/* AVEVA spec: hovered/active row = light gray */
+.dd-list li.active {
+  background: var(--light-gray);
+}
+/* selected row = light gray + emphasis (no native blue) */
+.dd-list li.selected {
+  background: var(--light-gray);
+  font-weight: 600;
+}

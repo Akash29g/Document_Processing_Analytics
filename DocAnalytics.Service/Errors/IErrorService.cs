@@ -1,4 +1,4 @@
-﻿using DocAnalytics.Service.Common;   // PagedResult<T> — match the namespace BatchService uses
+using DocAnalytics.Service.Common;   // PagedResult<T> — match the namespace BatchService uses
 
 namespace DocAnalytics.Service.Errors;
 

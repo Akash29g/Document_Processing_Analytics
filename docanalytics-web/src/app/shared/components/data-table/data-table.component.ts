@@ -1,17 +1,27 @@
 import {
-  Component, Directive, TemplateRef, computed, contentChildren, inject, input, output,
+  Component,
+  Directive,
+  TemplateRef,
+  computed,
+  contentChildren,
+  inject,
+  input,
+  output,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 
 export type SortDir = 'asc' | 'desc';
-export interface SortState { sortBy: string; sortDir: SortDir; }
+export interface SortState {
+  sortBy: string;
+  sortDir: SortDir;
+}
 
 export interface ColumnDef<T = any> {
-  key: string;                 // property name OR a unique key when you use a cell template
+  key: string; // property name OR a unique key when you use a cell template
   header: string;
   sortable?: boolean;
   align?: 'left' | 'right' | 'center';
-  width?: string;              // e.g. '160px'
+  width?: string; // e.g. '160px'
   value?: (row: T) => unknown; // optional accessor for computed/nested values
 }
 
@@ -76,8 +86,12 @@ export class DataTableComponent<T = any> {
     const dir: SortDir = same ? (this.sortDir() === 'asc' ? 'desc' : 'asc') : 'desc';
     this.sortChange.emit({ sortBy: col.key, sortDir: dir });
   }
-  protected prev(): void { if (this.page() > 1) this.pageChange.emit(this.page() - 1); }
-  protected next(): void { if (this.page() < this.totalPages()) this.pageChange.emit(this.page() + 1); }
+  protected prev(): void {
+    if (this.page() > 1) this.pageChange.emit(this.page() - 1);
+  }
+  protected next(): void {
+    if (this.page() < this.totalPages()) this.pageChange.emit(this.page() + 1);
+  }
   protected onPageSize(e: Event): void {
     this.pageSizeChange.emit(Number((e.target as HTMLSelectElement).value));
   }

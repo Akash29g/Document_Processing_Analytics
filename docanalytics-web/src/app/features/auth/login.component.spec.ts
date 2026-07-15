@@ -14,20 +14,20 @@ describe('LoginComponent', () => {
       imports: [LoginComponent],
       providers: [
         {
-          provide: AuthService, useValue: {
+          provide: AuthService,
+          useValue: {
             login: loginSpy,
             ensureSession: vi.fn().mockResolvedValue(false),
             sites: () => [{ site_id: 's1', site_name: 'Plant One' }],
-            currentUser: () => ({ id: '1', email: 'a@org.com', role: 'Viewer' }),  // ← added
-            logout: vi.fn(),                                                       // ← added
-          }
+            currentUser: () => ({ id: '1', email: 'a@org.com', role: 'Viewer' }), // ← added
+            logout: vi.fn(), // ← added
+          },
         },
         { provide: Router, useValue: { navigate: navSpy, navigateByUrl: navSpy } },
       ],
     });
     return TestBed.createComponent(LoginComponent).componentInstance;
   }
-
 
   beforeEach(() => navSpy.mockClear());
 

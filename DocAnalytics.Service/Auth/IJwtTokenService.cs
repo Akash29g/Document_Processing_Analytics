@@ -1,4 +1,4 @@
-﻿using DocAnalytics.Domain.Entities;   
+using DocAnalytics.Domain.Entities;
 
 namespace DocAnalytics.Service.Auth;
 

@@ -1,7 +1,6 @@
 using DocAnalytics.Service.ActivityLog;
 using DocAnalytics.Service.Tests.Support;
 using MockQueryable.Moq;
-using Moq;
 using DomainActivityLog = DocAnalytics.Domain.Entities.ActivityLog;
 
 namespace DocAnalytics.Service.Tests.ActivityLog;

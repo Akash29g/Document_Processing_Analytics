@@ -27,7 +27,7 @@ export class FileDetailsService {
   private _invoice = signal<InvoiceDetail | null>(null);
   private _invoiceLoading = signal(false);
   private _invoiceError = signal<string | null>(null);
-  private _hasInvoice = signal(true);          // false on 404 (file has no invoice)
+  private _hasInvoice = signal(true); // false on 404 (file has no invoice)
   readonly invoice = this._invoice.asReadonly();
   readonly invoiceLoading = this._invoiceLoading.asReadonly();
   readonly invoiceError = this._invoiceError.asReadonly();
@@ -101,13 +101,16 @@ export class FileDetailsService {
   downloadOriginal(): void {
     if (!this._fileId) return;
     this.http
-      .get<ApiResponse<{ url: string }>>(`${this.base}/files/${this._fileId}/download-url`, this.silent)
+      .get<ApiResponse<{ url: string }>>(
+        `${this.base}/files/${this._fileId}/download-url`,
+        this.silent,
+      )
       .subscribe({
-        next: (res) => { if (res.data?.url) window.open(res.data.url, '_blank'); },
+        next: (res) => {
+          if (res.data?.url) window.open(res.data.url, '_blank');
+        },
       });
   }
-
-
 
   reset(): void {
     this._fileId = null;

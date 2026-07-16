@@ -1,0 +1,46 @@
+{
+  "family": "docanalytics-api",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [ "FARGATE" ],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::323155024771:role/docanalytics-task-exec",
+  "taskRoleArn": "arn:aws:iam::323155024771:role/docanalytics-task-role",
+  "containerDefinitions": [
+    {
+      "name": "api",
+      "image": "PLACEHOLDER_WILL_BE_REPLACED_BY_WORKFLOW",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "ASPNETCORE_ENVIRONMENT",
+          "value": "Production"
+        },
+        {
+          "name": "ASPNETCORE_URLS",
+          "value": "http://+:8080"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "ConnectionStrings__Default",
+          "valueFrom": "arn:aws:secretsmanager:ap-south-1:323155024771:secret:docanalytics/rds-conn-hqfwaX"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/docanalytics-api",
+          "awslogs-region": "ap-south-1",
+          "awslogs-stream-prefix": "api"
+        }
+      }
+    }
+  ]
+}

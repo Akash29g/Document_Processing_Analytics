@@ -1,0 +1,80 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]          # deploy only AFTER merge
+  workflow_dispatch:           # allow manual runs from the Actions tab
+
+permissions:
+  id-token: write              # REQUIRED for OIDC
+  contents: read
+
+env:
+  AWS_REGION: ap-south-1
+  ECR_API_REPO: docanalytics-api
+  ECR_WEB_REPO: docanalytics-web
+  ECS_CLUSTER: docanalytics-cluster      # from Step A (skip if App Runner)
+  ECS_API_SERVICE: docanalytics-api-svc
+  ECS_WEB_SERVICE: docanalytics-web-svc
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── OIDC: assume the IAM role from Step A (no static keys) ──
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # ── Reuse your R2 Dockerfiles (already Trivy-clean) ──
+      - name: Build & push API image
+        env: { REGISTRY: "${{ steps.ecr.outputs.registry }}" }
+        run: |
+          docker build -t $REGISTRY/$ECR_API_REPO:${{ github.sha }} -f DocAnalytics.Api/Dockerfile .
+          docker push  $REGISTRY/$ECR_API_REPO:${{ github.sha }}
+
+      - name: Build & push Web image
+        env: { REGISTRY: "${{ steps.ecr.outputs.registry }}" }
+        run: |
+          docker build -t $REGISTRY/$ECR_WEB_REPO:${{ github.sha }} -f docanalytics-web/Dockerfile docanalytics-web
+          docker push  $REGISTRY/$ECR_WEB_REPO:${{ github.sha }}
+
+      # ── GATED EF migrations: fail the deploy if this fails ──
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with: { dotnet-version: '10.0.x' }
+
+      - name: Apply EF migrations
+        env:
+          ConnectionStrings__Default: ${{ secrets.RDS_CONNECTION_STRING }}
+        run: |
+          dotnet tool install --global dotnet-ef
+          dotnet ef database update \
+            --project DocAnalytics.Data \
+            --startup-project DocAnalytics.Api
+
+      # ── Deploy (ECS example; App Runner = a different action) ──
+      - name: Deploy API service
+        run: |
+          aws ecs update-service --cluster $ECS_CLUSTER \
+            --service $ECS_API_SERVICE --force-new-deployment
+          aws ecs wait services-stable --cluster $ECS_CLUSTER --services $ECS_API_SERVICE
+
+      # ── Smoke test: prove it's actually alive ──
+      - name: Health smoke test
+        run: |
+          for i in $(seq 1 10); do
+            if curl -fsS https://YOUR_PUBLIC_URL/api/v1/health | grep -q '"db":"connected"'; then
+              echo "✅ healthy"; exit 0
+            fi
+            echo "waiting for health... ($i)"; sleep 15
+          done
+          echo "❌ health check failed"; exit 1

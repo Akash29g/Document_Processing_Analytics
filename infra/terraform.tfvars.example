@@ -1,0 +1,6 @@
+account_id      = "000000000000"
+vpc_id          = "vpc-xxxxxxxx"
+public_subnets  = ["subnet-aaaa", "subnet-bbbb", "subnet-cccc"]
+private_subnets = ["subnet-aaaa", "subnet-bbbb", "subnet-cccc"]
+rds_sg_id       = "sg-xxxxxxxx"
+secret_arn      = "arn:aws:secretsmanager:ap-south-1:000000000000:secret:docanalytics/rds-conn-XXXXXX"

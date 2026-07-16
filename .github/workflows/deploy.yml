@@ -1,21 +1,19 @@
 name: deploy
 
 on:
-  push:
-    branches: [main]          # deploy only AFTER merge
-  workflow_dispatch:           # allow manual runs from the Actions tab
+  push: { branches: [main] }
+  workflow_dispatch:
 
 permissions:
-  id-token: write              # REQUIRED for OIDC
+  id-token: write
   contents: read
 
 env:
   AWS_REGION: ap-south-1
-  ECR_API_REPO: docanalytics-api
-  ECR_WEB_REPO: docanalytics-web
-  ECS_CLUSTER: docanalytics-cluster      # from Step A (skip if App Runner)
-  ECS_API_SERVICE: docanalytics-api-svc
-  ECS_WEB_SERVICE: docanalytics-web-svc
+  CLUSTER: docanalytics-cluster
+  API_REPO: docanalytics-api
+  WEB_REPO: docanalytics-web
+  MIG_REPO: docanalytics-migrations
 
 jobs:
   deploy:
@@ -23,7 +21,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # ── OIDC: assume the IAM role from Step A (no static keys) ──
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -34,47 +31,94 @@ jobs:
         id: ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # ── Reuse your R2 Dockerfiles (already Trivy-clean) ──
       - name: Build & push API image
-        env: { REGISTRY: "${{ steps.ecr.outputs.registry }}" }
+        env:
+          REG: ${{ steps.ecr.outputs.registry }}
         run: |
-          docker build -t $REGISTRY/$ECR_API_REPO:${{ github.sha }} -f DocAnalytics.Api/Dockerfile .
-          docker push  $REGISTRY/$ECR_API_REPO:${{ github.sha }}
+          docker build -t $REG/$API_REPO:${{ github.sha }} -f DocAnalytics.Api/Dockerfile .
+          docker push  $REG/$API_REPO:${{ github.sha }}
 
       - name: Build & push Web image
-        env: { REGISTRY: "${{ steps.ecr.outputs.registry }}" }
+        env:
+          REG: ${{ steps.ecr.outputs.registry }}
         run: |
-          docker build -t $REGISTRY/$ECR_WEB_REPO:${{ github.sha }} -f docanalytics-web/Dockerfile docanalytics-web
-          docker push  $REGISTRY/$ECR_WEB_REPO:${{ github.sha }}
+          docker build -t $REG/$WEB_REPO:${{ github.sha }} -f docanalytics-web/Dockerfile docanalytics-web
+          docker push  $REG/$WEB_REPO:${{ github.sha }}
 
-      # ── GATED EF migrations: fail the deploy if this fails ──
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
-        with: { dotnet-version: '10.0.x' }
+        with:
+          dotnet-version: '10.0.x'
 
-      - name: Apply EF migrations
+      # ── Build migrations as a self-contained bundle, ship as an image ──
+      - name: Build migration bundle image & push
         env:
-          ConnectionStrings__Default: ${{ secrets.RDS_CONNECTION_STRING }}
+          REG: ${{ steps.ecr.outputs.registry }}
         run: |
+          dotnet restore DocAnalytics.slnx
           dotnet tool install --global dotnet-ef
-          dotnet ef database update \
-            --project DocAnalytics.Data \
-            --startup-project DocAnalytics.Api
+          dotnet ef migrations bundle --self-contained -r linux-x64 \
+            --project DocAnalytics.Data --startup-project DocAnalytics.Api -o efbundle --force
+          docker build -t $REG/$MIG_REPO:${{ github.sha }} -f deploy/migrate.Dockerfile .
+          docker push  $REG/$MIG_REPO:${{ github.sha }}
 
-      # ── Deploy (ECS example; App Runner = a different action) ──
-      - name: Deploy API service
+      # ── GATED migration: run inside the VPC so it CAN reach RDS ──
+      - name: Register + run migration task (gated)
+        env:
+          REG: ${{ steps.ecr.outputs.registry }}
         run: |
-          aws ecs update-service --cluster $ECS_CLUSTER \
-            --service $ECS_API_SERVICE --force-new-deployment
-          aws ecs wait services-stable --cluster $ECS_CLUSTER --services $ECS_API_SERVICE
+          sed "s|PLACEHOLDER_WILL_BE_REPLACED_BY_WORKFLOW|$REG/$MIG_REPO:${{ github.sha }}|" \
+            deploy/migrate-task-def.json > mig.json
+          aws ecs register-task-definition --cli-input-json file://mig.json
+          TASK_ARN=$(aws ecs run-task --cluster $CLUSTER --launch-type FARGATE \
+            --task-definition docanalytics-migrate \
+            --network-configuration "awsvpcConfiguration={subnets=[${{ secrets.PRIV_SUBNETS }}],securityGroups=[${{ secrets.TASK_SG }}],assignPublicIp=ENABLED}" \
+            --query 'tasks[0].taskArn' --output text)
+          echo "task: $TASK_ARN"
+          aws ecs wait tasks-stopped --cluster $CLUSTER --tasks $TASK_ARN
+          CODE=$(aws ecs describe-tasks --cluster $CLUSTER --tasks $TASK_ARN \
+            --query 'tasks[0].containers[0].exitCode' --output text)
+          echo "migration exit code = $CODE"
+          [ "$CODE" = "0" ] || { echo "❌ migration failed — aborting deploy"; exit 1; }
 
-      # ── Smoke test: prove it's actually alive ──
+      # ── Deploy API (inject SHA image into the task def, then deploy) ──
+      - name: Render API task def
+        id: render-api
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: deploy/api-task-def.json
+          container-name: api
+          image: ${{ steps.ecr.outputs.registry }}/docanalytics-api:${{ github.sha }}
+      - name: Deploy API service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-api.outputs.task-definition }}
+          service: docanalytics-api-svc
+          cluster: docanalytics-cluster
+          wait-for-service-stability: true
+
+      # ── Deploy Web ──
+      - name: Render Web task def
+        id: render-web
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: deploy/web-task-def.json
+          container-name: web
+          image: ${{ steps.ecr.outputs.registry }}/docanalytics-web:${{ github.sha }}
+      - name: Deploy Web service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-web.outputs.task-definition }}
+          service: docanalytics-web-svc
+          cluster: docanalytics-cluster
+          wait-for-service-stability: true
+
       - name: Health smoke test
         run: |
-          for i in $(seq 1 10); do
-            if curl -fsS https://YOUR_PUBLIC_URL/api/v1/health | grep -q '"db":"connected"'; then
+          for i in $(seq 1 12); do
+            if curl -fsS ${{ secrets.PUBLIC_URL }}/api/v1/health | grep -q '"db":"connected"'; then
               echo "✅ healthy"; exit 0
             fi
-            echo "waiting for health... ($i)"; sleep 15
+            echo "waiting... ($i)"; sleep 15
           done
           echo "❌ health check failed"; exit 1

@@ -91,7 +91,7 @@ resource "aws_iam_role_policy" "read_secret" {
     Statement = [{
       Effect = "Allow", Action = ["secretsmanager:GetSecretValue"],
 
-      Resource = "arn:aws:secretsmanager:ap-south-1:323155024771:secret:docanalytics/jwt-key-6WojHu"
+      Resource = "arn:aws:secretsmanager:ap-south-1:323155024771:secret:docanalytics/*"
 
     }]
   })

@@ -29,5 +29,6 @@ public sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<App
         public Guid TenantId => Guid.Empty;
         public Guid SiteId => Guid.Empty;
         public string Role => "Developer";
+        public bool IsAuthenticated => false;
     }
 }

@@ -31,6 +31,10 @@
         {
           "name": "ConnectionStrings__Default",
           "valueFrom": "arn:aws:secretsmanager:ap-south-1:323155024771:secret:docanalytics/rds-conn-hqfwaX"
+        },
+        {
+          "name": "Jwt__Key",
+          "valueFrom": "xwjJ8lfNeIcVY2zBGATOK9RM7WXnP0uEmiC3yvQbZdaDLSqF"
         }
       ],
       "logConfiguration": {

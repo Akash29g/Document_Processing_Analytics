@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using DocAnalytics.Domain.Common;          // ICurrentUser
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
@@ -7,6 +8,7 @@ namespace DocAnalytics.Data;
 // Used ONLY by `dotnet ef` / the migration bundle. Lets EF build AppDbContext
 // without starting the API host (which needs JWT/AWS config that isn't present
 // in the migration container). DDL doesn't need a real tenant, so we stub ICurrentUser.
+[ExcludeFromCodeCoverage]
 public sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 {
     public AppDbContext CreateDbContext(string[] args)
@@ -23,6 +25,7 @@ public sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<App
     }
 
     // No-op current user — migrations run DDL, not tenant-filtered queries.
+    [ExcludeFromCodeCoverage]
     private sealed class MigrationCurrentUser : ICurrentUser
     {
         public Guid UserId => Guid.Empty;

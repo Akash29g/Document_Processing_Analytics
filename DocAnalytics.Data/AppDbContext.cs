@@ -34,8 +34,7 @@ public class AppDbContext : DbContext, IDataProtectionKeyContext
 
     public virtual DbSet<LoginAttempt> LoginAttempts => Set<LoginAttempt>();
 
-
-
+    public virtual DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     public virtual DbSet<InvoiceHeader> InvoiceHeaders => Set<InvoiceHeader>();
 
@@ -148,6 +147,19 @@ public class AppDbContext : DbContext, IDataProtectionKeyContext
             e.Property(x => x.Ip).HasMaxLength(64);
             e.HasIndex(x => x.Email).IsUnique();   // one running counter per account
         });
+
+        b.Entity<RefreshToken>(e =>
+        {
+            e.ToTable("refresh_tokens");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.TokenHash).HasMaxLength(88).IsRequired();   // base64 SHA-256 = 44 chars; pad room
+            e.Property(x => x.CreatedByIp).HasMaxLength(64);
+            e.Property(x => x.ReplacedByTokenHash).HasMaxLength(88);
+            e.HasIndex(x => x.TokenHash).IsUnique();                      // fast lookup on refresh
+            e.HasIndex(x => x.UserId);                                    // revoke-all-for-user
+            e.Ignore(x => x.IsActive);
+        });
+
 
         // ---- GLOBAL TENANT/SITE FILTER (every ITenantScoped entity) ----
         foreach (var et in b.Model.GetEntityTypes())

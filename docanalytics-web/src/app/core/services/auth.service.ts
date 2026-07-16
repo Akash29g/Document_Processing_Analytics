@@ -1,12 +1,19 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, firstValueFrom, tap } from 'rxjs';
+import { Observable, catchError, finalize, firstValueFrom, map, of, shareReplay, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
-import { AuthUser, LoginResponse, MeResponse, SiteSummary } from '../models/auth.model';
+import {
+  AuthUser,
+  LoginResponse,
+  MeResponse,
+  RefreshResponse,
+  SiteSummary,
+} from '../models/auth.model';
 import { Router } from '@angular/router';
 
 const TOKEN_KEY = 'da_token';
+const REFRESH_KEY = 'da_refresh'; // NEW (R4)
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -16,8 +23,13 @@ export class AuthService {
 
   // --- writable signals (private) ---
   private readonly _token = signal<string | null>(localStorage.getItem(TOKEN_KEY));
+  private readonly _refreshToken = signal<string | null>(localStorage.getItem(REFRESH_KEY)); // NEW
   private readonly _currentUser = signal<AuthUser | null>(null);
   private readonly _sites = signal<SiteSummary[]>([]);
+
+  // Single in-flight refresh — prevents concurrent 401s from each rotating the
+  // token (which would trip backend reuse-detection and log everyone out).
+  private refreshInFlight$: Observable<string | null> | null = null;
 
   // --- public readonly views ---
   readonly token = this._token.asReadonly();
@@ -25,14 +37,14 @@ export class AuthService {
   readonly sites = this._sites.asReadonly();
   readonly isAuthenticated = computed(() => !!this._token());
 
-  /** POST /auth/login — stores token + user + sites on success. */
+  /** POST /auth/login — stores token + refresh + user + sites on success. */
   login(email: string, password: string): Observable<ApiResponse<LoginResponse>> {
     return this.http
       .post<ApiResponse<LoginResponse>>(`${this.baseUrl}/login`, { email, password })
       .pipe(
         tap((res) => {
           if (res.data) {
-            this.setSession(res.data.token, res.data.user, res.data.sites);
+            this.setSession(res.data.token, res.data.refresh_token, res.data.user, res.data.sites);
           }
         }),
       );
@@ -48,6 +60,42 @@ export class AuthService {
         }
       }),
     );
+  }
+
+  /**
+   * POST /auth/refresh — exchanges the stored refresh token for a new access
+   * token (+ rotated refresh token). Shared in-flight so concurrent callers
+   * reuse the same request. Emits the new access token, or null on failure.
+   */
+  refreshToken(): Observable<string | null> {
+    const rt = this._refreshToken();
+    if (!rt) return of(null);
+    if (this.refreshInFlight$) return this.refreshInFlight$;
+
+    this.refreshInFlight$ = this.http
+      .post<ApiResponse<RefreshResponse>>(`${this.baseUrl}/refresh`, { refresh_token: rt })
+      .pipe(
+        map((res) => {
+          if (res.data) {
+            this._token.set(res.data.token);
+            this._refreshToken.set(res.data.refresh_token);
+            localStorage.setItem(TOKEN_KEY, res.data.token);
+            localStorage.setItem(REFRESH_KEY, res.data.refresh_token);
+            return res.data.token;
+          }
+          return null;
+        }),
+        catchError(() => {
+          this.clearSession(); // refresh rejected → local logout (no server call to avoid loop)
+          return of(null);
+        }),
+        finalize(() => {
+          this.refreshInFlight$ = null;
+        }),
+        shareReplay(1),
+      );
+
+    return this.refreshInFlight$;
   }
 
   /**
@@ -67,11 +115,16 @@ export class AuthService {
     }
   }
 
+  /** Full logout: best-effort server revoke, then clear local state. */
   logout(): void {
-    this._token.set(null);
-    this._currentUser.set(null);
-    this._sites.set([]);
-    localStorage.removeItem(TOKEN_KEY);
+    const rt = this._refreshToken();
+    if (rt) {
+      // fire-and-forget revoke; ignore result (endpoint is AllowAnonymous)
+      this.http
+        .post(`${this.baseUrl}/logout`, { refresh_token: rt })
+        .subscribe({ error: () => {} });
+    }
+    this.clearSession();
   }
 
   /** Used by siteAccessGuard (FR-5.3 client-side mirror). */
@@ -90,10 +143,26 @@ export class AuthService {
     this.router.navigate(first ? ['/site', first.site_id] : ['/login']);
   }
 
-  private setSession(token: string, user: AuthUser, sites: SiteSummary[]): void {
+  private setSession(
+    token: string,
+    refreshToken: string,
+    user: AuthUser,
+    sites: SiteSummary[],
+  ): void {
     this._token.set(token);
+    this._refreshToken.set(refreshToken);
     this._currentUser.set(user);
     this._sites.set(sites);
     localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(REFRESH_KEY, refreshToken);
+  }
+
+  private clearSession(): void {
+    this._token.set(null);
+    this._refreshToken.set(null);
+    this._currentUser.set(null);
+    this._sites.set([]);
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REFRESH_KEY);
   }
 }

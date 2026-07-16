@@ -18,7 +18,7 @@ public class JwtTokenService : IJwtTokenService
         var keyString = _config["Jwt:Key"]
             ?? throw new InvalidOperationException("Jwt:Key is not configured.");
 
-        var expiryMinutes = int.TryParse(_config["Jwt:ExpiryMinutes"], out var m) ? m : 120;
+        var expiryMinutes = int.TryParse(_config["Jwt:ExpiryMinutes"], out var m) ? m : 15;
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -35,7 +35,7 @@ public class JwtTokenService : IJwtTokenService
             issuer: _config["Jwt:Issuer"],     // 👈 "DocAnalytics"
             audience: _config["Jwt:Audience"],   // 👈 "DocAnalyticsClient"
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(8),
+            expires: DateTime.UtcNow.AddMinutes(expiryMinutes),
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

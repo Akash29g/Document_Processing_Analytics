@@ -13,8 +13,8 @@ public class BatchServiceTests
     private static BatchService Sut(Transaction[] txns, FileRecord[]? files = null)
     {
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.Transactions).Returns(txns.BuildMockDbSet().Object);
-        ctx.Setup(c => c.Files).Returns((files ?? Array.Empty<FileRecord>()).BuildMockDbSet().Object);
+        ctx.Setup(c => c.Transactions).Returns(txns.ToList().BuildMockDbSet().Object);
+        ctx.Setup(c => c.Files).Returns((files ?? Array.Empty<FileRecord>()).ToList().BuildMockDbSet().Object);
         return new BatchService(ctx.Object);
     }
 

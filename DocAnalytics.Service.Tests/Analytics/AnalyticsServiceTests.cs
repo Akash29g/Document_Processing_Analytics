@@ -10,7 +10,7 @@ public class AnalyticsServiceTests
     private static AnalyticsService Sut(FileRecord[] files)
     {
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.Files).Returns(files.BuildMockDbSet().Object);
+        ctx.Setup(c => c.Files).Returns(files.ToList().BuildMockDbSet().Object);
         return new AnalyticsService(ctx.Object);
     }
 

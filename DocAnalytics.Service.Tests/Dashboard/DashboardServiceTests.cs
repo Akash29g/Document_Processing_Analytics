@@ -16,7 +16,7 @@ public class DashboardServiceTests
             new Transaction { Id = Guid.NewGuid(), UploadedCount = 3, ProcessingCount = 0, CompletedCount = 4, FailedCount = 2 },
         };
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.Transactions).Returns(txns.BuildMockDbSet().Object);
+        ctx.Setup(c => c.Transactions).Returns(txns.ToList().BuildMockDbSet().Object);
 
         var summary = await new DashboardService(ctx.Object).GetSummaryAsync();
 
@@ -31,7 +31,7 @@ public class DashboardServiceTests
     public async Task GetSummaryAsync_returns_zeros_when_no_transactions()
     {
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.Transactions).Returns(Array.Empty<Transaction>().BuildMockDbSet().Object);
+        ctx.Setup(c => c.Transactions).Returns(Array.Empty<Transaction>().ToList().BuildMockDbSet().Object);
 
         var summary = await new DashboardService(ctx.Object).GetSummaryAsync();
 
@@ -50,8 +50,8 @@ public class DashboardServiceTests
             new FileStepHistory { Id = Guid.NewGuid(), FileId = fileId, StepName = "Upload",   Status = "Success" },
         };
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.Files).Returns(files.BuildMockDbSet().Object);
-        ctx.Setup(c => c.FileStepHistory).Returns(steps.BuildMockDbSet().Object);
+        ctx.Setup(c => c.Files).Returns(files.ToList().BuildMockDbSet().Object);
+        ctx.Setup(c => c.FileStepHistory).Returns(steps.ToList().BuildMockDbSet().Object);
 
         var result = await new DashboardService(ctx.Object).GetRecentFailuresAsync(new RecentFailuresQuery());
 
@@ -76,8 +76,8 @@ public class DashboardServiceTests
         }).ToArray();
 
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.Files).Returns(files.BuildMockDbSet().Object);
-        ctx.Setup(c => c.FileStepHistory).Returns(steps.BuildMockDbSet().Object);
+        ctx.Setup(c => c.Files).Returns(files.ToList().BuildMockDbSet().Object);
+        ctx.Setup(c => c.FileStepHistory).Returns(steps.ToList().BuildMockDbSet().Object);
 
         var result = await new DashboardService(ctx.Object)
             .GetRecentFailuresAsync(new RecentFailuresQuery { Page = 1, PageSize = 2 });
@@ -100,8 +100,8 @@ public class DashboardServiceTests
         new FileStepHistory { Id = Guid.NewGuid(), FileId = f2, StepName = "Validate", Status = "Failed", ErrorCode = "E2", CompletedAt = DateTime.UtcNow },
     };
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.Files).Returns(files.BuildMockDbSet().Object);
-        ctx.Setup(c => c.FileStepHistory).Returns(steps.BuildMockDbSet().Object);
+        ctx.Setup(c => c.Files).Returns(files.ToList().BuildMockDbSet().Object);
+        ctx.Setup(c => c.FileStepHistory).Returns(steps.ToList().BuildMockDbSet().Object);
 
         var result = await new DashboardService(ctx.Object)
             .GetRecentFailuresAsync(new RecentFailuresQuery { SortBy = "file_name", SortDir = "asc" });
@@ -119,8 +119,8 @@ public class DashboardServiceTests
         new FileStepHistory { Id = Guid.NewGuid(), FileId = f1, StepName = "Transform", Status = "Failed", ErrorCode = "E2", CompletedAt = DateTime.UtcNow },
     };
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.Files).Returns(files.BuildMockDbSet().Object);
-        ctx.Setup(c => c.FileStepHistory).Returns(steps.BuildMockDbSet().Object);
+        ctx.Setup(c => c.Files).Returns(files.ToList().BuildMockDbSet().Object);
+        ctx.Setup(c => c.FileStepHistory).Returns(steps.ToList().BuildMockDbSet().Object);
 
         var result = await new DashboardService(ctx.Object)
             .GetRecentFailuresAsync(new RecentFailuresQuery { SortBy = "failed_step", SortDir = "asc" });

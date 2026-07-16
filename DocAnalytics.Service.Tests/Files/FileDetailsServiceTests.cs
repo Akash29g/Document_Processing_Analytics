@@ -12,9 +12,9 @@ public class FileDetailsServiceTests
         FileRecord[] files, FileStepHistory[] steps, ErrorCatalog[] catalog)
     {
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.Files).Returns(files.BuildMockDbSet().Object);
-        ctx.Setup(c => c.FileStepHistory).Returns(steps.BuildMockDbSet().Object);
-        ctx.Setup(c => c.ErrorCatalog).Returns(catalog.BuildMockDbSet().Object);
+        ctx.Setup(c => c.Files).Returns(files.ToList().BuildMockDbSet().Object);
+        ctx.Setup(c => c.FileStepHistory).Returns(steps.ToList().BuildMockDbSet().Object);
+        ctx.Setup(c => c.ErrorCatalog).Returns(catalog.ToList().BuildMockDbSet().Object);
         return ctx;
     }
 

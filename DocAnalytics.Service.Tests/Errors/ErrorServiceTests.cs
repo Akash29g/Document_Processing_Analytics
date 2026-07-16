@@ -12,10 +12,10 @@ public class ErrorServiceTests
         IEnumerable<Transaction> txns, IEnumerable<ErrorCatalog> catalog)
     {
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.Files).Returns(files.BuildMockDbSet().Object);
-        ctx.Setup(c => c.FileStepHistory).Returns(steps.BuildMockDbSet().Object);
-        ctx.Setup(c => c.Transactions).Returns(txns.BuildMockDbSet().Object);
-        ctx.Setup(c => c.ErrorCatalog).Returns(catalog.BuildMockDbSet().Object);
+        ctx.Setup(c => c.Files).Returns(files.ToList().BuildMockDbSet().Object);
+        ctx.Setup(c => c.FileStepHistory).Returns(steps.ToList().BuildMockDbSet().Object);
+        ctx.Setup(c => c.Transactions).Returns(txns.ToList().BuildMockDbSet().Object);
+        ctx.Setup(c => c.ErrorCatalog).Returns(catalog.ToList().BuildMockDbSet().Object);
         return new ErrorService(ctx.Object);
     }
 

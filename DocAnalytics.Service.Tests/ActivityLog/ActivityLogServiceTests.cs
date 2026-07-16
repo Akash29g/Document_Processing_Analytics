@@ -15,7 +15,7 @@ public class ActivityLogServiceTests
     {
         var rows = new[] { Row("BATCH_SUBMITTED", "Batch", DateTime.UtcNow), Row("FILE_STATE_CHANGED", "File", DateTime.UtcNow) };
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.ActivityLog).Returns(rows.BuildMockDbSet().Object);
+        ctx.Setup(c => c.ActivityLog).Returns(rows.ToList().BuildMockDbSet().Object);
 
         var result = await new ActivityLogService(ctx.Object).GetActivityLogAsync(new ActivityLogQuery { EventType = "BATCH_SUBMITTED" });
 
@@ -29,7 +29,7 @@ public class ActivityLogServiceTests
         var older = Row("X", "File", DateTime.UtcNow.AddHours(-1));
         var newer = Row("Y", "File", DateTime.UtcNow);
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.ActivityLog).Returns(new[] { older, newer }.BuildMockDbSet().Object);
+        ctx.Setup(c => c.ActivityLog).Returns(new[] { older, newer }.ToList().BuildMockDbSet().Object);
 
         var result = await new ActivityLogService(ctx.Object).GetActivityLogAsync(new ActivityLogQuery());
 
@@ -45,7 +45,7 @@ public class ActivityLogServiceTests
             Row("B", "File", new DateTime(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc)),
         };
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.ActivityLog).Returns(rows.BuildMockDbSet().Object);
+        ctx.Setup(c => c.ActivityLog).Returns(rows.ToList().BuildMockDbSet().Object);
 
         var result = await new ActivityLogService(ctx.Object).GetActivityLogAsync(
             new ActivityLogQuery { From = new DateTime(2026, 5, 1), To = new DateTime(2026, 7, 1) });
@@ -59,7 +59,7 @@ public class ActivityLogServiceTests
     {
         var rows = Enumerable.Range(0, 5).Select(i => Row($"E{i}", "File", DateTime.UtcNow.AddMinutes(-i))).ToArray();
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.ActivityLog).Returns(rows.BuildMockDbSet().Object);
+        ctx.Setup(c => c.ActivityLog).Returns(rows.ToList().BuildMockDbSet().Object);
 
         var result = await new ActivityLogService(ctx.Object).GetActivityLogAsync(new ActivityLogQuery { Page = 1, PageSize = 2 });
 
@@ -71,7 +71,7 @@ public class ActivityLogServiceTests
     {
         var rows = new[] { Row("X", "Batch", DateTime.UtcNow), Row("Y", "File", DateTime.UtcNow) };
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.ActivityLog).Returns(rows.BuildMockDbSet().Object);
+        ctx.Setup(c => c.ActivityLog).Returns(rows.ToList().BuildMockDbSet().Object);
 
         var result = await new ActivityLogService(ctx.Object).GetActivityLogAsync(new ActivityLogQuery { EntityType = "Batch" });
         Assert.Equal(1, result.TotalCount);
@@ -83,7 +83,7 @@ public class ActivityLogServiceTests
     {
         var rows = new[] { Row("Zeta", "File", DateTime.UtcNow), Row("Alpha", "File", DateTime.UtcNow) };
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.ActivityLog).Returns(rows.BuildMockDbSet().Object);
+        ctx.Setup(c => c.ActivityLog).Returns(rows.ToList().BuildMockDbSet().Object);
 
         var result = await new ActivityLogService(ctx.Object).GetActivityLogAsync(new ActivityLogQuery { SortBy = "event_type", SortDir = "asc" });
         Assert.Equal("Alpha", result.Items[0].EventType);

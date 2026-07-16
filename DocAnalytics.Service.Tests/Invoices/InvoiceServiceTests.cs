@@ -11,8 +11,8 @@ public class InvoiceServiceTests
     public async Task GetInvoiceForFileAsync_returns_null_when_file_missing()
     {
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.Files).Returns(Array.Empty<FileRecord>().BuildMockDbSet().Object);
-        ctx.Setup(c => c.InvoiceLineItems).Returns(Array.Empty<InvoiceLineItem>().BuildMockDbSet().Object);
+        ctx.Setup(c => c.Files).Returns(Array.Empty<FileRecord>().ToList().BuildMockDbSet().Object);
+        ctx.Setup(c => c.InvoiceLineItems).Returns(Array.Empty<InvoiceLineItem>().ToList().BuildMockDbSet().Object);
 
         var result = await new InvoiceService(ctx.Object).GetInvoiceForFileAsync(Guid.NewGuid());
 
@@ -31,9 +31,9 @@ public class InvoiceServiceTests
             new InvoiceLineItem { Id = Guid.NewGuid(), FileId = fileId, LineNumber = 2, Description = "Nut",  LineTotal = 5m,  ItemCategory = null },
         };
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.Files).Returns(files.BuildMockDbSet().Object);
-        ctx.Setup(c => c.InvoiceLineItems).Returns(items.BuildMockDbSet().Object);
-        ctx.Setup(c => c.InvoiceHeaders).Returns(Array.Empty<InvoiceHeader>().BuildMockDbSet().Object);
+        ctx.Setup(c => c.Files).Returns(files.ToList().BuildMockDbSet().Object);
+        ctx.Setup(c => c.InvoiceLineItems).Returns(items.ToList().BuildMockDbSet().Object);
+        ctx.Setup(c => c.InvoiceHeaders).Returns(Array.Empty<InvoiceHeader>().ToList().BuildMockDbSet().Object);
 
         var result = await new InvoiceService(ctx.Object).GetInvoiceForFileAsync(fileId);
 

@@ -22,9 +22,9 @@ public class AuthServiceTests
     private static Mock<DocAnalytics.Data.AppDbContext> Ctx(User[] users, UserSiteAccess[] access, Site[] sites)
     {
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.Users).Returns(users.BuildMockDbSet().Object);
-        ctx.Setup(c => c.UserSiteAccess).Returns(access.BuildMockDbSet().Object);
-        ctx.Setup(c => c.Sites).Returns(sites.BuildMockDbSet().Object);
+        ctx.Setup(c => c.Users).Returns(users.ToList().BuildMockDbSet().Object);
+        ctx.Setup(c => c.UserSiteAccess).Returns(access.ToList().BuildMockDbSet().Object);
+        ctx.Setup(c => c.Sites).Returns(sites.ToList().BuildMockDbSet().Object);
         return ctx;
     }
 

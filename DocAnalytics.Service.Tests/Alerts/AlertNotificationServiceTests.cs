@@ -26,7 +26,7 @@ public class AlertNotificationServiceTests
     {
         var rows = new[] { Row(read: false), Row(read: true), Row(read: false) };
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.AlertNotifications).Returns(rows.BuildMockDbSet().Object);
+        ctx.Setup(c => c.AlertNotifications).Returns(rows.ToList().BuildMockDbSet().Object);
 
         var unread = await new AlertNotificationService(ctx.Object)
             .GetNotificationsAsync(unreadOnly: true);
@@ -40,7 +40,7 @@ public class AlertNotificationServiceTests
     {
         var rows = new[] { Row(read: false), Row(read: true) };
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.AlertNotifications).Returns(rows.BuildMockDbSet().Object);
+        ctx.Setup(c => c.AlertNotifications).Returns(rows.ToList().BuildMockDbSet().Object);
 
         var all = await new AlertNotificationService(ctx.Object)
             .GetNotificationsAsync(unreadOnly: false);
@@ -53,7 +53,7 @@ public class AlertNotificationServiceTests
     {
         var row = Row(read: false);
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.AlertNotifications).Returns(new[] { row }.BuildMockDbSet().Object);
+        ctx.Setup(c => c.AlertNotifications).Returns(new[] { row }.ToList().BuildMockDbSet().Object);
         ctx.Setup(c => c.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var ok = await new AlertNotificationService(ctx.Object).MarkReadAsync(row.Id);
@@ -67,7 +67,7 @@ public class AlertNotificationServiceTests
     public async Task MarkReadAsync_returns_false_for_unknown_id()
     {
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.AlertNotifications).Returns(new[] { Row(read: false) }.BuildMockDbSet().Object);
+        ctx.Setup(c => c.AlertNotifications).Returns(new[] { Row(read: false) }.ToList().BuildMockDbSet().Object);
 
         var ok = await new AlertNotificationService(ctx.Object).MarkReadAsync(Guid.NewGuid());
 
@@ -79,7 +79,7 @@ public class AlertNotificationServiceTests
     {
         var rows = new[] { Row(read: false), Row(read: false), Row(read: true) };
         var ctx = MockDb.Create();
-        ctx.Setup(c => c.AlertNotifications).Returns(rows.BuildMockDbSet().Object);
+        ctx.Setup(c => c.AlertNotifications).Returns(rows.ToList().BuildMockDbSet().Object);
         ctx.Setup(c => c.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(2);
 
         var count = await new AlertNotificationService(ctx.Object).MarkAllReadAsync();

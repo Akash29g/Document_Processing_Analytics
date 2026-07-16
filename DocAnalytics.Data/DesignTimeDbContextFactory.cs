@@ -18,6 +18,7 @@ public sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<App
             ?? "Host=localhost;Port=5432;Database=docanalytics;Username=postgres;Password=postgres";
 
         var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSnakeCaseNamingConvention()
             .UseNpgsql(conn)
             .Options;
 

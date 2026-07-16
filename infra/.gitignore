@@ -1,0 +1,8 @@
+# Terraform state (can contain sensitive values — never commit)
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Local variable values (has account/subnet/secret ARN — keep local)
+terraform.tfvars

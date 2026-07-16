@@ -1,0 +1,29 @@
+{
+  "family": "docanalytics-migrate",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [ "FARGATE" ],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::323155024771:role/docanalytics-task-exec",
+  "containerDefinitions": [
+    {
+      "name": "migrate",
+      "image": "PLACEHOLDER_WILL_BE_REPLACED_BY_WORKFLOW",
+      "essential": true,
+      "secrets": [
+        {
+          "name": "ConnectionStrings__Default",
+          "valueFrom": "arn:aws:secretsmanager:ap-south-1:323155024771:secret:docanalytics/rds-conn-hqfwaX"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/docanalytics-migrate",
+          "awslogs-region": "ap-south-1",
+          "awslogs-stream-prefix": "migrate"
+        }
+      }
+    }
+  ]
+}

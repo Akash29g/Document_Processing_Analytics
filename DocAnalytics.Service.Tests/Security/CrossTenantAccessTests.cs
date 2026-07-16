@@ -2,7 +2,6 @@ using DocAnalytics.Domain.Entities;
 using DocAnalytics.Service.Files;
 using DocAnalytics.Service.Invoices;
 using DocAnalytics.Service.Tests.Support;
-using Xunit;
 
 namespace DocAnalytics.Service.Tests.Security;
 

@@ -1,7 +1,6 @@
 using DocAnalytics.Domain.Entities;
 using DocAnalytics.Tests.Support;
 using Microsoft.EntityFrameworkCore;
-using Xunit;
 
 namespace DocAnalytics.Data.Tests.Persistence;
 

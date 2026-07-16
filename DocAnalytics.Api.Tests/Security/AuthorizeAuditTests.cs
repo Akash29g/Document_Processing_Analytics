@@ -1,6 +1,5 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
-using Xunit;
 
 namespace DocAnalytics.Api.Tests.Security;
 

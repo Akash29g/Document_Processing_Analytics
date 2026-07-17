@@ -4,3 +4,10 @@ yarn.lock linguist-generated=true
 pnpm-lock.yaml linguist-generated=true
 *.min.js linguist-generated=true
 *.min.css linguist-generated=true
+
+* text=auto eol=lf
+*.sln text eol=crlf
+*.csproj text eol=crlf
+*.png binary
+*.jpg binary
+*.ico binary

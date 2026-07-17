@@ -105,7 +105,7 @@ public static class DbSeeder
         await db.SaveChangesAsync();
 
 
-            if (await db.Tenants.AnyAsync()) return; // idempotent guard
+        if (await db.Tenants.AnyAsync()) return; // idempotent guard
 
         var now = DateTime.UtcNow;
         var hash = BCrypt.Net.BCrypt.HashPassword("Password123!");

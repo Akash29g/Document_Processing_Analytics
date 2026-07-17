@@ -16,12 +16,28 @@ public static class UploadsFeatureExtensions
     {
         services.Configure<AwsOptions>(cfg.GetSection("Aws"));
         var aws = cfg.GetSection("Aws").Get<AwsOptions>()!;
-        var creds = new BasicAWSCredentials(aws.AccessKeyId, aws.SecretAccessKey);
+        var region = RegionEndpoint.GetBySystemName(aws.Region);
+
+        // Use static keys ONLY if real ones are configured (local dev via user-secrets).
+        // In prod (ECS) the keys are unset/placeholder → fall back to the default
+        // credential chain, which picks up the ECS task role automatically.
+        var useStaticKeys = !string.IsNullOrWhiteSpace(aws.AccessKeyId)
+                            && aws.AccessKeyId != "SET_VIA_USER_SECRETS";
 
         services.AddSingleton<IAmazonS3>(_ =>
-            new AmazonS3Client(creds, RegionEndpoint.GetBySystemName(aws.Region)));
+            useStaticKeys
+                ? new AmazonS3Client(new BasicAWSCredentials(aws.AccessKeyId, aws.SecretAccessKey), region)
+                : new AmazonS3Client(region));
+
+
         services.AddSingleton<IAmazonBedrockRuntime>(_ =>
-            new AmazonBedrockRuntimeClient(creds, RegionEndpoint.GetBySystemName(aws.BedrockRegion)));
+        useStaticKeys
+        ? new AmazonBedrockRuntimeClient(
+            new BasicAWSCredentials(aws.AccessKeyId, aws.SecretAccessKey),
+            RegionEndpoint.GetBySystemName(aws.BedrockRegion))
+        : new AmazonBedrockRuntimeClient(
+            RegionEndpoint.GetBySystemName(aws.BedrockRegion)));
+
 
         services.AddScoped<IFileStorage, S3FileStorage>();
         services.AddScoped<IInvoiceExtractor, NovaInvoiceExtractor>();

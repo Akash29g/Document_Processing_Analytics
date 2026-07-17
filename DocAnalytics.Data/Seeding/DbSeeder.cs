@@ -8,22 +8,23 @@ namespace DocAnalytics.Data.Seeding;
 public static class DbSeeder
 {
     // ─────────────────────────────────────────────────────────────
-    // FIXED IDs — stable across resets so tokens & site_id never go stale.
-    // Login: Password123!  for every user below.
+    //  FIXED IDs — stable across resets so tokens & site_id never go stale.
+    //  Login: Password123!  for every user below.
     //
-
     //  TENANTS
-    //   Acme   : 11111111-1111-1111-1111-111111111111
-    //   Globex : 22222222-2222-2222-2222-222222222222
-
+    //    Acme   : 3f9a7c21-6b4e-4d18-9a2f-1c7e5b3d8a90
+    //    Globex : 8c1d4e62-2a7f-4b93-b5c6-9f0a3e2d7148
+    //
     //  SITES (paste these into X-Site-Id)
-    //   Acme/Mumbai  : a1111111-1111-1111-1111-111111111111
-    //   Acme/Delhi   : a2222222-2222-2222-2222-222222222222
-    //   Acme/Chennai : a3333333-3333-3333-3333-333333333333
-    //   Acme/Pune    : a4444444-4444-4444-4444-444444444444
-    //   Acme/Kolkata : a5555555-5555-5555-5555-555555555555
-    //   Globex/Berlin: b1111111-1111-1111-1111-111111111111
-    //   Globex/Munich: b2222222-2222-2222-2222-222222222222
+    //    Acme/Mumbai  : 5e2b9f14-7c3a-4e8d-a1b6-2f9c4d7e3a05
+    //    Acme/Delhi   : 9a4c7e21-3b8f-4d62-8e1a-6c2f9b4d7e30
+    //    Acme/Chennai : 2d7f1a93-5e4c-4b89-9f3a-7c1e6b2d8a45
+    //    Acme/Pune    : 7b3e9c42-1f6a-4d75-b8c2-3e9f4a1d6c28
+    //    Acme/Kolkata : 4c8a2f61-9d5e-4b37-a2f1-8b6c3e9d4a72
+    //    Globex/Berlin: 6f1d3b84-2c7e-4a95-9b3d-5e8f1a4c7d20
+    //    Globex/Munich: 1a5e8c73-4b2f-4d69-8c1a-9f3e6b2d5a84
+    // ─────────────────────────────────────────────────────────────
+
 
     //  USERS  (password: Password123!)
     //   developer@platform.com (Developer, NO tenant — platform super-admin: provisioning only, no data access, no site rows)
@@ -47,28 +48,29 @@ public static class DbSeeder
 
     // ─────────────────────────────────────────────────────────────
 
-    private static readonly Guid DeveloperId = new("d1111111-1111-1111-1111-111111111111");
+    private static readonly Guid DeveloperId = new("6a1f2c3d-8e4b-4a9c-b2d1-5f7e9a0c1b34");
 
-    private static readonly Guid AcmeId = new("11111111-1111-1111-1111-111111111111");
-    private static readonly Guid GlobexId = new("22222222-2222-2222-2222-222222222222");
+    private static readonly Guid AcmeId = new("2d9f83a1-7c4e-4b6a-9f21-3e5d8c0a1b62");
+    private static readonly Guid GlobexId = new("8b3c1e7d-45a9-4f2b-8d63-1a2c4e6f9b05");
 
-    private static readonly Guid AcmeMumbai = new("a1111111-1111-1111-1111-111111111111");
-    private static readonly Guid AcmeDelhi = new("a2222222-2222-2222-2222-222222222222");
-    private static readonly Guid AcmeChennai = new("a3333333-3333-3333-3333-333333333333");
-    private static readonly Guid AcmePune = new("a4444444-4444-4444-4444-444444444444");
-    private static readonly Guid AcmeKolkata = new("a5555555-5555-5555-5555-555555555555");
-    private static readonly Guid GlobexBerlin = new("b1111111-1111-1111-1111-111111111111");
-    private static readonly Guid GlobexMunich = new("b2222222-2222-2222-2222-222222222222");
+    private static readonly Guid AcmeMumbai = new("4e7a9c2f-1b3d-4a8e-9c5f-2d6b8f0a3c14");
+    private static readonly Guid AcmeDelhi = new("5f8b0d3a-2c4e-4b9f-8d16-3e7c9a1b4d25");
+    private static readonly Guid AcmeChennai = new("6a9c1e4b-3d5f-4c0a-9e27-4f8d0b2c5e36");
+    private static readonly Guid AcmePune = new("7b0d2f5c-4e6a-4d1b-8f38-5a9e1c3d6f47");
+    private static readonly Guid AcmeKolkata = new("8c1e3a6d-5f7b-4e2c-9a49-6b0f2d4e7a58");
+    private static readonly Guid GlobexBerlin = new("9d2f4b7e-6a8c-4f3d-8b5a-7c1a3e5f8b69");
+    private static readonly Guid GlobexMunich = new("0e3a5c8f-7b9d-4a4e-9c6b-8d2b4f6a9c70");
 
-    private static readonly Guid AcmeUserA = new("c1111111-1111-1111-1111-111111111111");
-    private static readonly Guid AcmeUserB = new("c4444444-4444-4444-4444-444444444444");
-    private static readonly Guid AcmeUserD = new("c6666666-6666-6666-6666-666666666666");
-    private static readonly Guid AcmeUserE = new("c7777777-7777-7777-7777-777777777777");
-    private static readonly Guid AcmeUserF = new("c8888888-8888-8888-8888-888888888888");
-    private static readonly Guid AcmeUserG = new("c9999999-9999-9999-9999-999999999999");
-    private static readonly Guid AdminAcme = new("c2222222-2222-2222-2222-222222222222");
-    private static readonly Guid GlobexUserC = new("c3333333-3333-3333-3333-333333333333");
-    private static readonly Guid AdminGlobex = new("c5555555-5555-5555-5555-555555555555");
+    private static readonly Guid AcmeUserA = new("1f4b6d9a-8c0e-4b5f-8d7c-9e3c5a7b0d81");
+    private static readonly Guid AcmeUserB = new("2a5c7e0b-9d1f-4c6a-9e8d-0f4d6b8c1e92");
+    private static readonly Guid AcmeUserD = new("3b6d8f1c-0e2a-4d7b-8f9e-1a5e7c9d2f03");
+    private static readonly Guid AcmeUserE = new("4c7e9a2d-1f3b-4e8c-9a0f-2b6f8d0e3a14");
+    private static readonly Guid AcmeUserF = new("5d8f0b3e-2a4c-4f9d-8b1a-3c7a9e1f4b25");
+    private static readonly Guid AcmeUserG = new("6e9a1c4f-3b5d-4a0e-9c2b-4d8b0f2a5c36");
+    private static readonly Guid AdminAcme = new("7f0b2d5a-4c6e-4b1f-8d3c-5e9c1a3b6d47");
+    private static readonly Guid GlobexUserC = new("8a1c3e6b-5d7f-4c2a-9e4d-6f0d2b4c7e58");
+    private static readonly Guid AdminGlobex = new("9b2d4f7c-6e8a-4d3b-8f5e-7a1e3c5d8f69");
+
 
 
     public static async Task SeedAsync(AppDbContext db)

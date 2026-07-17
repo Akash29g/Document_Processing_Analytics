@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Amazon;
 using Amazon.BedrockRuntime;
 using Amazon.Runtime;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
+[ExcludeFromCodeCoverage]
 public static class UploadsFeatureExtensions
 {
     public static IServiceCollection AddInvoicePipeline(this IServiceCollection services, IConfiguration cfg)

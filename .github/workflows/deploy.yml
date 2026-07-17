@@ -114,11 +114,15 @@ jobs:
           wait-for-service-stability: true
 
       - name: Health smoke test
+        env:
+          PUBLIC_URL: ${{ secrets.PUBLIC_URL }}
         run: |
+          BASE="$(printf '%s' "$PUBLIC_URL" | tr -d '[:space:]')"   # strip any stray whitespace/newlines
           for i in $(seq 1 12); do
-            if curl -fsS ${{ secrets.PUBLIC_URL }}/api/v1/health | grep -q '"db":"connected"'; then
+            if curl -fsSL "$BASE/api/v1/health" | grep -q '"db":"connected"'; then
               echo "✅ healthy"; exit 0
             fi
             echo "waiting... ($i)"; sleep 15
           done
           echo "❌ health check failed"; exit 1
+

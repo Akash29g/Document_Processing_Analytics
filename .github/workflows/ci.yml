@@ -109,19 +109,10 @@ jobs:
       - name: Trust dev HTTPS cert (API serves https on :7001)
         run: dotnet dev-certs https
 
-      - name: Start API in background (auto-migrates + seeds in Development)
-        env:
-          ASPNETCORE_ENVIRONMENT: Development
-          ConnectionStrings__Default: "Host=localhost;Port=5432;Database=docanalytics;Username=postgres;Password=postgres"
-          Jwt__Key: ${{ secrets.E2E_JWT_KEY }}
+      - name: Restore + build API (so startup is fast)
         run: |
           dotnet restore DocAnalytics.slnx
-          dotnet run --project DocAnalytics.Api --configuration Release &
-          echo "Waiting for API on :7001..."
-          for i in $(seq 1 90); do
-            if curl -sk https://localhost:7001/health >/dev/null 2>&1; then echo "API responding"; break; fi
-            sleep 2
-          done
+          dotnet build DocAnalytics.Api -c Release --no-restore
 
       - name: Install web dependencies
         working-directory: docanalytics-web
@@ -131,11 +122,26 @@ jobs:
         working-directory: docanalytics-web
         run: npx playwright install --with-deps
 
-      - name: Run Playwright E2E
+      - name: Start API and run Playwright E2E
         working-directory: docanalytics-web
         env:
+          ASPNETCORE_ENVIRONMENT: Development
+          ConnectionStrings__Default: "Host=localhost;Port=5432;Database=docanalytics;Username=postgres;Password=postgres"
+          Jwt__Key: ${{ secrets.E2E_JWT_KEY }}
           CI: 'true'
-        run: npx playwright test
+        run: |
+          set -e
+          # Start the API in the background WITHIN this step so it stays alive
+          # while Playwright runs (background procs are killed at step end).
+          ( cd .. && dotnet run --project DocAnalytics.Api -c Release --no-build > api.log 2>&1 & )
+          echo "Waiting for API on https://localhost:7001 ..."
+          up=""
+          for i in $(seq 1 90); do
+            if curl -sk https://localhost:7001/health >/dev/null 2>&1; then up=1; echo "API is up"; break; fi
+            sleep 2
+          done
+          if [ -z "$up" ]; then echo "API did not start"; cat ../api.log || true; exit 1; fi
+          npx playwright test
 
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
@@ -144,6 +150,7 @@ jobs:
           name: playwright-report
           path: docanalytics-web/playwright-report
           retention-days: 7
+
 
 
   # ──────────────────────── DevSecOps (scans) ────────────────────────

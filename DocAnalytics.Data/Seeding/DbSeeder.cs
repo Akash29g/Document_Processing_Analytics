@@ -105,7 +105,7 @@ public static class DbSeeder
         await db.SaveChangesAsync();
 
 
-        if (await db.Tenants.AnyAsync()) return; // idempotent guard
+            if (await db.Tenants.AnyAsync()) return; // idempotent guard
 
         var now = DateTime.UtcNow;
         var hash = BCrypt.Net.BCrypt.HashPassword("Password123!");
@@ -387,6 +387,21 @@ public static class DbSeeder
         db.AddRange(steps);
         db.AddRange(lineItems);
         db.AddRange(activity);
+
+        // Drop any error_catalog rows already inserted earlier in this seed run
+        // (prevents duplicate ix_error_catalog_error_code)
+        var existingErrorCodes = await db.ErrorCatalog
+            .Select(e => e.ErrorCode)
+            .ToListAsync();
+
+        foreach (var entry in db.ChangeTracker.Entries<ErrorCatalog>().ToList())
+        {
+            if (entry.State == EntityState.Added &&
+                existingErrorCodes.Contains(entry.Entity.ErrorCode))
+            {
+                entry.State = EntityState.Detached;   // don't re-insert this code
+            }
+        }
         await db.SaveChangesAsync();
     }
 }

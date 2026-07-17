@@ -208,9 +208,14 @@ public static class DbSeeder
 
 
         };
+        // Exclude any error codes already inserted by the backfill above,
+        // otherwise seeding a brand-new DB hits a duplicate-key crash on error_code.
+        var existingCodes = await db.ErrorCatalog.Select(x => x.ErrorCode).ToListAsync();
         var errorCatalog = errorDefs
+            .Where(e => !existingCodes.Contains(e.Code))
             .Select(e => new ErrorCatalog { Id = Guid.NewGuid(), ErrorCode = e.Code, Description = e.Desc, RemediationMsg = e.Remediation, CreatedAt = now, UpdatedAt = now })
             .ToArray();
+
 
         string[] sources = { "S3_Bucket_Alpha", "SFTP_Beta", "API_Upload", "Legacy_Import", "Azure_Blob_Gamma" };
         string[] pipeline = { "Upload", "Validate", "Transform", "Load" };

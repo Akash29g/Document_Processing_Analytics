@@ -71,6 +71,81 @@ jobs:
       - name: Test (Vitest, single run + coverage thresholds)
         run: npx ng test --watch=false
 
+
+  # ──────────────────────── E2E (Playwright) ────────────────────────
+  e2e:
+    name: e2e (Playwright)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: docanalytics
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: docanalytics-web/package-lock.json
+
+      - name: Trust dev HTTPS cert (API serves https on :7001)
+        run: dotnet dev-certs https
+
+      - name: Start API in background (auto-migrates + seeds in Development)
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+          ConnectionStrings__Default: "Host=localhost;Port=5432;Database=docanalytics;Username=postgres;Password=postgres"
+          Jwt__Key: ${{ secrets.E2E_JWT_KEY }}
+        run: |
+          dotnet restore DocAnalytics.slnx
+          dotnet run --project DocAnalytics.Api --configuration Release &
+          echo "Waiting for API on :7001..."
+          for i in $(seq 1 90); do
+            if curl -sk https://localhost:7001/health >/dev/null 2>&1; then echo "API responding"; break; fi
+            sleep 2
+          done
+
+      - name: Install web dependencies
+        working-directory: docanalytics-web
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: docanalytics-web
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright E2E
+        working-directory: docanalytics-web
+        env:
+          CI: 'true'
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: docanalytics-web/playwright-report
+          retention-days: 7
+
+
   # ──────────────────────── DevSecOps (scans) ────────────────────────
   devsecops:
     name: devsecops (secrets + deps + image scan)

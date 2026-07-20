@@ -19,6 +19,14 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       const isRefresh = req.url.includes('/auth/refresh');
       const isLogout = req.url.includes('/auth/logout');
 
+      // ── NEW (B6): rate-limited (429) → friendly toast for ANY endpoint, then stop ──
+      if (err.status === 429) {
+        const retryAfter = err.headers.get('Retry-After');
+        const wait = retryAfter ? ` Try again in ${retryAfter}s.` : '';
+        toast.warning(`You're doing that too fast.${wait}`);
+        return throwError(() => err);
+      }
+
       // Login handles its own errors inline — skip all global toasts/redirects.
       if (isLogin) {
         return throwError(() => err);

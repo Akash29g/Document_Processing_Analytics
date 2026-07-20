@@ -1,6 +1,5 @@
 using System.Text.Json;
 using DocAnalytics.Api.Auth;      // JwtSettings
-using DocAnalytics.Api.Common;    // ApiResponse<T>
 using DocAnalytics.Api.Configuration;
 using DocAnalytics.Api.Extensions;
 using DocAnalytics.Api.Middleware;

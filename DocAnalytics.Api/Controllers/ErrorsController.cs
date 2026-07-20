@@ -3,12 +3,14 @@ using DocAnalytics.Api.Common;            // ApiResponse<T>, Meta  (drop if glob
 using DocAnalytics.Service.Errors;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DocAnalytics.Api.Controllers;
 
 [ApiController]
 [Authorize(Policy = "DataAccess")]   // ← was [Authorize]
 [Route("api/v1/errors")]
+[EnableRateLimiting("reads")]        // ← NEW: per-user cap on all read endpoints here
 public sealed class ErrorsController : ControllerBase
 {
     private readonly IErrorService _errors;
@@ -33,6 +35,7 @@ public sealed class ErrorsController : ControllerBase
 
     // GET /api/v1/errors/export — CSV of the filtered list (FR-3.5)
     [HttpGet("export")]
+    [EnableRateLimiting("export")]   // ← NEW: tight limit, overrides the class-level "reads"
     public async Task<IActionResult> ExportErrors([FromQuery] ErrorListQuery query, CancellationToken ct)
     {
         var rows = await _errors.GetErrorsForExportAsync(query, ct);

@@ -2,6 +2,7 @@ using DocAnalytics.Api.Common;
 using DocAnalytics.Service.Analytics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DocAnalytics.Api.Controllers;
 
@@ -9,6 +10,7 @@ namespace DocAnalytics.Api.Controllers;
 [Authorize(Policy = "DataAccess")]   // ← was [Authorize]
 [Route("api/v1/errors")]
 [Tags("Errors")]
+[EnableRateLimiting("reads")]
 public sealed class ErrorAnalyticsController : ControllerBase
 {
     private readonly IAnalyticsService _chartService;

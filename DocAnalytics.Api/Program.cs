@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Threading.RateLimiting;
 using DocAnalytics.Api.Auth;      // JwtSettings
 using DocAnalytics.Api.Common;    // ApiResponse<T>
 using DocAnalytics.Api.Configuration;
@@ -80,40 +79,7 @@ builder.Services.AddAdminUsersFeature();
 builder.Services.AddInvoicePipeline(builder.Configuration);
 builder.Services.AddHostedService<DocAnalytics.Api.BackgroundServices.ExtractionWorker>();
 
-builder.Services.AddRateLimiter(options =>
-{
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-
-    options.AddPolicy("login", httpContext =>
-    {
-        // Client IP is correct behind nginx because UseForwardedHeaders() runs first (R1).
-        var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-        return RateLimitPartition.GetFixedWindowLimiter(ip, _ => new FixedWindowRateLimiterOptions
-        {
-            PermitLimit = 5,
-            Window = TimeSpan.FromMinutes(1),
-            QueueLimit = 0,
-            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
-        });
-    });
-
-    options.OnRejected = async (context, token) =>
-    {
-        var res = context.HttpContext.Response;
-        res.StatusCode = StatusCodes.Status429TooManyRequests;
-        res.ContentType = "application/json";
-
-        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
-            res.Headers.RetryAfter = ((int)retryAfter.TotalSeconds).ToString();
-
-        var body = ApiResponse<object>.Fail(
-            "RATE_LIMITED", "Too many login attempts. Please try again later.");
-        var json = JsonSerializer.Serialize(body,
-            new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower });
-
-        await res.WriteAsync(json, token);
-    };
-});
+builder.Services.AddRateLimitingFeature(builder.Configuration);
 
 builder.Services.AddControllers().AddJsonOptions(o =>
 {
@@ -142,7 +108,7 @@ app.UseSecurityHeaders();
 
 // 5) CORS (single, config-driven policy) — before auth.
 app.UseCors(CorsOptions.PolicyName);
-app.UseRateLimiter();          // ← NEW: throttle before auth work happens
+
 
 if (app.Environment.IsDevelopment())
 {
@@ -153,6 +119,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthentication();
+app.UseRateLimiter();          // ← NEW: throttle before auth work happens
 app.UseAuthorization();
 app.UseMiddleware<TenantSiteMiddleware>();
 

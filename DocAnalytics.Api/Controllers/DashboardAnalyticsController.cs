@@ -2,6 +2,7 @@ using DocAnalytics.Api.Common;
 using DocAnalytics.Service.Analytics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DocAnalytics.Api.Controllers;
 
@@ -9,6 +10,7 @@ namespace DocAnalytics.Api.Controllers;
 [Authorize(Policy = "DataAccess")]   // ← was [Authorize]
 [Route("api/v1/dashboard")]
 [Tags("Dashboard")]
+[EnableRateLimiting("reads")]
 public sealed class DashboardAnalyticsController : ControllerBase
 {
     private readonly IAnalyticsService _analyticsService;

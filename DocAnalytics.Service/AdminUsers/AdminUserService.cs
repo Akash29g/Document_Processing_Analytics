@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DocAnalytics.Service.AdminUsers;
 
+/// <summary>Default <see cref="IAdminUserService"/> implementation; all queries are explicitly scoped to the caller's tenant.</summary>
 // Every query here is EXPLICITLY scoped to _currentUser.TenantId —
 // Users/Sites are not ITenantScoped, so the global filter doesn't cover them.
 public sealed class AdminUserService : IAdminUserService
@@ -23,6 +24,7 @@ public sealed class AdminUserService : IAdminUserService
         _credentials = credentials; _email = email;
     }
 
+    /// <inheritdoc />
     public async Task<List<AdminUserDto>> GetUsersAsync(CancellationToken ct) =>
         await _db.Users.AsNoTracking()
             .Where(u => u.TenantId == _currentUser.TenantId && u.Role == "Viewer")
@@ -32,6 +34,7 @@ public sealed class AdminUserService : IAdminUserService
                 u.SiteAccess.Select(a => a.SiteId).ToList()))
             .ToListAsync(ct);
 
+    /// <inheritdoc />
     public async Task<AdminCreatedUserDto?> CreateUserAsync(AdminCreateUserRequest req, CancellationToken ct)
     {
         var tenant = await _db.Tenants.AsNoTracking()
@@ -79,6 +82,7 @@ public sealed class AdminUserService : IAdminUserService
         return new AdminCreatedUserDto(user.Id, user.Email, CredentialsEmailed: true);
     }
 
+    /// <inheritdoc />
     public async Task<bool> UpdateUserSitesAsync(Guid userId, UpdateUserSitesRequest req, CancellationToken ct)
     {
         var user = await _db.Users.FirstOrDefaultAsync(
@@ -105,6 +109,7 @@ public sealed class AdminUserService : IAdminUserService
         return true;
     }
 
+    /// <inheritdoc />
     public async Task<bool> DeactivateUserAsync(Guid userId, CancellationToken ct)
     {
         var user = await _db.Users.FirstOrDefaultAsync(
@@ -116,6 +121,7 @@ public sealed class AdminUserService : IAdminUserService
         return true;
     }
 
+    /// <inheritdoc />
     public async Task<List<AdminSiteDto>> GetSitesAsync(CancellationToken ct) =>
         await _db.Sites.AsNoTracking()
             .Where(s => s.TenantId == _currentUser.TenantId)
@@ -123,6 +129,7 @@ public sealed class AdminUserService : IAdminUserService
             .Select(s => new AdminSiteDto(s.Id, s.Name, s.Location, s.IsActive))
             .ToListAsync(ct);
 
+    /// <inheritdoc />
     public async Task<AdminSiteDto> CreateSiteAsync(AdminCreateSiteRequest req, CancellationToken ct)
     {
         var site = new Site

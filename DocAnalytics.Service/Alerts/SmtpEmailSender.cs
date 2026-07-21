@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace DocAnalytics.Service.Alerts;
 
+/// <summary>Production <see cref="IEmailSender"/> that sends via SMTP using the "Email" configuration section.</summary>
 [ExcludeFromCodeCoverage]
 // Reads the "Email" section of appsettings. Uses built-in SmtpClient (no extra package).
 public sealed class SmtpEmailSender : IEmailSender
@@ -12,6 +13,7 @@ public sealed class SmtpEmailSender : IEmailSender
     private readonly IConfiguration _cfg;
     public SmtpEmailSender(IConfiguration cfg) => _cfg = cfg;
 
+    /// <inheritdoc />
     public async Task SendAsync(string to, string subject, string body, CancellationToken ct = default)
     {
         var s = _cfg.GetSection("Email");

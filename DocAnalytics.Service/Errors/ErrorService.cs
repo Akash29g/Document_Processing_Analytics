@@ -4,11 +4,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DocAnalytics.Service.Errors;
 
+/// <summary>Default <see cref="IErrorService"/> implementation: filtered failed-step queries and CSV export rows.</summary>
 public sealed class ErrorService : IErrorService
 {
     private readonly AppDbContext _db;
     public ErrorService(AppDbContext db) => _db = db;
 
+    /// <inheritdoc />
     public async Task<PagedResult<ErrorListItemDto>> GetErrorsAsync(
         ErrorListQuery query, CancellationToken ct = default)
     {
@@ -33,6 +35,7 @@ public sealed class ErrorService : IErrorService
         };
     }
 
+    /// <inheritdoc />
     public async Task<List<ErrorListItemDto>> GetErrorsForExportAsync(
         ErrorListQuery query, CancellationToken ct = default)
         => await ApplySorting(BuildFilteredQuery(query), query.SortBy, query.SortDir)

@@ -3,11 +3,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DocAnalytics.Service.Alerts;
 
+/// <summary>Default <see cref="IAlertNotificationService"/> implementation; auto-scoped to the request's tenant/site.</summary>
 public sealed class AlertNotificationService : IAlertNotificationService
 {
     private readonly AppDbContext _db;
     public AlertNotificationService(AppDbContext db) => _db = db;
 
+    /// <inheritdoc />
     // Global query filter auto-scopes to the request's tenant+site (NFR-3).
     public async Task<List<AlertNotificationDto>> GetNotificationsAsync(
         bool unreadOnly, CancellationToken ct = default)
@@ -35,9 +37,11 @@ public sealed class AlertNotificationService : IAlertNotificationService
             .ToListAsync(ct);
     }
 
+    /// <inheritdoc />
     public Task<int> GetUnreadCountAsync(CancellationToken ct = default) =>
         _db.AlertNotifications.CountAsync(n => !n.IsRead, ct);
 
+    /// <inheritdoc />
     public async Task<bool> MarkReadAsync(Guid id, CancellationToken ct = default)
     {
         // Tracked query → filter still applies, so cross-tenant ids just return null → false.
@@ -51,6 +55,7 @@ public sealed class AlertNotificationService : IAlertNotificationService
         return true;
     }
 
+    /// <inheritdoc />
     public async Task<int> MarkAllReadAsync(CancellationToken ct = default)
     {
         var now = DateTime.UtcNow;

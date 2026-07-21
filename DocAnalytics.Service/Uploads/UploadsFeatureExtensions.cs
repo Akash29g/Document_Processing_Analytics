@@ -11,9 +11,14 @@ using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
+/// <summary>Dependency-injection registration for the full invoice-upload pipeline (AWS clients, storage, extraction, validation, queue).</summary>
 [ExcludeFromCodeCoverage]
 public static class UploadsFeatureExtensions
 {
+    /// <summary>Registers AWS S3/Bedrock clients and all invoice-pipeline services, selecting static or role-based credentials based on configuration.</summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="cfg">The application configuration (reads the "Aws" section).</param>
+    /// <returns>The same service collection, for chaining.</returns>
     public static IServiceCollection AddInvoicePipeline(this IServiceCollection services, IConfiguration cfg)
     {
         services.Configure<AwsOptions>(cfg.GetSection("Aws"));

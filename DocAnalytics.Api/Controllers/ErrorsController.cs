@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace DocAnalytics.Api.Controllers;
 
+/// <summary>
+/// Error analysis endpoints: filtered/paginated error list and CSV export (FR-3).
+/// </summary>
 [ApiController]
 [Authorize(Policy = "DataAccess")]   // ← was [Authorize]
 [Route("api/v1/errors")]
@@ -14,8 +17,16 @@ namespace DocAnalytics.Api.Controllers;
 public sealed class ErrorsController : ControllerBase
 {
     private readonly IErrorService _errors;
+
+    /// <summary>Creates a new <see cref="ErrorsController"/>.</summary>
+    /// <param name="errors">Error query/export service.</param>
     public ErrorsController(IErrorService errors) => _errors = errors;
 
+    /// <summary>Returns a filtered, paginated list of processing errors for the selected tenant/site (FR-3.4).</summary>
+    /// <param name="query">Filter, sort, and pagination parameters.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A paginated list of errors with metadata.</returns>
+    /// <response code="200">Errors returned.</response>
     // GET /api/v1/errors — filtered + paginated error list (FR-3.4)
     [HttpGet]
     public async Task<IActionResult> GetErrors([FromQuery] ErrorListQuery query, CancellationToken ct)
@@ -33,6 +44,12 @@ public sealed class ErrorsController : ControllerBase
         return Ok(ApiResponse<List<ErrorListItemDto>>.OkList(result.Items, meta));
     }
 
+    /// <summary>Exports the filtered error list as a UTF-8 (BOM) CSV attachment (FR-3.5).</summary>
+    /// <param name="query">Same filters as <see cref="GetErrors"/>.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A <c>text/csv</c> file download.</returns>
+    /// <response code="200">CSV file returned.</response>
+    /// <response code="429">Export rate limit exceeded.</response>
     // GET /api/v1/errors/export — CSV of the filtered list (FR-3.5)
     [HttpGet("export")]
     [EnableRateLimiting("export")]   // ← NEW: tight limit, overrides the class-level "reads"

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DocAnalytics.Service.Auth;
 
+/// <summary>Default <see cref="ILoginLockoutService"/> implementation: counts failed logins and locks accounts temporarily.</summary>
 public sealed class LoginLockoutService : ILoginLockoutService
 {
     private const int MaxFailures = 5;
@@ -15,6 +16,7 @@ public sealed class LoginLockoutService : ILoginLockoutService
 
     private static string Norm(string email) => (email ?? string.Empty).Trim().ToLowerInvariant();
 
+    /// <inheritdoc />
     public async Task<(bool Locked, int RetryAfterSeconds)> IsLockedAsync(string email, CancellationToken ct = default)
     {
         var e = Norm(email);
@@ -24,6 +26,7 @@ public sealed class LoginLockoutService : ILoginLockoutService
         return (false, 0);
     }
 
+    /// <inheritdoc />
     public async Task RegisterFailureAsync(string email, string? ip, CancellationToken ct = default)
     {
         var e = Norm(email);
@@ -54,6 +57,7 @@ public sealed class LoginLockoutService : ILoginLockoutService
         await _db.SaveChangesAsync(ct);
     }
 
+    /// <inheritdoc />
     public async Task ResetAsync(string email, CancellationToken ct = default)
     {
         var e = Norm(email);

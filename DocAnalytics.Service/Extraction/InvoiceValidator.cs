@@ -1,7 +1,9 @@
 namespace DocAnalytics.Service.Extraction;
 
+/// <summary>Default <see cref="IInvoiceValidator"/> implementation: reconciles totals and derives a confidence score.</summary>
 public sealed class InvoiceValidator : IInvoiceValidator
 {
+    /// <inheritdoc />
     public ValidationOutcome Validate(InvoiceExtractionResult r)
     {
         bool hasCore = !string.IsNullOrWhiteSpace(r.Seller) && r.Total is not null;

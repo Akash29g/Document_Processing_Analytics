@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace DocAnalytics.Api.Controllers;
 
+/// <summary>
+/// Authentication endpoints: login, refresh-token rotation, logout, current-user, and password change.
+/// </summary>
 [ApiController]
 [Route("api/v1/auth")]
 public class AuthController : ControllerBase
@@ -17,6 +20,12 @@ public class AuthController : ControllerBase
     private readonly IRefreshTokenService _refresh;   // ← NEW (R4)
     private readonly IJwtTokenService _jwt;            // ← NEW (R4)
 
+    /// <summary>Creates a new <see cref="AuthController"/>.</summary>
+    /// <param name="auth">Authentication service.</param>
+    /// <param name="currentUser">The current authenticated user.</param>
+    /// <param name="lockout">Login lockout (brute-force) service.</param>
+    /// <param name="refresh">Refresh-token service.</param>
+    /// <param name="jwt">JWT access-token service.</param>
     public AuthController(
         IAuthService auth,
         ICurrentUser currentUser,
@@ -31,6 +40,13 @@ public class AuthController : ControllerBase
         _jwt = jwt;
     }
 
+    /// <summary>Authenticates a user and issues a JWT access token plus a rotating refresh token.</summary>
+    /// <param name="req">Login request with email and password.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The access token, refresh token, and the user's authorized sites.</returns>
+    /// <response code="200">Login succeeded.</response>
+    /// <response code="401">Email or password is incorrect.</response>
+    /// <response code="429">Too many attempts — rate limited or account locked.</response>
     [AllowAnonymous]
     [HttpPost("login")]
     [EnableRateLimiting("login")]
@@ -65,6 +81,12 @@ public class AuthController : ControllerBase
         return Ok(ApiResponse<LoginResponse>.Ok(result));
     }
 
+    /// <summary>Exchanges a valid refresh token for a fresh access token and a rotated refresh token.</summary>
+    /// <param name="req">Request containing the current refresh token.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A new access token and rotated refresh token.</returns>
+    /// <response code="200">New tokens issued.</response>
+    /// <response code="401">Refresh token is invalid or expired.</response>
     // NEW (R4): exchange a valid refresh token for a fresh access token + rotated refresh token.
     [AllowAnonymous]
     [HttpPost("refresh")]
@@ -81,6 +103,11 @@ public class AuthController : ControllerBase
         return Ok(ApiResponse<RefreshResponse>.Ok(new RefreshResponse(accessToken, newRaw)));
     }
 
+    /// <summary>Revokes a refresh token (logout). Anonymous so an expired access token can't block cleanup.</summary>
+    /// <param name="req">Request containing the refresh token to revoke.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Confirmation that the token was revoked (idempotent).</returns>
+    /// <response code="200">Token revoked.</response>
     // NEW (R4): revoke a refresh token (logout). AllowAnonymous so an expired
     // access token doesn't block the client from cleanly revoking.
     [AllowAnonymous]
@@ -91,6 +118,11 @@ public class AuthController : ControllerBase
         return Ok(ApiResponse<object>.Ok(new { logged_out = true }));
     }
 
+    /// <summary>Returns the current authenticated user's profile and authorized sites (session rehydration).</summary>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The current user's profile, or 401 if no valid session.</returns>
+    /// <response code="200">Profile returned.</response>
+    /// <response code="401">No valid session.</response>
     [Authorize]
     [HttpGet("me")]
     public async Task<IActionResult> Me(CancellationToken ct)
@@ -100,6 +132,12 @@ public class AuthController : ControllerBase
         return Ok(ApiResponse<MeResponse>.Ok(result));
     }
 
+    /// <summary>Changes the current user's password.</summary>
+    /// <param name="req">Current and new password.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Confirmation, or a validation error.</returns>
+    /// <response code="200">Password changed.</response>
+    /// <response code="400">Current password is incorrect.</response>
     [Authorize]
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest req, CancellationToken ct)

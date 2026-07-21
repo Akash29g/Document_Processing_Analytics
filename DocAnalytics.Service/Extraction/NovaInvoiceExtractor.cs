@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace DocAnalytics.Service.Extraction;
 
+/// <summary>Default <see cref="IInvoiceExtractor"/> implementation using Amazon Bedrock (Nova) to extract invoice data from PDFs.</summary>
 public sealed class NovaInvoiceExtractor : IInvoiceExtractor
 {
     private readonly IAmazonBedrockRuntime _bedrock;
@@ -43,6 +44,7 @@ public sealed class NovaInvoiceExtractor : IInvoiceExtractor
         _opts = opts.Value;
     }
 
+    /// <inheritdoc />
     public async Task<InvoiceExtractionResult> ExtractAsync(byte[] pdfBytes, CancellationToken ct = default)
     {
         var request = new ConverseRequest

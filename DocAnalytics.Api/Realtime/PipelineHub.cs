@@ -5,17 +5,28 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DocAnalytics.Api.Realtime;
 
-// Live pipeline hub. Clients connect with their JWT, then call JoinSite(siteId)
-// to subscribe to their site's group. Broadcasts are scoped to "site:{siteId}"
-// so tenants never receive each other's events (FR-5.3).
+/// <summary>
+/// Live pipeline SignalR hub. Clients connect with their JWT then call <see cref="JoinSite"/>
+/// to subscribe to their site's group. Broadcasts are scoped to "site:{siteId}" so tenants
+/// never receive each other's events (FR-5.3).
+/// </summary>
 [Authorize]
 public sealed class PipelineHub : Hub
 {
     private readonly AppDbContext _db;
     public PipelineHub(AppDbContext db) => _db = db;
 
+    /// <summary>Builds the SignalR group name for a given site id.</summary>
+    /// <param name="siteId">The site id.</param>
+    /// <returns>The group name, e.g. "site:{siteId}".</returns>
     public static string Group(string siteId) => $"site:{siteId}";
 
+    /// <summary>
+    /// Subscribes the calling connection to a site's broadcast group after verifying the
+    /// authenticated user has access to that site.
+    /// </summary>
+    /// <param name="siteId">The site id to join.</param>
+    /// <exception cref="HubException">Thrown for an invalid site id, an unauthenticated caller, or no site access.</exception>
     public async Task JoinSite(string siteId)
     {
         if (!Guid.TryParse(siteId, out var sid))
@@ -38,6 +49,8 @@ public sealed class PipelineHub : Hub
         await Groups.AddToGroupAsync(Context.ConnectionId, Group(siteId));
     }
 
+    /// <summary>Removes the calling connection from a site's broadcast group.</summary>
+    /// <param name="siteId">The site id to leave.</param>
     public Task LeaveSite(string siteId)
         => Groups.RemoveFromGroupAsync(Context.ConnectionId, Group(siteId));
 }

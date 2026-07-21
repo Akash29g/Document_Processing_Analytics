@@ -2,6 +2,7 @@ using DocAnalytics.Domain.Entities;
 
 namespace DocAnalytics.Service.Auth;
 
+/// <summary>Issues, rotates, and revokes opaque refresh tokens (only their hashes are persisted).</summary>
 public interface IRefreshTokenService
 {
     /// <summary>Mints a new opaque refresh token for the user and persists its hash.

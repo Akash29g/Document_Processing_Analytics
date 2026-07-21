@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DocAnalytics.Service.Auth;
 
+/// <summary>Default <see cref="IAuthService"/> implementation: credential verification, profile, sites, and password change.</summary>
 public class AuthService : IAuthService
 {
     private readonly AppDbContext _db;
@@ -14,6 +15,7 @@ public class AuthService : IAuthService
         _jwt = jwt;
     }
 
+    /// <inheritdoc />
     public async Task<LoginResponse?> LoginAsync(LoginRequest req, CancellationToken ct)
     {
         // 1) Find user by globally-unique email (safe pre-token lookup)
@@ -38,6 +40,7 @@ public class AuthService : IAuthService
         user.MustChangePassword);
     }
 
+    /// <inheritdoc />
     public async Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordRequest req, CancellationToken ct)
     {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId && u.IsActive, ct);
@@ -53,6 +56,7 @@ public class AuthService : IAuthService
     }
 
 
+    /// <inheritdoc />
     public async Task<MeResponse?> GetMeAsync(Guid userId, CancellationToken ct)
     {
         var user = await _db.Users
@@ -63,6 +67,7 @@ public class AuthService : IAuthService
         return new MeResponse(new UserDto(user.Id, user.Email, user.Role), sites);
     }
 
+    /// <inheritdoc />
     public Task<IReadOnlyList<SiteDto>> GetSitesAsync(Guid userId, CancellationToken ct)
         => GetSitesForUserAsync(userId, ct);
 

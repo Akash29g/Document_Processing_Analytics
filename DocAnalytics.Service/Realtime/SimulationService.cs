@@ -5,6 +5,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DocAnalytics.Service.Realtime;
 
+/// <summary>
+/// Dev-only <see cref="ISimulationService"/> implementation: fabricates a pipeline state change
+/// so real-time (SignalR) updates are demoable on an otherwise read-only, post-seed system.
+/// </summary>
 // Dev-only: simulates a pipeline event so real-time updates are demoable on a
 // system that is otherwise read-only after seeding. Runs on an HTTP request, so
 // TenantSiteMiddleware has populated CurrentUser → all queries are tenant/site scoped.
@@ -21,6 +25,7 @@ public sealed class SimulationService : ISimulationService
 
     private static readonly string[] Outcomes = { "Completed", "Failed" };
 
+    /// <inheritdoc />
     public async Task<FileStateChangedNotification?> SimulateStateChangeAsync(CancellationToken ct = default)
     {
         // Prefer an in-flight file; fall back to any file for this site.

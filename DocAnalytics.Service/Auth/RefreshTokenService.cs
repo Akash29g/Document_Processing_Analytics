@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace DocAnalytics.Service.Auth;
 
+/// <summary>Default <see cref="IRefreshTokenService"/> implementation: issues/rotates/revokes opaque refresh tokens (hashes stored).</summary>
 public sealed class RefreshTokenService : IRefreshTokenService
 {
     private readonly AppDbContext _db;
@@ -32,6 +33,7 @@ public sealed class RefreshTokenService : IRefreshTokenService
         return Convert.ToBase64String(bytes);
     }
 
+    /// <inheritdoc />
     public async Task<(string RawToken, DateTime ExpiresAt)> IssueAsync(
         Guid userId, string? ip, CancellationToken ct = default)
     {
@@ -53,6 +55,7 @@ public sealed class RefreshTokenService : IRefreshTokenService
         return (raw, expiresAt);
     }
 
+    /// <inheritdoc />
     public async Task<(User User, string RawToken, DateTime ExpiresAt)?> ValidateAndRotateAsync(
         string rawToken, string? ip, CancellationToken ct = default)
     {
@@ -99,6 +102,7 @@ public sealed class RefreshTokenService : IRefreshTokenService
         return (user, raw, expiresAt);
     }
 
+    /// <inheritdoc />
     public async Task RevokeAsync(string rawToken, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(rawToken)) return;
@@ -112,6 +116,7 @@ public sealed class RefreshTokenService : IRefreshTokenService
         }
     }
 
+    /// <inheritdoc />
     public async Task RevokeAllForUserAsync(Guid userId, CancellationToken ct = default)
     {
         var now = DateTime.UtcNow;

@@ -8,6 +8,10 @@ using Microsoft.EntityFrameworkCore;    // AnyAsync
 
 namespace DocAnalytics.Api.Middleware;
 
+/// <summary>
+/// Populates the request's tenant/site context on <see cref="CurrentUser"/> from JWT claims and the site header/query.
+/// Hard-blocks the Developer role from business-data routes and enforces per-site access (FR-5.3) before the request proceeds.
+/// </summary>
 [ExcludeFromCodeCoverage]
 public class TenantSiteMiddleware
 {
@@ -15,8 +19,15 @@ public class TenantSiteMiddleware
         new() { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
 
     private readonly RequestDelegate _next;
+
+    /// <summary>Creates the middleware with the next delegate.</summary>
+    /// <param name="next">The next delegate in the pipeline.</param>
     public TenantSiteMiddleware(RequestDelegate next) => _next = next;
 
+    /// <summary>Resolves and validates tenant/site context for the request, then invokes the rest of the pipeline.</summary>
+    /// <param name="ctx">The current HTTP context.</param>
+    /// <param name="currentUser">The request-scoped current-user accessor to populate.</param>
+    /// <param name="db">The database context, used to verify site access.</param>
     public async Task Invoke(HttpContext ctx, CurrentUser currentUser, AppDbContext db)
     {
         // Developer = provisioning only — hard-block all data routes at the API level,

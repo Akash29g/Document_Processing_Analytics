@@ -82,23 +82,25 @@ public sealed class ExtractionWorker : BackgroundService
                 await Task.Delay(TimeSpan.FromSeconds(5), ct);
             }
 
-            if (scan == "THREATS_FOUND")
+            // Fail-closed decision (see ScanGate): only NO_THREATS_FOUND proceeds.
+            switch (ScanGate.Evaluate(scan))
             {
-                await storage.DeleteAsync(file.StorageKey!, ct);     // never servable again
-                file.StorageKey = null;                              // download-url → 404
-                await FailFileAsync(db, notifier, file, txn, now,
-                    "ERR_MALWARE_DETECTED", "Malware detected in uploaded file; the file has been removed.", ct);
-                return;
-            }
+                case ScanDecision.Threat:
+                    await storage.DeleteAsync(file.StorageKey!, ct);     // never servable again
+                    file.StorageKey = null;                              // download-url → 404
+                    await FailFileAsync(db, notifier, file, txn, now,
+                        "ERR_MALWARE_DETECTED", "Malware detected in uploaded file; the file has been removed.", ct);
+                    return;
 
-            // ── FAIL-CLOSED: only an explicit clean verdict may proceed ──
-            // Covers: null (scan still pending after ~60s), FAILED, UNSUPPORTED, ACCESS_DENIED.
-            if (scan != "NO_THREATS_FOUND")
-            {
-                await FailFileAsync(db, notifier, file, txn, now,
-                    "ERR_SCAN_INCOMPLETE",
-                    $"Malware scan not confirmed clean (status: {scan ?? "PENDING"}). File was not processed.", ct);
-                return;
+                case ScanDecision.Incomplete:
+                    // null (still pending after ~60s), FAILED, UNSUPPORTED, ACCESS_DENIED, or unknown
+                    await FailFileAsync(db, notifier, file, txn, now,
+                        "ERR_SCAN_INCOMPLETE",
+                        $"Malware scan not confirmed clean (status: {scan ?? "PENDING"}). File was not processed.", ct);
+                    return;
+
+                case ScanDecision.Clean:
+                    break;   // ✅ proceed to download + extract
             }
 
             // ✅ Confirmed clean → safe to download + extract.

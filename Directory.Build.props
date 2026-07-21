@@ -1,6 +1,10 @@
 <Project>
   <!-- Coverage gate: applies only to *.Tests projects -->
   <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Keep the build green while you document incrementally:
+       CS1591 = "missing XML comment on public member" -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <Threshold>30</Threshold>
     <ThresholdType>line</ThresholdType>
     <ThresholdStat>total</ThresholdStat>

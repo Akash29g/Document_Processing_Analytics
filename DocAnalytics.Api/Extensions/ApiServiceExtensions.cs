@@ -66,6 +66,13 @@ public static class ApiServiceExtensions
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(options =>
         {
+
+            // Include XML docs from Api + Service + Domain so summaries/params render in Swagger UI
+            foreach (var xml in Directory.GetFiles(AppContext.BaseDirectory, "DocAnalytics.*.xml"))
+            {
+                options.IncludeXmlComments(xml, includeControllerXmlComments: true);
+            }
+
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Name = "Authorization",

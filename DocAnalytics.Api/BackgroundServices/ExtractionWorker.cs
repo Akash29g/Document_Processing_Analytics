@@ -8,7 +8,6 @@ using DocAnalytics.Service.Realtime;
 using DocAnalytics.Service.Storage;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace DocAnalytics.Api.BackgroundServices;
 
 [ExcludeFromCodeCoverage]
@@ -66,16 +65,15 @@ public sealed class ExtractionWorker : BackgroundService
             StartedAt = now
         });
         await db.SaveChangesAsync(ct);
+
         await notifier.NotifyFileStateChangedAsync(file.SiteId,
             new FileStateChangedNotification(file.Id, file.FileName, "Queued", "Processing", "Extract", now), ct);
 
         try
         {
-            var bytes = await storage.DownloadAsync(file.StorageKey!, ct);
-            var result = await extractor.ExtractAsync(bytes, ct);
-            var v = validator.Validate(result);
-
-            // ── SECURITY GATE 1: GuardDuty malware verdict (tag is written async, poll briefly) ──
+            // ── SECURITY GATE 1: GuardDuty malware verdict FIRST ──
+            // Runs BEFORE download/extraction so we never spend Bedrock cost on an unscanned/malicious file.
+            // GuardDuty writes the tag asynchronously after upload, so poll briefly.
             string? scan = null;
             for (var attempt = 0; attempt < 12; attempt++)          // up to ~60s
             {
@@ -83,6 +81,7 @@ public sealed class ExtractionWorker : BackgroundService
                 if (scan is not null) break;
                 await Task.Delay(TimeSpan.FromSeconds(5), ct);
             }
+
             if (scan == "THREATS_FOUND")
             {
                 await storage.DeleteAsync(file.StorageKey!, ct);     // never servable again
@@ -91,6 +90,19 @@ public sealed class ExtractionWorker : BackgroundService
                     "ERR_MALWARE_DETECTED", "Malware detected in uploaded file; the file has been removed.", ct);
                 return;
             }
+
+            // ── FAIL-CLOSED: only an explicit clean verdict may proceed ──
+            // Covers: null (scan still pending after ~60s), FAILED, UNSUPPORTED, ACCESS_DENIED.
+            if (scan != "NO_THREATS_FOUND")
+            {
+                await FailFileAsync(db, notifier, file, txn, now,
+                    "ERR_SCAN_INCOMPLETE",
+                    $"Malware scan not confirmed clean (status: {scan ?? "PENDING"}). File was not processed.", ct);
+                return;
+            }
+
+            // ✅ Confirmed clean → safe to download + extract.
+            var bytes = await storage.DownloadAsync(file.StorageKey!, ct);
 
             // ── SECURITY GATE 2: magic bytes — real PDFs start with %PDF- ──
             if (bytes.Length < 5 || bytes[0] != 0x25 || bytes[1] != 0x50 ||
@@ -103,7 +115,8 @@ public sealed class ExtractionWorker : BackgroundService
                 return;
             }
 
-
+            var result = await extractor.ExtractAsync(bytes, ct);
+            var v = validator.Validate(result);
 
             // ⚠️ GOTCHA #2: idempotent → clear existing line items first
             var old = await db.InvoiceLineItems.Where(i => i.FileId == file.Id).ToListAsync(ct);
@@ -134,7 +147,6 @@ public sealed class ExtractionWorker : BackgroundService
                 cats.Add(created);   // reuse within this same file
                 return created.Id;
             }
-
 
             foreach (var li in result.LineItems)
                 db.Add(new InvoiceLineItem
@@ -176,10 +188,8 @@ public sealed class ExtractionWorker : BackgroundService
                 ExtractedAt = DateTime.UtcNow,
             });
 
-
             var done = DateTime.UtcNow;
             bool failed = !v.IsValid;
-
             file.Status = failed ? "Failed" : "Completed";
             file.CurrentStep = failed ? "Extract" : "Load";
             file.ExtractionStatus = failed ? "Failed" : "Done";
@@ -219,6 +229,7 @@ public sealed class ExtractionWorker : BackgroundService
             });
 
             await db.SaveChangesAsync(ct);
+
             await notifier.NotifyFileStateChangedAsync(file.SiteId,
                 new FileStateChangedNotification(file.Id, file.FileName, "Processing", file.Status, "Extract", done), ct);
         }
@@ -228,6 +239,7 @@ public sealed class ExtractionWorker : BackgroundService
             var done = DateTime.UtcNow;
             file.Status = "Failed"; file.CurrentStep = "Extract"; file.ExtractionStatus = "Failed";
             file.LastUpdatedAt = done;
+
             db.Add(new FileStepHistory
             {
                 Id = Guid.NewGuid(),
@@ -240,17 +252,19 @@ public sealed class ExtractionWorker : BackgroundService
                 ErrorCode = "ERR_EXTRACTION_FAILED",
                 ErrorMessage = ex.Message
             });
+
             txn.ProcessingCount = Math.Max(0, txn.ProcessingCount - 1);
             txn.FailedCount += 1;
             RecomputeState(txn, done);
+
             await db.SaveChangesAsync(ct);
         }
     }
 
     private static async Task FailFileAsync(
-    AppDbContext db, IPipelineNotifier notifier,
-    FileRecord file, Transaction txn, DateTime startedAt,
-    string errorCode, string errorMessage, CancellationToken ct)
+        AppDbContext db, IPipelineNotifier notifier,
+        FileRecord file, Transaction txn, DateTime startedAt,
+        string errorCode, string errorMessage, CancellationToken ct)
     {
         var done = DateTime.UtcNow;
         file.Status = "Failed"; file.CurrentStep = "Extract"; file.ExtractionStatus = "Failed";
@@ -289,23 +303,20 @@ public sealed class ExtractionWorker : BackgroundService
         });
 
         await db.SaveChangesAsync(ct);
+
         await notifier.NotifyFileStateChangedAsync(file.SiteId,
             new FileStateChangedNotification(file.Id, file.FileName, "Processing", "Failed", "Extract", done), ct);
     }
-
 
     // DT-1 preserved: any file fails → batch Failed. But only finalize once ALL files are settled.
     private static void RecomputeState(Transaction t, DateTime at)
     {
         var settled = t.CompletedCount + t.FailedCount;
         var allDone = settled >= t.TotalFiles;
-
         t.State = allDone
             ? (t.FailedCount > 0 ? "Failed" : "Completed")
             : "Processing";
-
         t.LastUpdatedAt = at;
         t.CompletedAt = allDone ? at : null;
     }
-
 }

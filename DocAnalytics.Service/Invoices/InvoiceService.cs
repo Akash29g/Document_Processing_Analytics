@@ -3,11 +3,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DocAnalytics.Service.Invoices;
 
+/// <summary>Default <see cref="IInvoiceService"/> implementation: assembles an invoice (header + line items + totals) for a file.</summary>
 public sealed class InvoiceService : IInvoiceService
 {
     private readonly AppDbContext _db;
     public InvoiceService(AppDbContext db) => _db = db;
 
+    /// <inheritdoc />
     public async Task<InvoiceDetailDto?> GetInvoiceForFileAsync(Guid fileId, CancellationToken ct = default)
     {
         // 1. Does this file exist for THIS tenant/site? (Files is tenant-scoped → auto-filtered)

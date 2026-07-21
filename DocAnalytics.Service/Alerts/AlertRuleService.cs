@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DocAnalytics.Service.Alerts;
 
+/// <summary>Default <see cref="IAlertRuleService"/> implementation backed by EF Core, with Admin/Viewer visibility rules.</summary>
 public sealed class AlertRuleService : IAlertRuleService
 {
     private readonly AppDbContext _db;
@@ -16,6 +17,7 @@ public sealed class AlertRuleService : IAlertRuleService
         _me = me;
     }
 
+    /// <inheritdoc />
     // reads auto-scope to tenant/site via the global ITenantScoped filter
     public async Task<IReadOnlyList<AlertRuleDto>> ListAsync(CancellationToken ct = default)
     {
@@ -45,6 +47,7 @@ public sealed class AlertRuleService : IAlertRuleService
                 .Any(e => string.Equals(e, myEmail, StringComparison.OrdinalIgnoreCase));
 
 
+    /// <inheritdoc />
     public async Task<AlertRuleDto?> GetAsync(Guid id, CancellationToken ct = default)
     {
         var r = await _db.AlertRules.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, ct);
@@ -60,6 +63,7 @@ public sealed class AlertRuleService : IAlertRuleService
     }
 
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<RecipientDto>> ListRecipientsAsync(CancellationToken ct = default)
     {
         // Users granted access to the CURRENT site, within the CURRENT tenant.
@@ -77,6 +81,7 @@ public sealed class AlertRuleService : IAlertRuleService
     }
 
 
+    /// <inheritdoc />
     public async Task<AlertRuleDto> CreateAsync(CreateAlertRuleRequest req, CancellationToken ct = default)
     {
         var now = DateTime.UtcNow;
@@ -99,6 +104,7 @@ public sealed class AlertRuleService : IAlertRuleService
         return ToDto(rule);
     }
 
+    /// <inheritdoc />
     public async Task<AlertRuleDto?> UpdateAsync(Guid id, UpdateAlertRuleRequest req, CancellationToken ct = default)
     {
         var rule = await _db.AlertRules.FirstOrDefaultAsync(x => x.Id == id, ct);
@@ -116,6 +122,7 @@ public sealed class AlertRuleService : IAlertRuleService
         return ToDto(rule);
     }
 
+    /// <inheritdoc />
     public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
     {
         var rule = await _db.AlertRules.FirstOrDefaultAsync(x => x.Id == id, ct);

@@ -2,6 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DocAnalytics.Service.Common;
 
+/// <summary>
+/// Validation attribute that checks a string property is one of an allowed set (case-insensitive).
+/// Null/blank values pass — intended for OPTIONAL fields; combine with <see cref="RequiredAttribute"/> when mandatory.
+/// </summary>
 // Reusable whitelist check: value must be one of the allowed strings (case-insensitive).
 // Null/blank passes — use it on OPTIONAL fields. Combine with [Required] if mandatory.
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
@@ -9,8 +13,11 @@ public sealed class OneOfAttribute : ValidationAttribute
 {
     private readonly string[] _allowed;
 
+    /// <summary>Creates the attribute with the set of allowed values.</summary>
+    /// <param name="allowed">The permitted string values.</param>
     public OneOfAttribute(params string[] allowed) => _allowed = allowed;
 
+    /// <inheritdoc />
     public override bool IsValid(object? value)
     {
         var s = value as string;
@@ -19,6 +26,7 @@ public sealed class OneOfAttribute : ValidationAttribute
         return _allowed.Any(a => string.Equals(a, s, StringComparison.OrdinalIgnoreCase));
     }
 
+    /// <inheritdoc />
     public override string FormatErrorMessage(string name)
         => $"'{name}' must be one of: {string.Join(", ", _allowed)}.";
 }

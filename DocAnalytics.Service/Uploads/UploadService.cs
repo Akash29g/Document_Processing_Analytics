@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DocAnalytics.Service.Uploads;
 
+/// <summary>Default <see cref="IUploadService"/> implementation: batch creation, presigned upload URLs, duplicate handling, and pipeline hand-off.</summary>
 public sealed class UploadService : IUploadService
 {
     private const long MaxBytes = 15 * 1024 * 1024;   // 15 MB cap
@@ -20,6 +21,7 @@ public sealed class UploadService : IUploadService
         _db = db; _me = me; _storage = storage; _queue = queue;
     }
 
+    /// <inheritdoc />
     // 👇 NEW — open ONE batch for the whole upload
     public async Task<CreateBatchResponse> CreateBatchAsync(CreateBatchRequest req, CancellationToken ct = default)
     {
@@ -64,6 +66,7 @@ public sealed class UploadService : IUploadService
         return new CreateBatchResponse { BatchId = txn.Id };
     }
 
+    /// <inheritdoc />
     public async Task<string?> GetDownloadUrlAsync(Guid fileId, CancellationToken ct = default)
     {
         // tenant-scoped by the global filter — other tenants get null → 404
@@ -73,6 +76,7 @@ public sealed class UploadService : IUploadService
     }
 
 
+    /// <inheritdoc />
     // MODIFIED — attach file to an existing batch (no new Transaction)
     public async Task<UploadUrlResponse> CreateUploadAsync(UploadUrlRequest req, CancellationToken ct = default)
     {
@@ -148,6 +152,7 @@ public sealed class UploadService : IUploadService
         return new UploadUrlResponse { FileId = fileId, UploadUrl = url };
     }
 
+    /// <inheritdoc />
     // Called when the user skips a duplicate: the batch now expects one fewer file.
     public async Task<bool> ShrinkBatchAsync(Guid batchId, CancellationToken ct = default)
     {
@@ -177,6 +182,7 @@ public sealed class UploadService : IUploadService
         return true;
     }
 
+    /// <inheritdoc />
     public async Task<bool> DeleteBatchAsync(Guid batchId, CancellationToken ct = default)
     {
         var txn = await _db.Set<Transaction>().FirstOrDefaultAsync(t => t.Id == batchId, ct);
@@ -198,6 +204,7 @@ public sealed class UploadService : IUploadService
 
 
 
+    /// <inheritdoc />
     // MODIFIED — bump batch UploadedCount, then enqueue
     public async Task<bool> CompleteAsync(Guid fileId, CancellationToken ct = default)
     {
@@ -231,6 +238,6 @@ public sealed class UploadService : IUploadService
 
 }
 
+/// <summary>Thrown when a file with the same name has already been uploaded today for the current site.</summary>
 public sealed class DuplicateFileException(string fileName)
     : Exception($"\"{fileName}\" was already uploaded today.");
-

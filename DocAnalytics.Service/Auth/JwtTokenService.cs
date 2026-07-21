@@ -7,11 +7,13 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace DocAnalytics.Service.Auth;
 
+/// <summary>Default <see cref="IJwtTokenService"/> implementation: builds HMAC-SHA256 signed JWTs from configuration.</summary>
 public class JwtTokenService : IJwtTokenService
 {
     private readonly IConfiguration _config;
     public JwtTokenService(IConfiguration config) => _config = config;
 
+    /// <inheritdoc />
     public string CreateToken(User user)
     {
         // Secret comes from user-secrets. Must be >= 32 chars or startup throws IDX10720.

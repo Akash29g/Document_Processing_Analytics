@@ -72,7 +72,6 @@ data "aws_iam_policy_document" "ecs_assume" {
       identifiers = ["ecs-tasks.amazonaws.com"]
     }
   }
-
 }
 
 resource "aws_iam_role" "task_exec" {
@@ -89,16 +88,36 @@ resource "aws_iam_role_policy" "read_secret" {
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Effect = "Allow", Action = ["secretsmanager:GetSecretValue"],
-
+      Effect   = "Allow", Action = ["secretsmanager:GetSecretValue"],
       Resource = "arn:aws:secretsmanager:ap-south-1:323155024771:secret:docanalytics/*"
-
     }]
   })
 }
 
-# ── ECS task role (runtime: S3/Bedrock later) ──
+# ── ECS task role (runtime: S3 / Bedrock) ──
 resource "aws_iam_role" "task_role" {
   name               = "docanalytics-task-role"
   assume_role_policy = data.aws_iam_policy_document.ecs_assume.json
+}
+
+# ── Runtime S3 access for the API/worker (task role) ──
+# Lets the ExtractionWorker download PDFs, delete files flagged THREATS_FOUND,
+# and read the GuardDutyMalwareScanStatus tag written by Malware Protection for S3.
+resource "aws_iam_role_policy" "task_role_s3" {
+  name = "docanalytics-task-s3"
+  role = aws_iam_role.task_role.id
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Sid    = "InvoicesBucketAccess",
+      Effect = "Allow",
+      Action = [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject",
+        "s3:GetObjectTagging"
+      ],
+      Resource = "arn:aws:s3:::docanalytics-invoices/*"
+    }]
+  })
 }

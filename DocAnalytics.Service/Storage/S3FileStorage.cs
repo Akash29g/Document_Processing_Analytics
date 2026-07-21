@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace DocAnalytics.Service.Storage;
 
+/// <summary>Amazon S3-backed <see cref="IFileStorage"/> implementation: key building, presigned URLs, download, delete, and malware-scan status.</summary>
 [ExcludeFromCodeCoverage]
 public sealed class S3FileStorage : IFileStorage
 {
@@ -19,9 +20,11 @@ public sealed class S3FileStorage : IFileStorage
         _opts = opts.Value;
     }
 
+    /// <inheritdoc />
     public string BuildKey(string tenantName, string siteName, DateTime dateUtc, string fileName)
     => $"{Slug(tenantName)}/{Slug(siteName)}/{dateUtc:yyyy/MM/dd}/{SanitizeFileName(fileName)}";
 
+    /// <inheritdoc />
     public string GetDownloadUrl(string storageKey, string fileName, TimeSpan validFor)
     {
         var req = new GetPreSignedUrlRequest
@@ -39,6 +42,7 @@ public sealed class S3FileStorage : IFileStorage
         return _s3.GetPreSignedURL(req);
     }
 
+    /// <inheritdoc />
     public async Task<string?> GetMalwareScanStatusAsync(string storageKey, CancellationToken ct = default)
     {
         var res = await _s3.GetObjectTaggingAsync(new GetObjectTaggingRequest
@@ -56,10 +60,12 @@ public sealed class S3FileStorage : IFileStorage
     private static string SanitizeFileName(string name) =>
         Regex.Replace(name.Trim(), @"[^\w\s\.\-\(\)']", "_");   // keep letters/digits/space/._-()' 
 
+    /// <inheritdoc />
     public Task DeleteAsync(string storageKey, CancellationToken ct = default) =>
     _s3.DeleteObjectAsync(_opts.BucketName, storageKey, ct);
 
 
+    /// <inheritdoc />
     public Task<string> GetPresignedPutUrlAsync(string key, string contentType, TimeSpan ttl, CancellationToken ct = default)
     {
         var req = new GetPreSignedUrlRequest
@@ -73,6 +79,7 @@ public sealed class S3FileStorage : IFileStorage
         return _s3.GetPreSignedURLAsync(req);
     }
 
+    /// <inheritdoc />
     public async Task<byte[]> DownloadAsync(string key, CancellationToken ct = default)
     {
         using var resp = await _s3.GetObjectAsync(_opts.BucketName, key, ct);

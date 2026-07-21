@@ -2,12 +2,24 @@ using System.Security.Cryptography;
 
 namespace DocAnalytics.Service.Provisioning;
 
+/// <summary>Generates secure passwords and unique login emails for newly provisioned users.</summary>
 public interface ICredentialGenerator
 {
+    /// <summary>Generates a cryptographically random password that includes at least one upper, lower, digit, and symbol.</summary>
+    /// <param name="length">The desired password length (minimum effective length is 4).</param>
+    /// <returns>The generated password.</returns>
     string GeneratePassword(int length = 14);
+
+    /// <summary>Builds a unique <c>first.last@domain</c> email, appending a numeric suffix if the address is already taken.</summary>
+    /// <param name="firstName">The user's first name.</param>
+    /// <param name="lastName">The user's last name.</param>
+    /// <param name="orgDomain">The organization domain.</param>
+    /// <param name="takenEmails">The set of already-used emails to avoid.</param>
+    /// <returns>A unique email address.</returns>
     string BuildEmail(string firstName, string lastName, string orgDomain, ISet<string> takenEmails);
 }
 
+/// <summary>Default <see cref="ICredentialGenerator"/> implementation using a crypto RNG and ambiguous-character-free alphabets.</summary>
 public sealed class CredentialGenerator : ICredentialGenerator
 {
     private const string Upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
@@ -15,6 +27,7 @@ public sealed class CredentialGenerator : ICredentialGenerator
     private const string Digits = "23456789";
     private const string Symbols = "!@#$%^&*";
 
+    /// <inheritdoc />
     public string GeneratePassword(int length = 14)
     {
         var all = Upper + Lower + Digits + Symbols;
@@ -32,6 +45,7 @@ public sealed class CredentialGenerator : ICredentialGenerator
         return new string(chars.ToArray());
     }
 
+    /// <inheritdoc />
     public string BuildEmail(string firstName, string lastName, string orgDomain, ISet<string> takenEmails)
     {
         var local = $"{Sanitize(firstName)}.{Sanitize(lastName)}";

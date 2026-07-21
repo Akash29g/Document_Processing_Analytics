@@ -5,11 +5,13 @@ using DomainActivityLog = DocAnalytics.Domain.Entities.ActivityLog;
 
 namespace DocAnalytics.Service.ActivityLog;
 
+/// <summary>Default <see cref="IActivityLogService"/> implementation backed by EF Core.</summary>
 public sealed class ActivityLogService : IActivityLogService
 {
     private readonly AppDbContext _db;
     public ActivityLogService(AppDbContext db) => _db = db;
 
+    /// <inheritdoc />
     public async Task<PagedResult<ActivityLogItemDto>> GetActivityLogAsync(
         ActivityLogQuery query, CancellationToken ct = default)
     {

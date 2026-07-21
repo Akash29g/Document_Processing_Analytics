@@ -2,12 +2,16 @@ using System.Text;
 
 namespace DocAnalytics.Service.Errors;
 
+/// <summary>Serializes error list rows to RFC-4180-style CSV (FR-3.5).</summary>
 public static class ErrorCsvWriter
 {
     private static readonly string[] Header =
         { "file_id", "file_name", "error_code", "error_message",
           "step", "source", "failed_at", "suggested_fix" };
 
+    /// <summary>Writes the given error rows to a CSV string (header row + one row per item).</summary>
+    /// <param name="rows">The error rows to serialize.</param>
+    /// <returns>The CSV content.</returns>
     public static string Write(IEnumerable<ErrorListItemDto> rows)
     {
         var sb = new StringBuilder();

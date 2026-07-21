@@ -4,11 +4,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DocAnalytics.Service.Dashboard;
 
+/// <summary>Default <see cref="IDashboardService"/> implementation: summary counters and recent failures.</summary>
 public sealed class DashboardService : IDashboardService
 {
     private readonly AppDbContext _db;
     public DashboardService(AppDbContext db) => _db = db;
 
+    /// <inheritdoc />
     // FR-1.1 — SUM the per-batch counters. tenant_id + site_id auto-applied
     // by the global query filter on Transaction (ITenantScoped).
     public async Task<DashboardSummaryResponse> GetSummaryAsync(CancellationToken ct = default)
@@ -29,6 +31,7 @@ public sealed class DashboardService : IDashboardService
         return summary;
     }
 
+    /// <inheritdoc />
     // FR-1.4 — start FROM Files (tenant+site auto-filtered) then join the
     // failed steps. FileStepHistory is NOT ITenantScoped, so driving from
     // Files is what keeps tenant isolation intact.

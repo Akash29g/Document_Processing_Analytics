@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DocAnalytics.Service.Alerts;
 
+/// <summary>Default <see cref="IAlertEvaluator"/> implementation; scans all sites and fires alerts that exceed their threshold.</summary>
 public sealed class AlertEvaluator : IAlertEvaluator
 {
     private readonly AppDbContext _db;
@@ -18,6 +19,7 @@ public sealed class AlertEvaluator : IAlertEvaluator
         _logger = logger;
     }
 
+    /// <inheritdoc />
     public async Task EvaluateAllAsync(CancellationToken ct = default)
     {
         var now = DateTime.UtcNow;

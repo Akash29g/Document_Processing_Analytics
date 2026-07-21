@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace DocAnalytics.Service.Batches;
 
 
+/// <summary>Default <see cref="IBatchService"/> implementation backed by EF Core (tenant/site auto-scoped).</summary>
 public sealed class BatchService : IBatchService
 {
     private readonly AppDbContext _db;
@@ -13,6 +14,7 @@ public sealed class BatchService : IBatchService
     // ② constructor injection — the DbContext is handed to us
     public BatchService(AppDbContext db) => _db = db;
 
+    /// <inheritdoc />
     public async Task<PagedResult<BatchListItemDto>> GetBatchesAsync(
         BatchListQuery query, CancellationToken ct = default)
     {
@@ -88,6 +90,7 @@ public sealed class BatchService : IBatchService
         };
     }
 
+    /// <inheritdoc />
     // Distinct source systems for the current tenant/site (Transactions is ITenantScoped
     // → tenant_id + site_id auto-applied by the global query filter).
     public async Task<List<string>> GetSourcesAsync(CancellationToken ct = default)
@@ -101,6 +104,7 @@ public sealed class BatchService : IBatchService
     }
 
 
+    /// <inheritdoc />
     // ── GET /api/v1/batches/{id} : drill into ONE batch ──
     public async Task<BatchDetailDto?> GetBatchByIdAsync(
         Guid id, CancellationToken ct = default)
@@ -131,6 +135,7 @@ public sealed class BatchService : IBatchService
             .FirstOrDefaultAsync(ct);          // null = not found
     }
 
+    /// <inheritdoc />
     // ── GET /api/v1/batches/{id}/files : list the files in ONE batch (paged) ──
     public async Task<PagedResult<BatchFileDto>?> GetBatchFilesAsync(
         Guid id, BatchFilesQuery query, CancellationToken ct = default)

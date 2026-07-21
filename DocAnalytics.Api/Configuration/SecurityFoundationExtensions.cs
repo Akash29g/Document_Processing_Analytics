@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace DocAnalytics.Api.Configuration;
 
+/// <summary>Round 0 security foundation wiring: binds <see cref="SecurityOptions"/> and registers CORS, HSTS, and forwarded-headers services.</summary>
 [ExcludeFromCodeCoverage]
 public static class SecurityFoundationExtensions
 {

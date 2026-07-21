@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DocAnalytics.Service.Provisioning;
 
+/// <summary>Default <see cref="IProvisioningService"/> implementation: super-admin tenant, site, and admin-user management.</summary>
 public sealed class ProvisioningService : IProvisioningService
 {
     private readonly AppDbContext _db;
@@ -19,6 +20,7 @@ public sealed class ProvisioningService : IProvisioningService
     // NOTE: Tenants/Users/Sites are NOT ITenantScoped → no global filter applies.
     // Only counts and identity fields are exposed — never business data.
 
+    /// <inheritdoc />
     public async Task<List<TenantSummaryDto>> GetTenantsAsync(CancellationToken ct) =>
         await _db.Tenants.AsNoTracking()
             .OrderBy(t => t.Name)
@@ -29,6 +31,7 @@ public sealed class ProvisioningService : IProvisioningService
                 t.Users.Count(u => u.IsActive && u.Role == "Admin")))
             .ToListAsync(ct);
 
+    /// <inheritdoc />
     public async Task<TenantSummaryDto?> CreateTenantAsync(CreateTenantRequest req, CancellationToken ct)
     {
         var domain = req.OrgDomain.Trim().ToLowerInvariant();
@@ -48,6 +51,7 @@ public sealed class ProvisioningService : IProvisioningService
         return new TenantSummaryDto(tenant.Id, tenant.Name, tenant.OrgDomain, true, 0, 0, 0);
     }
 
+    /// <inheritdoc />
     public async Task<List<ProvisionedUserDto>> GetUsersAsync(Guid tenantId, CancellationToken ct) =>
         await _db.Users.AsNoTracking()
             .Where(u => u.TenantId == tenantId)
@@ -55,6 +59,7 @@ public sealed class ProvisioningService : IProvisioningService
             .Select(u => new ProvisionedUserDto(u.Id, u.Email, u.Role, u.IsActive, u.CreatedAt))
             .ToListAsync(ct);
 
+    /// <inheritdoc />
     public async Task<ProvisionedUserDto?> CreateAdminAsync(
         Guid tenantId, CreateAdminRequest req, Guid createdBy, CancellationToken ct)
     {
@@ -106,9 +111,11 @@ public sealed class ProvisioningService : IProvisioningService
         return new ProvisionedUserDto(user.Id, user.Email, user.Role, true, user.CreatedAt);
     }
 
+    /// <inheritdoc />
     public Task<bool> RemoveAdminAsync(Guid tenantId, Guid userId, CancellationToken ct) =>
         DeactivateUserAsync(tenantId, userId, requiredRole: "Admin", ct);
 
+    /// <inheritdoc />
     public Task<bool> RemoveUserAsync(Guid tenantId, Guid userId, CancellationToken ct) =>
         DeactivateUserAsync(tenantId, userId, requiredRole: null, ct);
 
@@ -124,6 +131,7 @@ public sealed class ProvisioningService : IProvisioningService
         return true;
     }
 
+    /// <inheritdoc />
     public async Task<List<ProvisionedSiteDto>> GetSitesAsync(Guid tenantId, CancellationToken ct) =>
         await _db.Sites.AsNoTracking()
             .Where(s => s.TenantId == tenantId)
@@ -131,6 +139,7 @@ public sealed class ProvisioningService : IProvisioningService
             .Select(s => new ProvisionedSiteDto(s.Id, s.Name, s.Location, s.IsActive))
             .ToListAsync(ct);
 
+    /// <inheritdoc />
     public async Task<ProvisionedSiteDto?> CreateSiteAsync(Guid tenantId, CreateSiteRequest req, CancellationToken ct)
     {
         if (!await _db.Tenants.AnyAsync(t => t.Id == tenantId && t.IsActive, ct))
@@ -150,6 +159,7 @@ public sealed class ProvisioningService : IProvisioningService
         return new ProvisionedSiteDto(site.Id, site.Name, site.Location, true);
     }
 
+    /// <inheritdoc />
     public async Task<bool> RemoveSiteAsync(Guid tenantId, Guid siteId, CancellationToken ct)
     {
         var site = await _db.Sites.FirstOrDefaultAsync(

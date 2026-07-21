@@ -4,11 +4,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DocAnalytics.Service.Files;
 
+/// <summary>Default <see cref="IFileDetailsService"/> implementation: file timeline details and downloadable step logs.</summary>
 public sealed class FileDetailsService : IFileDetailsService
 {
     private readonly AppDbContext _db;
     public FileDetailsService(AppDbContext db) => _db = db;
 
+    /// <inheritdoc />
     // GET /api/v1/files/{id}/details — joins Files + FileStepHistory + ErrorCatalog
     public async Task<FileDetailDto?> GetFileDetailsAsync(Guid fileId, CancellationToken ct = default)
     {
@@ -65,6 +67,7 @@ public sealed class FileDetailsService : IFileDetailsService
         return dto;
     }
 
+    /// <inheritdoc />
     // GET /api/v1/files/{id}/logs — downloadable step-by-step trace
     public async Task<FileLogDto?> GetFileLogsAsync(Guid fileId, CancellationToken ct = default)
     {

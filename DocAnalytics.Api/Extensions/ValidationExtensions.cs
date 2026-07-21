@@ -6,9 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DocAnalytics.Api.Extensions;
 
+/// <summary>Overrides the framework's default model-validation 400 response with the standard <see cref="ApiResponse{T}"/> failure envelope.</summary>
 [ExcludeFromCodeCoverage]
 public static class ValidationExtensions
 {
+    /// <summary>Configures <see cref="ApiBehaviorOptions"/> so invalid model state returns a snake_cased, field-level error envelope.</summary>
+    /// <param name="services">The service collection.</param>
+    /// <returns>The same service collection, for chaining.</returns>
     // Replaces the framework's default 400 (ProblemDetails) with our ApiResponse.Fail envelope.
     public static IServiceCollection AddValidationBehavior(this IServiceCollection services)
     {

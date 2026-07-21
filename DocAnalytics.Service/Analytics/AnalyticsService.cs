@@ -6,11 +6,13 @@ namespace DocAnalytics.Service.Analytics;
 
 
 
+/// <summary>Default <see cref="IAnalyticsService"/> implementation; EF Core aggregations for dashboard/error charts.</summary>
 public sealed class AnalyticsService : IAnalyticsService
 {
     private readonly AppDbContext _db;
     public AnalyticsService(AppDbContext db) => _db = db;
 
+    /// <inheritdoc />
     public async Task<SeriesDto> GetStatusDistributionAsync(CancellationToken ct = default)
     {
         var points = await _db.Files
@@ -28,6 +30,7 @@ public sealed class AnalyticsService : IAnalyticsService
         return new SeriesDto { Points = points };
     }
 
+    /// <inheritdoc />
     public async Task<SeriesDto> GetThroughputAsync(DateTime? from, DateTime? to, CancellationToken ct = default)
     {
         var q = _db.Files
@@ -59,6 +62,7 @@ public sealed class AnalyticsService : IAnalyticsService
     }
 
 
+    /// <inheritdoc />
     public async Task<SeriesDto> GetTopErrorsAsync(int topN = 5, CancellationToken ct = default)
     {
         // Light guard so a silly topN can't break the chart (full validation = Round 5).
@@ -82,6 +86,8 @@ public sealed class AnalyticsService : IAnalyticsService
 
         return new SeriesDto { Points = points };
     }
+
+    /// <inheritdoc />
     public async Task<SeriesDto> GetErrorTrendAsync(DateTime? from, DateTime? to, CancellationToken ct = default)
     {
         var q = _db.Files
@@ -113,6 +119,7 @@ public sealed class AnalyticsService : IAnalyticsService
         return new SeriesDto { Points = points };
     }
 
+    /// <inheritdoc />
     public async Task<List<StepPercentileDto>> GetStepPercentilesAsync(CancellationToken ct = default)
     {
         // Drive from Files (ITenantScoped → tenant_id + site_id auto-applied),

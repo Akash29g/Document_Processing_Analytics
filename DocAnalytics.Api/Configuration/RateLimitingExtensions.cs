@@ -4,12 +4,20 @@ using DocAnalytics.Api.Common;   // ApiResponse<T>
 
 namespace DocAnalytics.Api.Configuration;
 
+/// <summary>Registers the ASP.NET Core rate limiter with login/reads/export policies (Round 5) and a standard 429 envelope.</summary>
 public static class RateLimitingExtensions
 {
+    /// <summary>Policy name for login endpoints (partitioned by client IP).</summary>
     public const string LoginPolicy = "login";
+    /// <summary>Policy name for read endpoints (partitioned by authenticated user).</summary>
     public const string ReadsPolicy = "reads";
+    /// <summary>Policy name for export endpoints (tight, partitioned by user).</summary>
     public const string ExportPolicy = "export";
 
+    /// <summary>Configures the rate limiter, its policies, and the 429 rejection response.</summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="config">The application configuration (reads the "RateLimiting" section).</param>
+    /// <returns>The same service collection, for chaining.</returns>
     public static IServiceCollection AddRateLimitingFeature(
         this IServiceCollection services, IConfiguration config)
     {

@@ -11,6 +11,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DocAnalytics.Api.BackgroundServices;
 
+/// <summary>
+/// Hosted worker that drains the extraction queue and runs the invoice pipeline per file:
+/// download → malware/format security gates → Bedrock extraction → validation → persist header/line items,
+/// updating file/batch state and broadcasting real-time notifications throughout.
+/// </summary>
 [ExcludeFromCodeCoverage]
 public sealed class ExtractionWorker : BackgroundService
 {
@@ -18,11 +23,16 @@ public sealed class ExtractionWorker : BackgroundService
     private readonly IServiceScopeFactory _scopes;
     private readonly ILogger<ExtractionWorker> _logger;
 
+    /// <summary>Creates the worker with the shared queue, a scope factory, and a logger.</summary>
+    /// <param name="queue">The extraction queue to consume.</param>
+    /// <param name="scopes">Factory used to create a DI scope per file.</param>
+    /// <param name="logger">The logger.</param>
     public ExtractionWorker(IExtractionQueue queue, IServiceScopeFactory scopes, ILogger<ExtractionWorker> logger)
     {
         _queue = queue; _scopes = scopes; _logger = logger;
     }
 
+    /// <inheritdoc />
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await foreach (var fileId in _queue.DequeueAllAsync(stoppingToken))
@@ -32,6 +42,7 @@ public sealed class ExtractionWorker : BackgroundService
         }
     }
 
+    /// <summary>Runs the full extraction pipeline for a single file within its own DI scope.</summary>
     private async Task ProcessAsync(Guid fileId, CancellationToken ct)
     {
         using var scope = _scopes.CreateScope();
@@ -247,6 +258,7 @@ public sealed class ExtractionWorker : BackgroundService
         }
     }
 
+    /// <summary>Marks a file (and its parent batch counters) as failed with the given error, logs it, and broadcasts the change.</summary>
     private static async Task FailFileAsync(
     AppDbContext db, IPipelineNotifier notifier,
     FileRecord file, Transaction txn, DateTime startedAt,
@@ -294,6 +306,7 @@ public sealed class ExtractionWorker : BackgroundService
     }
 
 
+    /// <summary>Recomputes the batch state (DT-1): any failure marks the batch Failed, but only once every file is settled.</summary>
     // DT-1 preserved: any file fails → batch Failed. But only finalize once ALL files are settled.
     private static void RecomputeState(Transaction t, DateTime at)
     {

@@ -5,6 +5,7 @@ using DocAnalytics.Api.Common;
 
 namespace DocAnalytics.Api.Middleware;
 
+/// <summary>Global exception handler: logs unhandled exceptions and returns a generic 500 in the standard <see cref="ApiResponse{T}"/> envelope (no internal detail leaked).</summary>
 [ExcludeFromCodeCoverage]
 public class ExceptionHandlingMiddleware
 {
@@ -17,12 +18,17 @@ public class ExceptionHandlingMiddleware
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
+    /// <summary>Creates the middleware with the next delegate and a logger.</summary>
+    /// <param name="next">The next delegate in the pipeline.</param>
+    /// <param name="logger">The logger.</param>
     public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
     {
         _next = next;
         _logger = logger;
     }
 
+    /// <summary>Invokes the pipeline and converts any unhandled exception into a safe 500 JSON response.</summary>
+    /// <param name="ctx">The current HTTP context.</param>
     public async Task Invoke(HttpContext ctx)
     {
         try

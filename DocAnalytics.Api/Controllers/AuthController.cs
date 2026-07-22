@@ -17,15 +17,10 @@ public class AuthController : ControllerBase
     private readonly IAuthService _auth;
     private readonly ICurrentUser _currentUser;
     private readonly ILoginLockoutService _lockout;
-    private readonly IRefreshTokenService _refresh;   // ← NEW (R4)
-    private readonly IJwtTokenService _jwt;            // ← NEW (R4)
+    private readonly IRefreshTokenService _refresh;
+    private readonly IJwtTokenService _jwt;
 
     /// <summary>Creates a new <see cref="AuthController"/>.</summary>
-    /// <param name="auth">Authentication service.</param>
-    /// <param name="currentUser">The current authenticated user.</param>
-    /// <param name="lockout">Login lockout (brute-force) service.</param>
-    /// <param name="refresh">Refresh-token service.</param>
-    /// <param name="jwt">JWT access-token service.</param>
     public AuthController(
         IAuthService auth,
         ICurrentUser currentUser,
@@ -40,13 +35,7 @@ public class AuthController : ControllerBase
         _jwt = jwt;
     }
 
-    /// <summary>Authenticates a user and issues a JWT access token plus a rotating refresh token.</summary>
-    /// <param name="req">Login request with email and password.</param>
-    /// <param name="ct">Cancellation token.</param>
-    /// <returns>The access token, refresh token, and the user's authorized sites.</returns>
-    /// <response code="200">Login succeeded.</response>
-    /// <response code="401">Email or password is incorrect.</response>
-    /// <response code="429">Too many attempts — rate limited or account locked.</response>
+    /// <summary>Authenticates a user and issues a JWT access token; the refresh token is set as an HttpOnly cookie.</summary>
     [AllowAnonymous]
     [HttpPost("login")]
     [EnableRateLimiting("login")]
@@ -73,56 +62,53 @@ public class AuthController : ControllerBase
 
         await _lockout.ResetAsync(email, ct);
 
-        // NEW (R4): mint a rotating refresh token alongside the 15-min access token.
+        // Refresh token now lives ONLY in an HttpOnly cookie — never in the JSON body.
         var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString();
-        var (raw, _) = await _refresh.IssueAsync(result.User.Id, clientIp, ct);
-        result = result with { RefreshToken = raw };
+        var (raw, refreshExpiresAt) = await _refresh.IssueAsync(result.User.Id, clientIp, ct);
+        SetRefreshCookie(raw, refreshExpiresAt);
 
         return Ok(ApiResponse<LoginResponse>.Ok(result));
     }
 
-    /// <summary>Exchanges a valid refresh token for a fresh access token and a rotated refresh token.</summary>
-    /// <param name="req">Request containing the current refresh token.</param>
-    /// <param name="ct">Cancellation token.</param>
-    /// <returns>A new access token and rotated refresh token.</returns>
-    /// <response code="200">New tokens issued.</response>
-    /// <response code="401">Refresh token is invalid or expired.</response>
-    // NEW (R4): exchange a valid refresh token for a fresh access token + rotated refresh token.
+    /// <summary>Exchanges the refresh-token cookie for a fresh access token and rotates the cookie.</summary>
     [AllowAnonymous]
     [HttpPost("refresh")]
-    public async Task<IActionResult> Refresh([FromBody] RefreshRequest req, CancellationToken ct)
+    public async Task<IActionResult> Refresh(CancellationToken ct)
     {
+        var presented = Request.Cookies["refresh_token"];
+        if (string.IsNullOrEmpty(presented))
+            return Unauthorized(ApiResponse<object>.Fail(
+                "INVALID_REFRESH_TOKEN", "Refresh token is missing."));
+
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-        var rotated = await _refresh.ValidateAndRotateAsync(req.RefreshToken, ip, ct);
+        var rotated = await _refresh.ValidateAndRotateAsync(presented, ip, ct);
         if (rotated is null)
+        {
+            DeleteRefreshCookie();   // clear the bad cookie
             return Unauthorized(ApiResponse<object>.Fail(
                 "INVALID_REFRESH_TOKEN", "Refresh token is invalid or expired."));
+        }
 
-        var (user, newRaw, _) = rotated.Value;
+        var (user, newRaw, newExpiresAt) = rotated.Value;
+        SetRefreshCookie(newRaw, newExpiresAt);   // rotate the cookie
         var accessToken = _jwt.CreateToken(user);
-        return Ok(ApiResponse<RefreshResponse>.Ok(new RefreshResponse(accessToken, newRaw)));
+        return Ok(ApiResponse<RefreshResponse>.Ok(new RefreshResponse(accessToken)));
     }
 
-    /// <summary>Revokes a refresh token (logout). Anonymous so an expired access token can't block cleanup.</summary>
-    /// <param name="req">Request containing the refresh token to revoke.</param>
-    /// <param name="ct">Cancellation token.</param>
-    /// <returns>Confirmation that the token was revoked (idempotent).</returns>
-    /// <response code="200">Token revoked.</response>
-    // NEW (R4): revoke a refresh token (logout). AllowAnonymous so an expired
-    // access token doesn't block the client from cleanly revoking.
+    /// <summary>Revokes the refresh token (logout) and clears the cookie.</summary>
     [AllowAnonymous]
     [HttpPost("logout")]
-    public async Task<IActionResult> Logout([FromBody] LogoutRequest req, CancellationToken ct)
+    public async Task<IActionResult> Logout(CancellationToken ct)
     {
-        await _refresh.RevokeAsync(req.RefreshToken, ct);
+        var raw = Request.Cookies["refresh_token"];
+        if (!string.IsNullOrEmpty(raw))
+            await _refresh.RevokeAsync(raw, ct);
+
+        DeleteRefreshCookie();
         return Ok(ApiResponse<object>.Ok(new { logged_out = true }));
     }
 
     /// <summary>Returns the current authenticated user's profile and authorized sites (session rehydration).</summary>
-    /// <param name="ct">Cancellation token.</param>
-    /// <returns>The current user's profile, or 401 if no valid session.</returns>
-    /// <response code="200">Profile returned.</response>
-    /// <response code="401">No valid session.</response>
     [Authorize]
     [HttpGet("me")]
     public async Task<IActionResult> Me(CancellationToken ct)
@@ -133,11 +119,6 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>Changes the current user's password.</summary>
-    /// <param name="req">Current and new password.</param>
-    /// <param name="ct">Cancellation token.</param>
-    /// <returns>Confirmation, or a validation error.</returns>
-    /// <response code="200">Password changed.</response>
-    /// <response code="400">Current password is incorrect, or the new password fails the policy / breach check.</response>
     [Authorize]
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest req, CancellationToken ct)
@@ -148,4 +129,27 @@ public class AuthController : ControllerBase
         return Ok(ApiResponse<object>.Ok(new { changed = true }));
     }
 
+    // ── refresh-token cookie helpers ────────────────────────────────────────
+    private void SetRefreshCookie(string rawToken, DateTime expiresAt)
+    {
+        Response.Cookies.Append("refresh_token", rawToken, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = expiresAt,
+            Path = "/api/v1/auth"
+        });
+    }
+
+    private void DeleteRefreshCookie()
+    {
+        Response.Cookies.Delete("refresh_token", new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Path = "/api/v1/auth"
+        });
+    }
 }

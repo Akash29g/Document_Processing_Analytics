@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.EntityFrameworkCore;
 
 namespace DocAnalytics.Api.Middleware;
 

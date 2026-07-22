@@ -25,7 +25,9 @@ public interface IAuthService
     /// <param name="userId">The user id.</param>
     /// <param name="req">Current and new password.</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <returns><c>true</c> if changed; <c>false</c> if the current password is incorrect.</returns>
-    Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordRequest req, CancellationToken ct);
+    /// <returns>null on success; otherwise a human-readable failure reason..</returns>
+    Task<string?> ChangePasswordAsync(Guid userId, ChangePasswordRequest req, CancellationToken ct);
+    // null = success; non-null = human-readable failure reason
+
 
 }

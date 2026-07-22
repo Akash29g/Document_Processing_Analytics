@@ -137,15 +137,15 @@ public class AuthController : ControllerBase
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Confirmation, or a validation error.</returns>
     /// <response code="200">Password changed.</response>
-    /// <response code="400">Current password is incorrect.</response>
+    /// <response code="400">Current password is incorrect, or the new password fails the policy / breach check.</response>
     [Authorize]
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest req, CancellationToken ct)
     {
-        var ok = await _auth.ChangePasswordAsync(_currentUser.UserId, req, ct);
-        if (!ok)
-            return BadRequest(ApiResponse<object>.Fail(
-                "INVALID_PASSWORD", "Current password is incorrect."));
+        var error = await _auth.ChangePasswordAsync(_currentUser.UserId, req, ct);
+        if (error is not null)
+            return BadRequest(ApiResponse<object>.Fail("INVALID_PASSWORD", error));
         return Ok(ApiResponse<object>.Ok(new { changed = true }));
     }
+
 }

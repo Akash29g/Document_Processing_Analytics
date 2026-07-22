@@ -31,7 +31,7 @@ public class AuthServiceTests
     [Fact]
     public async Task LoginAsync_returns_null_when_user_not_found()
     {
-        var sut = new AuthService(Ctx(Array.Empty<User>(), Array.Empty<UserSiteAccess>(), Array.Empty<Site>()).Object, Mock.Of<IJwtTokenService>());
+        var sut = new AuthService(Ctx(Array.Empty<User>(), Array.Empty<UserSiteAccess>(), Array.Empty<Site>()).Object, Mock.Of<IJwtTokenService>(), Mock.Of<IPasswordPolicy>());
         Assert.Null(await sut.LoginAsync(new LoginRequest("nobody@org.com", "pw"), default));
     }
 
@@ -39,7 +39,7 @@ public class AuthServiceTests
     public async Task LoginAsync_returns_null_on_wrong_password()
     {
         var user = ActiveUser("a@org.com", "correct");
-        var sut = new AuthService(Ctx(new[] { user }, Array.Empty<UserSiteAccess>(), Array.Empty<Site>()).Object, Mock.Of<IJwtTokenService>());
+        var sut = new AuthService(Ctx(new[] { user }, Array.Empty<UserSiteAccess>(), Array.Empty<Site>()).Object, Mock.Of<IJwtTokenService>(), Mock.Of<IPasswordPolicy>());
         Assert.Null(await sut.LoginAsync(new LoginRequest("a@org.com", "wrong"), default));
     }
 
@@ -54,7 +54,7 @@ public class AuthServiceTests
         var jwt = new Mock<IJwtTokenService>();
         jwt.Setup(j => j.CreateToken(It.IsAny<User>())).Returns("jwt-123");
 
-        var result = await new AuthService(Ctx(new[] { user }, access, sites).Object, jwt.Object)
+        var result = await new AuthService(Ctx(new[] { user }, access, sites).Object, jwt.Object, Mock.Of<IPasswordPolicy>())
             .LoginAsync(new LoginRequest("a@org.com", "pw"), default);
 
         Assert.NotNull(result);
@@ -68,7 +68,7 @@ public class AuthServiceTests
     [Fact]
     public async Task GetMeAsync_returns_null_when_user_missing()
     {
-        var sut = new AuthService(Ctx(Array.Empty<User>(), Array.Empty<UserSiteAccess>(), Array.Empty<Site>()).Object, Mock.Of<IJwtTokenService>());
+        var sut = new AuthService(Ctx(Array.Empty<User>(), Array.Empty<UserSiteAccess>(), Array.Empty<Site>()).Object, Mock.Of<IJwtTokenService>(), Mock.Of<IPasswordPolicy>());
         Assert.Null(await sut.GetMeAsync(Guid.NewGuid(), default));
     }
 
@@ -80,7 +80,7 @@ public class AuthServiceTests
         var access = new[] { new UserSiteAccess { Id = Guid.NewGuid(), UserId = user.Id, SiteId = siteId } };
         var sites = new[] { new Site { Id = siteId, Name = "Plant One", IsActive = true } };
 
-        var result = await new AuthService(Ctx(new[] { user }, access, sites).Object, Mock.Of<IJwtTokenService>())
+        var result = await new AuthService(Ctx(new[] { user }, access, sites).Object, Mock.Of<IJwtTokenService>(), Mock.Of<IPasswordPolicy>())
             .GetMeAsync(user.Id, default);
 
         Assert.NotNull(result);
@@ -104,7 +104,7 @@ public class AuthServiceTests
             new Site { Id = inactiveId, Name = "Inactive", IsActive = false },
         };
 
-        var result = await new AuthService(Ctx(Array.Empty<User>(), access, sites).Object, Mock.Of<IJwtTokenService>())
+        var result = await new AuthService(Ctx(Array.Empty<User>(), access, sites).Object, Mock.Of<IJwtTokenService>(), Mock.Of<IPasswordPolicy>())
             .GetSitesAsync(userId, default);
 
         Assert.Single(result);
@@ -112,18 +112,18 @@ public class AuthServiceTests
     }
 
     [Fact]
-    public async Task ChangePasswordAsync_returns_false_when_user_missing()
+    public async Task ChangePasswordAsync_returns_error_when_user_missing()
     {
-        var sut = new AuthService(Ctx(Array.Empty<User>(), Array.Empty<UserSiteAccess>(), Array.Empty<Site>()).Object, Mock.Of<IJwtTokenService>());
-        Assert.False(await sut.ChangePasswordAsync(Guid.NewGuid(), new ChangePasswordRequest("old", "newpassword12"), default));
+        var sut = new AuthService(Ctx(Array.Empty<User>(), Array.Empty<UserSiteAccess>(), Array.Empty<Site>()).Object, Mock.Of<IJwtTokenService>(), Mock.Of<IPasswordPolicy>());
+        Assert.NotNull(await sut.ChangePasswordAsync(Guid.NewGuid(), new ChangePasswordRequest("old", "newpassword12"), default));
     }
 
     [Fact]
-    public async Task ChangePasswordAsync_returns_false_on_wrong_current_password()
+    public async Task ChangePasswordAsync_returns_error_on_wrong_current_password()
     {
         var user = ActiveUser("a@org.com", "correct");
-        var sut = new AuthService(Ctx(new[] { user }, Array.Empty<UserSiteAccess>(), Array.Empty<Site>()).Object, Mock.Of<IJwtTokenService>());
-        Assert.False(await sut.ChangePasswordAsync(user.Id, new ChangePasswordRequest("wrong", "newpassword12"), default));
+        var sut = new AuthService(Ctx(new[] { user }, Array.Empty<UserSiteAccess>(), Array.Empty<Site>()).Object, Mock.Of<IJwtTokenService>(), Mock.Of<IPasswordPolicy>());
+        Assert.NotNull(await sut.ChangePasswordAsync(user.Id, new ChangePasswordRequest("wrong", "newpassword12"), default));
     }
 
     [Fact]
@@ -131,11 +131,10 @@ public class AuthServiceTests
     {
         var user = ActiveUser("a@org.com", "oldpassword");
         user.MustChangePassword = true;
-        var sut = new AuthService(Ctx(new[] { user }, Array.Empty<UserSiteAccess>(), Array.Empty<Site>()).Object, Mock.Of<IJwtTokenService>());
+        var sut = new AuthService(Ctx(new[] { user }, Array.Empty<UserSiteAccess>(), Array.Empty<Site>()).Object, Mock.Of<IJwtTokenService>(), Mock.Of<IPasswordPolicy>());
 
-        var ok = await sut.ChangePasswordAsync(user.Id, new ChangePasswordRequest("oldpassword", "newpassword12"), default);
-
-        Assert.True(ok);
+        var error = await sut.ChangePasswordAsync(user.Id, new ChangePasswordRequest("oldpassword", "newpassword12"), default);
+        Assert.Null(error);   // null == success
         Assert.False(user.MustChangePassword);
         Assert.True(BCrypt.Net.BCrypt.Verify("newpassword12", user.PasswordHash));
     }

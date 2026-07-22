@@ -11,6 +11,7 @@ public static class AuthFeatureExtensions
     public static IServiceCollection AddAuthFeature(this IServiceCollection services)
     {
         services.AddScoped<IAuthService, AuthService>();
+        services.AddHttpClient<IPasswordPolicy, PasswordPolicy>(c => c.Timeout = TimeSpan.FromSeconds(3));
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<ILoginLockoutService, LoginLockoutService>();   // ← the only new line
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();   // NEW (R4)

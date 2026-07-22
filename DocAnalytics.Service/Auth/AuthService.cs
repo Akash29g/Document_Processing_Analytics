@@ -8,11 +8,13 @@ public class AuthService : IAuthService
 {
     private readonly AppDbContext _db;
     private readonly IJwtTokenService _jwt;
+    private readonly IPasswordPolicy _passwordPolicy;
 
-    public AuthService(AppDbContext db, IJwtTokenService jwt)
+    public AuthService(AppDbContext db, IJwtTokenService jwt, IPasswordPolicy passwordPolicy)
     {
         _db = db;
         _jwt = jwt;
+        _passwordPolicy = passwordPolicy;
     }
 
     /// <inheritdoc />
@@ -41,18 +43,21 @@ public class AuthService : IAuthService
     }
 
     /// <inheritdoc />
-    public async Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordRequest req, CancellationToken ct)
+    public async Task<string?> ChangePasswordAsync(Guid userId, ChangePasswordRequest req, CancellationToken ct)
     {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId && u.IsActive, ct);
-        if (user is null) return false;
+        if (user is null) return "User not found.";
+        if (!BCrypt.Net.BCrypt.Verify(req.CurrentPassword, user.PasswordHash))
+            return "Current password is incorrect.";
 
-        // must prove they know the current (temporary) password
-        if (!BCrypt.Net.BCrypt.Verify(req.CurrentPassword, user.PasswordHash)) return false;
+        var reason = await _passwordPolicy.ValidateAsync(req.NewPassword, ct);
+        if (reason is not null) return reason;   // e.g. "This password has appeared in a known data breach."
 
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.NewPassword);
         user.MustChangePassword = false;
         await _db.SaveChangesAsync(ct);
-        return true;
+        return null;   // success
+
     }
 
 

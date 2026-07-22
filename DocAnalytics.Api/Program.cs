@@ -14,6 +14,7 @@ using DocAnalytics.Service.Dashboard;
 using DocAnalytics.Service.Health;
 using DocAnalytics.Service.Invoices;
 using DocAnalytics.Service.Realtime;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 
@@ -113,9 +114,21 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    using var scope = app.Services.CreateScope();
-    await DbSeeder.SeedAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>());
 }
+
+// Seeding: reference catalogs seed in EVERY environment; demo users/data are Development-only.
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    if (app.Environment.IsDevelopment())
+        await db.Database.MigrateAsync();   // prod migrations run in the deploy pipeline
+
+    await DbSeeder.SeedCatalogsAsync(db);            // always
+    if (app.Environment.IsDevelopment())
+        await DbSeeder.SeedDemoDataAsync(db);         // dev only — no credentials in prod
+}
+
 
 app.UseAuthentication();
 app.UseRateLimiter();          // ← NEW: throttle before auth work happens

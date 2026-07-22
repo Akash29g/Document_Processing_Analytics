@@ -47,17 +47,7 @@ public record UserDto(Guid Id, string Email, string Role);
 // One site the user is allowed to access
 public record SiteDto(Guid SiteId, string SiteName);
 
-/// <summary>Refresh request body for POST /auth/refresh.</summary>
-/// <param name="RefreshToken">The current refresh token.</param>
-// NEW (R4) — POST /auth/refresh
-public record RefreshRequest(string RefreshToken);
 
-/// <summary>Refresh response: a new access token and rotated refresh token.</summary>
+/// <summary>Refresh response: a new access token (refresh token is set as an HttpOnly cookie).</summary>
 /// <param name="Token">The new JWT access token.</param>
-/// <param name="RefreshToken">The rotated refresh token.</param>
-public record RefreshResponse(string Token, string RefreshToken);
-
-/// <summary>Logout request body for POST /auth/logout.</summary>
-/// <param name="RefreshToken">The refresh token to revoke.</param>
-// NEW (R4) — POST /auth/logout
-public record LogoutRequest(string RefreshToken);
+public record RefreshResponse(string Token);

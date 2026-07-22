@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -37,10 +38,17 @@ public sealed class RateLimitFactory : WebApplicationFactory<HealthController>
 
         builder.ConfigureTestServices(services =>
         {
-            // swap Npgsql AppDbContext → in-memory (fast, no real DB)
-            var dbOpts = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
-            if (dbOpts is not null) services.Remove(dbOpts);
+            // swap Npgsql AppDbContext → in-memory (fast, no real DB).
+            // EF Core 10: must also remove IDbContextOptionsConfiguration<AppDbContext>,
+            // else the Npgsql provider callback still applies alongside InMemory → dual-provider error.
+            var efDescriptors = services.Where(d =>
+                d.ServiceType == typeof(DbContextOptions<AppDbContext>) ||
+                d.ServiceType == typeof(IDbContextOptionsConfiguration<AppDbContext>) ||
+                d.ServiceType == typeof(AppDbContext)).ToList();
+            foreach (var d in efDescriptors) services.Remove(d);
+
             services.AddDbContext<AppDbContext>(o => o.UseInMemoryDatabase("ratelimit-tests"));
+
 
             // drop background workers so they don't hit the DB during the test
             foreach (var d in services.Where(d =>

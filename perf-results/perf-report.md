@@ -1,13 +1,13 @@
 # Performance Report (mocked, in-memory)
 
-Generated: 2026-07-10T12:34:33Z  
+Generated: 2026-07-22T06:27:06Z  
 Dataset: 2,000 batches x 50 files
 
 | Operation | Samples | P50 (ms) | P90 (ms) | Max (ms) |
 |---|---:|---:|---:|---:|
-| batch_list_page | 10 | 1.1 | 2.9 | 20.8 |
-| concurrent_dashboard_summary | 10 | 1.5 | 23.2 | 156.5 |
-| concurrent_total_wall_time | 1 | 211.4 | 211.4 | 211.4 |
-| dashboard_summary | 10 | 1.4 | 3.4 | 20.8 |
-| error_list_page | 10 | 168.3 | 258.4 | 301.4 |
-| recent_failures_page | 10 | 61.4 | 153.3 | 163.6 |
+| batch_list_page | 10 | 1.3 | 2.9 | 16.3 |
+| concurrent_dashboard_summary | 10 | 1.6 | 14.3 | 24.9 |
+| concurrent_total_wall_time | 1 | 59.7 | 59.7 | 59.7 |
+| dashboard_summary | 10 | 1.5 | 3.5 | 24.0 |
+| error_list_page | 10 | 179.0 | 296.3 | 384.8 |
+| recent_failures_page | 10 | 59.2 | 185.6 | 185.9 |

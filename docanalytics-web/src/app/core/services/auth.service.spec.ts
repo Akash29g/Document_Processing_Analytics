@@ -17,39 +17,39 @@ describe('AuthService', () => {
     service = TestBed.inject(AuthService);
     httpMock = TestBed.inject(HttpTestingController);
   });
+
   afterEach(() => httpMock.verify());
 
   const loginPayload = {
     data: {
       token: 'jwt-123',
-      refresh_token: 'refresh-123',
+      // server still sends refresh via Set-Cookie (HttpOnly); body value is ignored by the client
       user: { id: 'u1', email: 'a@org.com', role: 'Viewer' },
       sites: [{ site_id: 's1', site_name: 'Plant One' }],
     },
     error: null,
   };
 
-  /** helper: log in and flush so the session (incl. refresh token) is populated */
+  /** helper: log in and flush so the session is populated */
   const doLogin = () => {
     service.login('a@org.com', 'pw').subscribe();
     httpMock.expectOne((r) => r.url === `${base}/auth/login`).flush(loginPayload);
   };
 
-  it('login() stores token + refresh token + sites on success', () => {
+  it('login() stores access token + sites on success', () => {
     doLogin();
     expect(localStorage.getItem('da_token')).toBe('jwt-123');
-    expect(localStorage.getItem('da_refresh')).toBe('refresh-123');
     expect(service.sites().length).toBe(1);
   });
 
-  it('logout() revokes server-side and clears both tokens', () => {
+  it('logout() revokes server-side (via cookie) and clears the session', () => {
     doLogin();
     service.logout();
     const req = httpMock.expectOne((r) => r.url === `${base}/auth/logout`);
-    expect(req.request.body).toEqual({ refresh_token: 'refresh-123' });
+    expect(req.request.body).toEqual({}); // token is in the cookie, not the body
+    expect(req.request.withCredentials).toBe(true); // cookie must ride along
     req.flush({ data: { logged_out: true }, error: null });
     expect(localStorage.getItem('da_token')).toBeNull();
-    expect(localStorage.getItem('da_refresh')).toBeNull();
   });
 
   it('hasSiteAccess() reflects the sites list', () => {
@@ -58,18 +58,18 @@ describe('AuthService', () => {
     expect(service.hasSiteAccess('s999')).toBe(false);
   });
 
-  it('refreshToken() stores rotated tokens and emits the new access token', () => {
+  it('refreshToken() stores the rotated access token and emits it', () => {
     doLogin();
     let emitted: string | null = 'unset';
     service.refreshToken().subscribe((t) => (emitted = t));
 
     const req = httpMock.expectOne((r) => r.url === `${base}/auth/refresh`);
-    expect(req.request.body).toEqual({ refresh_token: 'refresh-123' });
-    req.flush({ data: { token: 'jwt-456', refresh_token: 'refresh-456' }, error: null });
+    expect(req.request.body).toEqual({}); // refresh token comes from the cookie
+    expect(req.request.withCredentials).toBe(true);
+    req.flush({ data: { token: 'jwt-456' }, error: null });
 
     expect(emitted).toBe('jwt-456');
     expect(localStorage.getItem('da_token')).toBe('jwt-456');
-    expect(localStorage.getItem('da_refresh')).toBe('refresh-456');
   });
 
   it('refreshToken() clears the session and emits null on failure', () => {
@@ -83,28 +83,22 @@ describe('AuthService', () => {
 
     expect(emitted).toBeNull();
     expect(localStorage.getItem('da_token')).toBeNull();
-    expect(localStorage.getItem('da_refresh')).toBeNull();
   });
 
   it('refreshToken() is single-flight — concurrent calls make one request', () => {
     doLogin();
     let a: string | null = 'unset';
     let b: string | null = 'unset';
+
     service.refreshToken().subscribe((t) => (a = t));
     service.refreshToken().subscribe((t) => (b = t));
 
     // expectOne asserts EXACTLY one matching request — proves the in-flight share
     const req = httpMock.expectOne((r) => r.url === `${base}/auth/refresh`);
-    req.flush({ data: { token: 'jwt-789', refresh_token: 'refresh-789' }, error: null });
+    req.flush({ data: { token: 'jwt-789' }, error: null });
 
     expect(a).toBe('jwt-789');
     expect(b).toBe('jwt-789');
-  });
-
-  it('refreshToken() emits null immediately when no refresh token exists', () => {
-    let emitted: string | null = 'unset';
-    service.refreshToken().subscribe((t) => (emitted = t));
-    expect(emitted).toBeNull(); // no HTTP request made (httpMock.verify passes)
   });
 
   it('ensureSession() returns false when there is no token', async () => {
@@ -132,6 +126,7 @@ describe('AuthService', () => {
         },
         error: null,
       });
+
     expect(await p).toBe(true);
     expect(service.sites().length).toBe(1);
   });

@@ -29,14 +29,18 @@ public class AuthControllerTests
         var response = new LoginResponse("jwt", new UserDto(Guid.NewGuid(), "a@org.com", "Viewer"), new List<SiteDto>(), false);
         var auth = new Mock<IAuthService>();
         auth.Setup(a => a.LoginAsync(It.IsAny<LoginRequest>(), It.IsAny<CancellationToken>())).ReturnsAsync(response);
+        var refresh = new Mock<IRefreshTokenService>();
+        refresh.Setup(r => r.IssueAsync(It.IsAny<Guid>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+               .ReturnsAsync(("raw-refresh", DateTime.UtcNow.AddDays(7)));   // ← valid expiry, no MinValue blow-up
 
-        var result = await NewController(auth.Object, Mock.Of<ICurrentUser>(), Mock.Of<ILoginLockoutService>())
+        var result = await NewController(auth.Object, Mock.Of<ICurrentUser>(), Mock.Of<ILoginLockoutService>(), refresh.Object)
             .Login(new LoginRequest("a@org.com", "pw"), default);
 
         var ok = Assert.IsType<OkObjectResult>(result);
         var body = Assert.IsType<ApiResponse<LoginResponse>>(ok.Value);
         Assert.Equal("jwt", body.Data!.Token);
     }
+
 
     [Fact]
     public async Task Login_returns_401_on_invalid_credentials()
@@ -87,7 +91,7 @@ public class AuthControllerTests
     }
 
     [Fact]
-    public async Task Login_issues_refresh_token_on_success()
+    public async Task Login_sets_refresh_token_cookie_on_success()
     {
         var response = new LoginResponse("jwt", new UserDto(Guid.NewGuid(), "a@org.com", "Viewer"), new List<SiteDto>(), false);
         var auth = new Mock<IAuthService>();
@@ -96,16 +100,19 @@ public class AuthControllerTests
         refresh.Setup(r => r.IssueAsync(It.IsAny<Guid>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
                .ReturnsAsync(("raw-refresh", DateTime.UtcNow.AddDays(7)));
 
-        var result = await NewController(auth.Object, Mock.Of<ICurrentUser>(), Mock.Of<ILoginLockoutService>(), refresh.Object)
-            .Login(new LoginRequest("a@org.com", "pw"), default);
+        var controller = NewController(auth.Object, Mock.Of<ICurrentUser>(), Mock.Of<ILoginLockoutService>(), refresh.Object);
+        var result = await controller.Login(new LoginRequest("a@org.com", "pw"), default);
 
-        var ok = Assert.IsType<OkObjectResult>(result);
-        var body = Assert.IsType<ApiResponse<LoginResponse>>(ok.Value);
-        Assert.Equal("raw-refresh", body.Data!.RefreshToken);
+        Assert.IsType<OkObjectResult>(result);
+        // refresh token is now in the HttpOnly cookie, NOT the body
+        var setCookie = controller.Response.Headers["Set-Cookie"].ToString();
+        Assert.Contains("refresh_token=raw-refresh", setCookie);
+        Assert.Contains("httponly", setCookie.ToLowerInvariant());
     }
 
+
     [Fact]
-    public async Task Refresh_returns_200_with_rotated_tokens()
+    public async Task Refresh_returns_200_and_rotates_cookie()
     {
         var user = new User { Id = Guid.NewGuid(), Email = "a@org.com", Role = "Viewer" };
         var refresh = new Mock<IRefreshTokenService>();
@@ -114,14 +121,20 @@ public class AuthControllerTests
         var jwt = new Mock<IJwtTokenService>();
         jwt.Setup(j => j.CreateToken(user)).Returns("new-access");
 
-        var result = await NewController(Mock.Of<IAuthService>(), Mock.Of<ICurrentUser>(), Mock.Of<ILoginLockoutService>(), refresh.Object, jwt.Object)
-            .Refresh(new RefreshRequest("old-refresh"), default);
+        var controller = NewController(Mock.Of<IAuthService>(), Mock.Of<ICurrentUser>(), Mock.Of<ILoginLockoutService>(), refresh.Object, jwt.Object);
+        controller.HttpContext.Request.Headers["Cookie"] = "refresh_token=old-refresh";
+
+        var result = await controller.Refresh(default);
 
         var ok = Assert.IsType<OkObjectResult>(result);
         var body = Assert.IsType<ApiResponse<RefreshResponse>>(ok.Value);
-        Assert.Equal("new-access", body.Data!.Token);
-        Assert.Equal("new-refresh", body.Data!.RefreshToken);
+        Assert.Equal("new-access", body.Data!.Token);          // only the access token is in the body now
+
+        var setCookie = controller.Response.Headers["Set-Cookie"].ToString();
+        Assert.Contains("refresh_token=new-refresh", setCookie); // rotated cookie
+        refresh.Verify(r => r.ValidateAndRotateAsync("old-refresh", It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
     }
+
 
     [Fact]
     public async Task Refresh_returns_401_when_token_invalid()
@@ -130,25 +143,31 @@ public class AuthControllerTests
         refresh.Setup(r => r.ValidateAndRotateAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
                .ReturnsAsync(((User, string, DateTime)?)null);
 
-        var result = await NewController(Mock.Of<IAuthService>(), Mock.Of<ICurrentUser>(), Mock.Of<ILoginLockoutService>(), refresh.Object)
-            .Refresh(new RefreshRequest("bad"), default);
+        var controller = NewController(Mock.Of<IAuthService>(), Mock.Of<ICurrentUser>(), Mock.Of<ILoginLockoutService>(), refresh.Object);
+        controller.HttpContext.Request.Headers["Cookie"] = "refresh_token=bad";
+
+        var result = await controller.Refresh(default);
 
         var unauth = Assert.IsType<UnauthorizedObjectResult>(result);
         var body = Assert.IsType<ApiResponse<object>>(unauth.Value);
         Assert.Equal("INVALID_REFRESH_TOKEN", body.Error!.Code);
     }
 
+
     [Fact]
     public async Task Logout_revokes_token_and_returns_200()
     {
         var refresh = new Mock<IRefreshTokenService>();
 
-        var result = await NewController(Mock.Of<IAuthService>(), Mock.Of<ICurrentUser>(), Mock.Of<ILoginLockoutService>(), refresh.Object)
-            .Logout(new LogoutRequest("some-token"), default);
+        var controller = NewController(Mock.Of<IAuthService>(), Mock.Of<ICurrentUser>(), Mock.Of<ILoginLockoutService>(), refresh.Object);
+        controller.HttpContext.Request.Headers["Cookie"] = "refresh_token=some-token";
+
+        var result = await controller.Logout(default);
 
         Assert.IsType<OkObjectResult>(result);
         refresh.Verify(r => r.RevokeAsync("some-token", It.IsAny<CancellationToken>()), Times.Once);
     }
+
 
     [Fact]
     public async Task Me_returns_401_when_user_not_found()
@@ -162,6 +181,16 @@ public class AuthControllerTests
 
         Assert.IsType<UnauthorizedResult>(result);
     }
+
+    [Fact]
+    public async Task Refresh_returns_401_when_cookie_missing()
+    {
+        var controller = NewController(Mock.Of<IAuthService>(), Mock.Of<ICurrentUser>(), Mock.Of<ILoginLockoutService>());
+        var result = await controller.Refresh(default);   // no cookie set
+        var unauth = Assert.IsType<UnauthorizedObjectResult>(result);
+        Assert.Equal("INVALID_REFRESH_TOKEN", Assert.IsType<ApiResponse<object>>(unauth.Value).Error!.Code);
+    }
+
 
     [Fact]
     public async Task Me_returns_200_with_user_and_sites()

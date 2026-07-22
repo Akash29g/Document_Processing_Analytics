@@ -30,6 +30,11 @@ public sealed class SecurityHeadersMiddleware
         // Trim server fingerprinting where we can.
         h.Remove("X-Powered-By");
 
+        // API returns JSON only — lock everything down, block framing entirely.
+        ctx.Response.Headers["Content-Security-Policy"] =
+            "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'";
+
+
         await _next(ctx);
     }
 }

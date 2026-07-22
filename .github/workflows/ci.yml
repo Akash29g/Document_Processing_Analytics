@@ -127,7 +127,7 @@ jobs:
         env:
           ASPNETCORE_ENVIRONMENT: Development
           ConnectionStrings__Default: "Host=localhost;Port=5432;Database=docanalytics;Username=postgres;Password=postgres"
-          Jwt__Key: ${{ secrets.E2E_JWT_KEY }}
+          Jwt__Key: ${{ secrets.E2E_JWT_KEY || 'ci-e2e-dummy-signing-key-not-a-secret-0123456789' }}
           CI: 'true'
         run: |
           set -e

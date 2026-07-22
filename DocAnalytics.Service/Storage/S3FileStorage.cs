@@ -50,7 +50,10 @@ public sealed class S3FileStorage : IFileStorage
             BucketName = _opts.BucketName,
             Key = storageKey
         }, ct);
-        return res.Tagging.FirstOrDefault(t => t.Key == "GuardDutyMalwareScanStatus")?.Value;
+
+        // Tagging is null when the object has no tags yet (e.g. GuardDuty hasn't scanned/tagged it).
+        return res.Tagging?
+            .FirstOrDefault(t => t.Key == "GuardDutyMalwareScanStatus")?.Value;
     }
 
 

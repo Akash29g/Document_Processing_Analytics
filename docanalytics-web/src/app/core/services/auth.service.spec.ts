@@ -46,8 +46,8 @@ describe('AuthService', () => {
     doLogin();
     service.logout();
     const req = httpMock.expectOne((r) => r.url === `${base}/auth/logout`);
-    expect(req.request.body).toEqual({});                 // token is in the cookie, not the body
-    expect(req.request.withCredentials).toBe(true);       // cookie must ride along
+    expect(req.request.body).toEqual({}); // token is in the cookie, not the body
+    expect(req.request.withCredentials).toBe(true); // cookie must ride along
     req.flush({ data: { logged_out: true }, error: null });
     expect(localStorage.getItem('da_token')).toBeNull();
   });
@@ -64,7 +64,7 @@ describe('AuthService', () => {
     service.refreshToken().subscribe((t) => (emitted = t));
 
     const req = httpMock.expectOne((r) => r.url === `${base}/auth/refresh`);
-    expect(req.request.body).toEqual({});                 // refresh token comes from the cookie
+    expect(req.request.body).toEqual({}); // refresh token comes from the cookie
     expect(req.request.withCredentials).toBe(true);
     req.flush({ data: { token: 'jwt-456' }, error: null });
 

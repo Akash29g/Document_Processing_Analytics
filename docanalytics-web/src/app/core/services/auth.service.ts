@@ -3,7 +3,13 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, catchError, finalize, firstValueFrom, map, of, shareReplay, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
-import { AuthUser, LoginResponse, MeResponse, RefreshResponse, SiteSummary } from '../models/auth.model';
+import {
+  AuthUser,
+  LoginResponse,
+  MeResponse,
+  RefreshResponse,
+  SiteSummary,
+} from '../models/auth.model';
 import { Router } from '@angular/router';
 
 const TOKEN_KEY = 'da_token';
@@ -65,11 +71,7 @@ export class AuthService {
     if (this.refreshInFlight$) return this.refreshInFlight$;
 
     this.refreshInFlight$ = this.http
-      .post<ApiResponse<RefreshResponse>>(
-        `${this.baseUrl}/refresh`,
-        {},
-        { withCredentials: true },
-      )
+      .post<ApiResponse<RefreshResponse>>(`${this.baseUrl}/refresh`, {}, { withCredentials: true })
       .pipe(
         map((res) => {
           if (res.data) {
@@ -112,7 +114,7 @@ export class AuthService {
   logout(): void {
     this.http
       .post(`${this.baseUrl}/logout`, {}, { withCredentials: true })
-      .subscribe({ error: () => { } });
+      .subscribe({ error: () => {} });
     this.clearSession();
   }
 

@@ -36,13 +36,8 @@ export class ErrorsComponent {
     const siteId = this.site.selectedSiteId();
     if (!siteId || !item.batch_id) return;
 
-    this.router.navigate([
-      '/site', siteId,
-      'batches', item.batch_id,
-      'files', item.file_id
-    ]);
+    this.router.navigate(['/site', siteId, 'batches', item.batch_id, 'files', item.file_id]);
   }
-
 
   // ⚠️ VERIFY step tokens/casing accepted by backend `step` filter (seed shows Validate/Transform/Load)
   protected stepOptions: FilterOption[] = [

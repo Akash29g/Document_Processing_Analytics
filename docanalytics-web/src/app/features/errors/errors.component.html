@@ -10,81 +10,89 @@
   </header>
 
   @if (svc.exportError()) {
-  <p class="inline-error">{{ svc.exportError() }}</p>
+    <p class="inline-error">{{ svc.exportError() }}</p>
   }
   <div class="charts">
-    <app-chart-card title="Top 10 Error Types"
-                    subtitle="Most frequent failure codes"
-                    [loading]="svc.topLoading()"
-                    [error]="svc.topError()"
-                    [empty]="!svc.top().length"
-                    emptyMessage="No errors recorded."
-                    (retry)="svc.loadTop()">
+    <app-chart-card
+      title="Top 10 Error Types"
+      subtitle="Most frequent failure codes"
+      [loading]="svc.topLoading()"
+      [error]="svc.topError()"
+      [empty]="!svc.top().length"
+      emptyMessage="No errors recorded."
+      (retry)="svc.loadTop()"
+    >
       <div class="bars">
         @for (p of svc.top(); track p.label) {
-        <div class="bar-row">
-          <span class="bar-label" [title]="p.label">{{ p.label }}</span>
-          <div class="bar-track">
-            <div class="bar-fill" [style.width.%]="pct(p.value, topMax())"></div>
+          <div class="bar-row">
+            <span class="bar-label" [title]="p.label">{{ p.label }}</span>
+            <div class="bar-track">
+              <div class="bar-fill" [style.width.%]="pct(p.value, topMax())"></div>
+            </div>
+            <span class="bar-val">{{ p.value }}</span>
           </div>
-          <span class="bar-val">{{ p.value }}</span>
-        </div>
         }
       </div>
     </app-chart-card>
 
-    <app-chart-card title="Error Trend"
-                    subtitle="Failures per day"
-                    [loading]="svc.trendLoading()"
-                    [error]="svc.trendError()"
-                    [empty]="!svc.trend().length"
-                    emptyMessage="No trend data."
-                    (retry)="svc.loadTrend()">
+    <app-chart-card
+      title="Error Trend"
+      subtitle="Failures per day"
+      [loading]="svc.trendLoading()"
+      [error]="svc.trendError()"
+      [empty]="!svc.trend().length"
+      emptyMessage="No trend data."
+      (retry)="svc.loadTrend()"
+    >
       <div class="trend">
         @for (p of svc.trend(); track p.label) {
-        <div class="col" [title]="p.label + ': ' + p.value">
-          <span class="col-val">{{ p.value }}</span>
-          <div class="col-bar" [style.height.%]="pct(p.value, trendMax())"></div>
-          <span class="col-label">{{ shortDate(p.label) }}</span>
-        </div>
+          <div class="col" [title]="p.label + ': ' + p.value">
+            <span class="col-val">{{ p.value }}</span>
+            <div class="col-bar" [style.height.%]="pct(p.value, trendMax())"></div>
+            <span class="col-label">{{ shortDate(p.label) }}</span>
+          </div>
         }
       </div>
     </app-chart-card>
   </div>
 
-  <app-filter-bar statusLabel="Step"
-                  [statusOptions]="stepOptions"
-                  [sourceOptions]="sourceOptions"
-                  (changed)="onFilters($event)" />
+  <app-filter-bar
+    statusLabel="Step"
+    [statusOptions]="stepOptions"
+    [sourceOptions]="sourceOptions"
+    (changed)="onFilters($event)"
+  />
 
-  <app-data-table [columns]="columns"
-                  [rows]="svc.errors()"
-                  [loading]="svc.loading()"
-                  [error]="svc.error()"
-                  emptyMessage="No errors match your filters."
-                  [sortBy]="svc.query().sortBy"
-                  [sortDir]="svc.query().sortDir"
-                  [page]="svc.query().page"
-                  [pageSize]="svc.query().pageSize"
-                  [totalCount]="svc.meta()?.total_count ?? 0"
-                  [totalPages]="svc.meta()?.total_pages ?? 1"
-                  (sortChange)="onSort($event)"
-                  (pageChange)="svc.setPage($event)"
-                  (pageSizeChange)="svc.setPageSize($event)"
-                  (retry)="svc.loadErrors()">
+  <app-data-table
+    [columns]="columns"
+    [rows]="svc.errors()"
+    [loading]="svc.loading()"
+    [error]="svc.error()"
+    emptyMessage="No errors match your filters."
+    [sortBy]="svc.query().sortBy"
+    [sortDir]="svc.query().sortDir"
+    [page]="svc.query().page"
+    [pageSize]="svc.query().pageSize"
+    [totalCount]="svc.meta()?.total_count ?? 0"
+    [totalPages]="svc.meta()?.total_pages ?? 1"
+    (sortChange)="onSort($event)"
+    (pageChange)="svc.setPage($event)"
+    (pageSizeChange)="svc.setPageSize($event)"
+    (retry)="svc.loadErrors()"
+  >
     <ng-template dtCell="failed_at" let-row>{{ row.failed_at | date: 'medium' }}</ng-template>
-    <ng-template dtCell="error_code" let-row><span class="err-chip">{{ row.error_code }}</span></ng-template>
+    <ng-template dtCell="error_code" let-row
+      ><span class="err-chip">{{ row.error_code }}</span></ng-template
+    >
 
     <ng-template dtCell="file_name" let-row>
       @if (row.batch_id) {
-      <button type="button" class="file-link" (click)="navigateToFile(row)">
-        {{ row.file_name }}
-      </button>
+        <button type="button" class="file-link" (click)="navigateToFile(row)">
+          {{ row.file_name }}
+        </button>
       } @else {
-      {{ row.file_name }}
+        {{ row.file_name }}
       }
     </ng-template>
-
   </app-data-table>
-
 </section>

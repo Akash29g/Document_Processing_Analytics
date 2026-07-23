@@ -47,18 +47,14 @@ export class ActivityLogComponent {
       siteId,
       entity_id: item.entity_id,
       entity_type: item.entity_type,
-      batch_id: item.batch_id
+      batch_id: item.batch_id,
     });
     if (!siteId) return;
 
     if (item.entity_type === 'Batch') {
       this.router.navigate(['/site', siteId, 'batches', item.entity_id]);
     } else if (item.entity_type === 'File' && item.batch_id) {
-      this.router.navigate([
-        '/site', siteId,
-        'batches', item.batch_id,
-        'files', item.entity_id
-      ]);
+      this.router.navigate(['/site', siteId, 'batches', item.batch_id, 'files', item.entity_id]);
     }
   }
 
@@ -68,7 +64,6 @@ export class ActivityLogComponent {
     if (item.entity_type === 'File') return !!item.batch_id;
     return false;
   }
-
 
   protected readonly eventTypeOptions: FilterOption[] = [
     { value: 'all', label: 'All events' },

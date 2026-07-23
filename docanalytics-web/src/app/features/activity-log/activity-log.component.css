@@ -107,9 +107,9 @@
   text-align: left;
 }
 
-  .entity-link:hover {
-    opacity: 0.7;
-  }
+.entity-link:hover {
+  opacity: 0.7;
+}
 
 /* Entity type pills (Batch / File) */
 .entity-type-badge {
@@ -129,4 +129,3 @@
   background: var(--badge-file-bg, rgba(34, 197, 94, 0.12));
   color: var(--badge-file-fg, #4ade80);
 }
-

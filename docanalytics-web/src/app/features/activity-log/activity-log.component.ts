@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { Router } from '@angular/router';
 import { ChangeDetectionStrategy, Component, effect, inject, untracked } from '@angular/core';
 import { ActivityLogService } from './activity-log.service';
 import { ActivityLogItem, ActivityLogSortBy } from './activity-log.models';
@@ -35,6 +36,39 @@ export class ActivityLogComponent {
   protected svc = inject(ActivityLogService);
   private siteCtx = inject(SiteContextService);
   private searchTimer: any;
+
+  private readonly router = inject(Router);
+  private readonly site = inject(SiteContextService);
+
+  /** Navigate to the batch or file the log row refers to. */
+  navigateTo(item: ActivityLogItem): void {
+    const siteId = this.site.selectedSiteId();
+    console.log('[activity-log navigate]', {
+      siteId,
+      entity_id: item.entity_id,
+      entity_type: item.entity_type,
+      batch_id: item.batch_id
+    });
+    if (!siteId) return;
+
+    if (item.entity_type === 'Batch') {
+      this.router.navigate(['/site', siteId, 'batches', item.entity_id]);
+    } else if (item.entity_type === 'File' && item.batch_id) {
+      this.router.navigate([
+        '/site', siteId,
+        'batches', item.batch_id,
+        'files', item.entity_id
+      ]);
+    }
+  }
+
+  /** True if the row has a navigable destination. */
+  isNavigable(item: ActivityLogItem): boolean {
+    if (item.entity_type === 'Batch') return true;
+    if (item.entity_type === 'File') return !!item.batch_id;
+    return false;
+  }
+
 
   protected readonly eventTypeOptions: FilterOption[] = [
     { value: 'all', label: 'All events' },

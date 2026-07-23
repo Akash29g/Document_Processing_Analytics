@@ -2,6 +2,7 @@ using DocAnalytics.Data;                         // AppDbContext
 using DocAnalytics.Service.Common;               // PagedResult<T>
 using Microsoft.EntityFrameworkCore;
 using DomainActivityLog = DocAnalytics.Domain.Entities.ActivityLog;
+using DocAnalytics.Domain.Entities;
 
 namespace DocAnalytics.Service.ActivityLog;
 
@@ -62,11 +63,44 @@ public sealed class ActivityLogService : IActivityLogService
                 EventType = a.EventType,
                 EntityType = a.EntityType,
                 Entity = a.EntityName,
+                EntityId = a.EntityId,
                 OldState = a.OldState,
                 NewState = a.NewState,
-                Actor = a.TriggeredBy
+                Actor = a.TriggeredBy,
+                BatchId = null
             })
             .ToListAsync(ct);
+
+        // ── NEW: resolve BatchId for File-type entries ──────────────────────
+        // The file detail route is /site/:siteId/batches/:batchId/files/:fileId
+        // so we need the transaction_id (batchId) from the files table.
+        var fileIds = items
+            .Where(i => i.EntityType == "File")
+            .Select(i => i.EntityId)
+            .Distinct()
+            .ToList();
+
+        if (fileIds.Count > 0 && _db.Files is not null)
+        {
+            // _db.Files has the global query filter applied (same tenant/site),
+            // so this query is already correctly scoped — no cross-tenant risk.
+            var batchMap = await _db.Files
+                .Where(f => fileIds.Contains(f.Id))
+                .Select(f => new { f.Id, f.TransactionId })
+                .ToDictionaryAsync(f => f.Id, f => f.TransactionId, ct);
+
+            // ActivityLogItemDto uses init-only props, so rebuild the record
+            // using C# `with` expression to set BatchId.
+            for (var i = 0; i < items.Count; i++)
+            {
+                var item = items[i];
+                if (item.EntityType != "File") continue;
+                if (!batchMap.TryGetValue(item.EntityId, out var txnId)) continue;
+
+                items[i] = item with { BatchId = txnId };
+            }
+        }
+        // ────────────────────────────────────────────────────────────────────
 
         return new PagedResult<ActivityLogItemDto>
         {

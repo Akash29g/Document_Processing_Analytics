@@ -24,7 +24,7 @@ public sealed class ErrorListQuery
 
 /// <summary>One failed-step row returned to the client / exported to CSV.</summary>
 // one failed-step row
-public sealed class ErrorListItemDto
+public sealed record ErrorListItemDto
 {
     /// <summary>The file id.</summary>
     public Guid FileId { get; set; }
@@ -42,4 +42,6 @@ public sealed class ErrorListItemDto
     public DateTime? FailedAt { get; set; }
     /// <summary>Suggested remediation from ErrorCatalog (LEFT join), if available.</summary>
     public string? SuggestedFix { get; set; }        // ErrorCatalog.RemediationMsg (LEFT join)
+
+    public Guid? BatchId { get; init; }
 }

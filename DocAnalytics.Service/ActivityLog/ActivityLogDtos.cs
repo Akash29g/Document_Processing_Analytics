@@ -26,7 +26,7 @@ public sealed class ActivityLogQuery
 
 /// <summary>A single audit-trail row returned to the client (FR-4.2).</summary>
 // one audit row (FR-4.2)
-public sealed class ActivityLogItemDto
+public sealed record ActivityLogItemDto
 {
     /// <summary>Event timestamp (maps from CreatedAt).</summary>
     public DateTime Ts { get; set; }            // → "ts"          (CreatedAt)
@@ -37,9 +37,12 @@ public sealed class ActivityLogItemDto
     /// <summary>The related entity's display name (maps from EntityName).</summary>
     public string? Entity { get; set; }         // → "entity"      (EntityName)
     /// <summary>The previous state, if applicable.</summary>
+    public Guid EntityId { get; init; }
     public string? OldState { get; set; }
     /// <summary>The new state, if applicable.</summary>
     public string? NewState { get; set; }
     /// <summary>Who or what triggered the event (maps from TriggeredBy).</summary>
     public string Actor { get; set; } = null!;  // → "actor"       (TriggeredBy)
+
+    public Guid? BatchId { get; init; }
 }

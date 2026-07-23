@@ -28,7 +28,7 @@ public class AuthController : ControllerBase
         ILoginLockoutService lockout,
         IRefreshTokenService refresh,
         IJwtTokenService jwt,
-        IPasswordResetService passwordReset) 
+        IPasswordResetService passwordReset)
     {
         _auth = auth;
         _currentUser = currentUser;

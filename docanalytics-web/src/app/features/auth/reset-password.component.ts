@@ -1,6 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
-import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -58,7 +64,9 @@ export class ResetPasswordComponent {
       },
       error: (e: HttpErrorResponse) => {
         this.loading.set(false);
-        this.errorMessage.set(e.error?.error?.message ?? 'This reset link is invalid or has expired.');
+        this.errorMessage.set(
+          e.error?.error?.message ?? 'This reset link is invalid or has expired.',
+        );
       },
     });
   }

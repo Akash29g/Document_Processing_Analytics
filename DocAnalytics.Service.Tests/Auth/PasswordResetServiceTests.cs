@@ -4,8 +4,8 @@ using DocAnalytics.Data;
 using DocAnalytics.Domain.Entities;
 using DocAnalytics.Service.Alerts;
 using DocAnalytics.Service.Auth;
-using Microsoft.Extensions.Configuration;
 using DocAnalytics.Service.Tests.Support;
+using Microsoft.Extensions.Configuration;
 using Moq;
 
 namespace DocAnalytics.Service.Tests.Auth;

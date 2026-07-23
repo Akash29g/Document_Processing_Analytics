@@ -123,7 +123,6 @@ input.invalid {
   text-decoration: none;
 }
 
-  .link:hover {
-    text-decoration: underline;
-  }
-
+.link:hover {
+  text-decoration: underline;
+}

@@ -52,20 +52,18 @@ export class AuthService {
 
   /** POST /auth/forgot-password — always resolves 200 (generic message, no enumeration). */
   forgotPassword(email: string): Observable<ApiResponse<{ message: string }>> {
-    return this.http.post<ApiResponse<{ message: string }>>(
-      `${this.baseUrl}/forgot-password`,
-      { email },
-    );
+    return this.http.post<ApiResponse<{ message: string }>>(`${this.baseUrl}/forgot-password`, {
+      email,
+    });
   }
 
   /** POST /auth/reset-password — consumes the emailed token and sets a new password. */
   resetPassword(token: string, newPassword: string): Observable<ApiResponse<{ reset: boolean }>> {
-    return this.http.post<ApiResponse<{ reset: boolean }>>(
-      `${this.baseUrl}/reset-password`,
-      { token, new_password: newPassword },
-    );
+    return this.http.post<ApiResponse<{ reset: boolean }>>(`${this.baseUrl}/reset-password`, {
+      token,
+      new_password: newPassword,
+    });
   }
-
 
   /** GET /auth/me — rehydrates user + sites (used after a page refresh). */
   loadMe(): Observable<ApiResponse<MeResponse>> {

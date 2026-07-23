@@ -88,7 +88,7 @@ export class UploadService {
         // b) PUT bytes straight to S3 (signed URL — no auth header)
         await fetch(data.upload_url, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/pdf' },
+          headers: { 'Content-Type': file.type || 'application/octet-stream' }, // ← dynamic
           body: file,
         }).then((r) => {
           if (!r.ok) throw new Error(`S3 upload failed for ${file.name}`);

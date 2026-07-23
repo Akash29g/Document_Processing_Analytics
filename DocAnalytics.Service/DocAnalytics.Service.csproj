@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\DocAnalytics.Data\DocAnalytics.Data.csproj" />
@@ -14,6 +14,9 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.10" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.10" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.20.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols" Version="8.20.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.20.0" />
+
   </ItemGroup>
 
   <PropertyGroup>

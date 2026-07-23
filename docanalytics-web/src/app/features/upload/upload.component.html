@@ -3,7 +3,7 @@
     <p class="up-eyebrow">Invoices</p>
     <h2 class="up-title">Upload Invoices</h2>
     <p class="up-sub">
-      Drop one or more PDF invoices (or a ZIP of PDFs) — they're stored in S3 and extracted
+      Drop PDF or JPEG invoices (or a ZIP containing them) — they're stored in S3 and extracted
       automatically as a single batch.
     </p>
   </header>
@@ -15,7 +15,13 @@
     (dragleave)="dragging.set(false)"
     (drop)="onDrop($event)"
   >
-    <input type="file" accept="application/pdf,.zip" multiple hidden (change)="onPick($event)" />
+    <input
+      type="file"
+      accept="application/pdf,image/jpeg,.jpg,.jpeg,.zip"
+      multiple
+      hidden
+      (change)="onPick($event)"
+    />
 
     @if (expanding()) {
       <span class="up-spinner"></span>
@@ -29,7 +35,7 @@
       }
     } @else {
       <span class="up-icon">⬆️</span>
-      <span><strong>Click to choose</strong> or drag PDFs / a ZIP here</span>
+      <span><strong>Click to choose</strong> or drag PDFs / JPEGs / a ZIP here</span>
     }
   </label>
 

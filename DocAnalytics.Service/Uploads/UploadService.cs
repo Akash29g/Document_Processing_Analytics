@@ -11,6 +11,16 @@ namespace DocAnalytics.Service.Uploads;
 public sealed class UploadService : IUploadService
 {
     private const long MaxBytes = 15 * 1024 * 1024;   // 15 MB cap
+    private static readonly HashSet<string> AllowedExtensions =
+    new(StringComparer.OrdinalIgnoreCase) { ".pdf", ".jpg", ".jpeg" };
+
+    private static readonly Dictionary<string, string> MimeTypes =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+        { ".pdf",  "application/pdf" },
+        { ".jpg",  "image/jpeg" },
+        { ".jpeg", "image/jpeg" }
+        };
     private readonly AppDbContext _db;
     private readonly ICurrentUser _me;
     private readonly IFileStorage _storage;
@@ -80,8 +90,11 @@ public sealed class UploadService : IUploadService
     // MODIFIED — attach file to an existing batch (no new Transaction)
     public async Task<UploadUrlResponse> CreateUploadAsync(UploadUrlRequest req, CancellationToken ct = default)
     {
-        if (!req.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
-            throw new InvalidOperationException("Only PDF invoices are supported.");
+        var ext = Path.GetExtension(req.FileName);
+        if (string.IsNullOrWhiteSpace(ext) || !AllowedExtensions.Contains(ext))
+            throw new InvalidOperationException("Only PDF, JPG, and JPEG files are supported.");
+        var contentType = MimeTypes[ext];
+        var fileTypeName = ext.Equals(".pdf", StringComparison.OrdinalIgnoreCase) ? "PDF" : "JPEG";
         if (req.SizeBytes is <= 0 or > MaxBytes)
             throw new InvalidOperationException("File is empty or exceeds the 15 MB limit.");
 
@@ -134,7 +147,7 @@ public sealed class UploadService : IUploadService
             TransactionId = req.BatchId,
             DocumentTypeId = invoiceTypeId,
             FileName = fileName,              // 👈 NOTE: fileName (may be renamed), not req.FileName
-            FileType = "PDF",
+            FileType = fileTypeName,
             Status = "Queued",
             CurrentStep = "Upload",
             FileSizeBytes = req.SizeBytes,
@@ -148,7 +161,7 @@ public sealed class UploadService : IUploadService
         _db.Add(file);
         await _db.SaveChangesAsync(ct);
 
-        var url = await _storage.GetPresignedPutUrlAsync(key, "application/pdf", TimeSpan.FromMinutes(5), ct);
+        var url = await _storage.GetPresignedPutUrlAsync(key, contentType, TimeSpan.FromMinutes(5), ct);
         return new UploadUrlResponse { FileId = fileId, UploadUrl = url };
     }
 

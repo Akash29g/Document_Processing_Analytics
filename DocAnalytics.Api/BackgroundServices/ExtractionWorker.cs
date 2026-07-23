@@ -17,6 +17,9 @@ public sealed class ExtractionWorker : BackgroundService
     private readonly IServiceScopeFactory _scopes;
     private readonly ILogger<ExtractionWorker> _logger;
 
+    private static readonly byte[] PdfMagic = { 0x25, 0x50, 0x44, 0x46, 0x2D }; // %PDF-
+    private static readonly byte[] JpegMagic = { 0xFF, 0xD8, 0xFF };
+
     public ExtractionWorker(IExtractionQueue queue, IServiceScopeFactory scopes, ILogger<ExtractionWorker> logger)
     {
         _queue = queue; _scopes = scopes; _logger = logger;
@@ -106,18 +109,32 @@ public sealed class ExtractionWorker : BackgroundService
             // ✅ Confirmed clean → safe to download + extract.
             var bytes = await storage.DownloadAsync(file.StorageKey!, ct);
 
-            // ── SECURITY GATE 2: magic bytes — real PDFs start with %PDF- ──
-            if (bytes.Length < 5 || bytes[0] != 0x25 || bytes[1] != 0x50 ||
-                bytes[2] != 0x44 || bytes[3] != 0x46 || bytes[4] != 0x2D)
+            // ── SECURITY GATE 2: magic bytes — PDF or JPEG ──────────────────────────────
+            string detectedType;
+
+            if (bytes.Length >= PdfMagic.Length &&
+                bytes.AsSpan(0, PdfMagic.Length).SequenceEqual(PdfMagic))
+            {
+                detectedType = "pdf";
+            }
+            else if (bytes.Length >= JpegMagic.Length &&
+                     bytes.AsSpan(0, JpegMagic.Length).SequenceEqual(JpegMagic))
+            {
+                detectedType = "jpeg";
+            }
+            else
             {
                 await storage.DeleteAsync(file.StorageKey!, ct);
                 file.StorageKey = null;
                 await FailFileAsync(db, notifier, file, txn, now,
-                    "ERR_INVALID_FILETYPE", "File content is not a valid PDF (extension spoofing suspected).", ct);
+                    "ERR_INVALID_FILETYPE",
+                    "File is not a valid PDF or JPEG (extension spoofing suspected).", ct);
                 return;
             }
+            // ─────────────────────────────────────────────────────────────────────────────
 
-            var result = await extractor.ExtractAsync(bytes, ct);
+            var result = await extractor.ExtractAsync(bytes, detectedType, ct);
+
             var v = validator.Validate(result);
 
             // ⚠️ GOTCHA #2: idempotent → clear existing line items first

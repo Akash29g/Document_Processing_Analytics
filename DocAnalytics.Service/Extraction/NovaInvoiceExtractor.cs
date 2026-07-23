@@ -45,37 +45,53 @@ public sealed class NovaInvoiceExtractor : IInvoiceExtractor
     }
 
     /// <inheritdoc />
-    public async Task<InvoiceExtractionResult> ExtractAsync(byte[] pdfBytes, CancellationToken ct = default)
+    public async Task<InvoiceExtractionResult> ExtractAsync(
+    byte[] fileBytes,
+    string fileType,
+    CancellationToken ct = default)
     {
+        ContentBlock fileBlock = fileType.Equals("jpeg", StringComparison.OrdinalIgnoreCase)
+            ? new ContentBlock
+            {
+                Image = new ImageBlock
+                {
+                    Format = ImageFormat.Jpeg,
+                    Source = new ImageSource { Bytes = new MemoryStream(fileBytes) }
+                }
+            }
+            : new ContentBlock
+            {
+                Document = new DocumentBlock
+                {
+                    Format = DocumentFormat.Pdf,
+                    Name = "invoice",
+                    Source = new DocumentSource { Bytes = new MemoryStream(fileBytes) }
+                }
+            };
+
         var request = new ConverseRequest
         {
             ModelId = _opts.NovaModelId,
             Messages = new List<Message>
+        {
+            new()
             {
-                new()
+                Role = ConversationRole.User,
+                Content = new List<ContentBlock>
                 {
-                    Role = ConversationRole.User,
-                    Content = new List<ContentBlock>
-                    {
-                        new() { Text = Prompt },
-                        new()
-                        {
-                            Document = new DocumentBlock
-                            {
-                                Format = DocumentFormat.Pdf,
-                                Name   = "invoice",
-                                Source = new DocumentSource { Bytes = new MemoryStream(pdfBytes) }
-                            }
-                        }
-                    }
+                    new() { Text = Prompt },
+                    fileBlock
                 }
             }
+        }
         };
 
-        var resp = await _bedrock.ConverseAsync(request, ct);
-        var raw = resp.Output.Message.Content[0].Text ?? "";
-        return Parse(raw);
+        var resp = await _bedrock.ConverseAsync(request, ct);   // ← don't lose these
+        var raw = resp.Output.Message.Content[0].Text ?? "";   // ← don't lose these
+        return Parse(raw);                                      // ← the missing return
     }
+
+
 
     // strip ```json fences, then deserialize
     private static InvoiceExtractionResult Parse(string raw)

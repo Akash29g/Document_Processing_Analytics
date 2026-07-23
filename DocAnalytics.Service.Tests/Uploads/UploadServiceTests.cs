@@ -198,4 +198,32 @@ public class UploadServiceTests
         Assert.False(await Sut(db).DeleteBatchAsync(Guid.NewGuid()));
     }
 
+    [Fact]
+    public async Task CreateUploadAsync_accepts_jpg_file()
+    {
+        using var db = InMemoryDb.Create(_me);
+        SeedTenantSite(db);
+        var batch = SeedBatch(db);
+
+        var res = await Sut(db).CreateUploadAsync(
+            new UploadUrlRequest { BatchId = batch.Id, FileName = "scan.jpg", SizeBytes = 500_000 });
+
+        Assert.Equal("https://s3/put", res.UploadUrl);
+        Assert.NotEqual(Guid.Empty, res.FileId);
+    }
+
+    [Fact]
+    public async Task CreateUploadAsync_accepts_jpeg_extension()
+    {
+        using var db = InMemoryDb.Create(_me);
+        SeedTenantSite(db);
+        var batch = SeedBatch(db);
+
+        var res = await Sut(db).CreateUploadAsync(
+            new UploadUrlRequest { BatchId = batch.Id, FileName = "receipt.jpeg", SizeBytes = 300_000 });
+
+        Assert.NotEqual(Guid.Empty, res.FileId);
+    }
+
+
 }

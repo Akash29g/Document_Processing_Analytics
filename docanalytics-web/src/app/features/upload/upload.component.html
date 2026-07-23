@@ -15,7 +15,13 @@
     (dragleave)="dragging.set(false)"
     (drop)="onDrop($event)"
   >
-    <input type="file" accept="application/pdf,image/jpeg,.jpg,.jpeg,.zip" multiple hidden (change)="onPick($event)" />
+    <input
+      type="file"
+      accept="application/pdf,image/jpeg,.jpg,.jpeg,.zip"
+      multiple
+      hidden
+      (change)="onPick($event)"
+    />
 
     @if (expanding()) {
       <span class="up-spinner"></span>

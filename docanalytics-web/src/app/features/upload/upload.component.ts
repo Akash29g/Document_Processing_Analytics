@@ -42,7 +42,9 @@ export class UploadComponent {
     }
 
     if (!pdfs.length) {
-      this.toast.error('No PDF or JPEG invoices found. Accepted: .pdf, .jpg, .jpeg, or a .zip containing them.');
+      this.toast.error(
+        'No PDF or JPEG invoices found. Accepted: .pdf, .jpg, .jpeg, or a .zip containing them.',
+      );
       return;
     }
 
@@ -71,7 +73,6 @@ export class UploadComponent {
           const blob = await entry.async('blob');
           const mimeType = isPdf ? 'application/pdf' : 'image/jpeg';
           out.push(new File([blob], name, { type: mimeType }));
-
         }
       } else if (lower.endsWith('.pdf') || lower.endsWith('.jpg') || lower.endsWith('.jpeg')) {
         out.push(f);

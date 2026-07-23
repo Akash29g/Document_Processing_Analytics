@@ -114,3 +114,16 @@ input.invalid {
     transform: rotate(360deg);
   }
 }
+
+.link {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 0.9rem;
+  color: var(--brand, #2563eb);
+  text-decoration: none;
+}
+
+  .link:hover {
+    text-decoration: underline;
+  }
+

@@ -15,6 +15,7 @@ public static class AuthFeatureExtensions
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<ILoginLockoutService, LoginLockoutService>();   // ← the only new line
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();   // NEW (R4)
+        services.AddScoped<IPasswordResetService, PasswordResetService>();
         return services;
     }
 }

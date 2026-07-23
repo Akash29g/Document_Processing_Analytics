@@ -51,3 +51,10 @@ public record SiteDto(Guid SiteId, string SiteName);
 /// <summary>Refresh response: a new access token (refresh token is set as an HttpOnly cookie).</summary>
 /// <param name="Token">The new JWT access token.</param>
 public record RefreshResponse(string Token);
+
+/// <summary>Forgot-password request — the account email to send a reset link to.</summary>
+public record ForgotPasswordRequest(string Email);
+
+/// <summary>Reset-password request — the raw token from the email link + the new password.</summary>
+public record ResetPasswordRequest(string Token, string NewPassword);
+

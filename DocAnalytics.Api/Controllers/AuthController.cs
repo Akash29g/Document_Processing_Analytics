@@ -19,6 +19,7 @@ public class AuthController : ControllerBase
     private readonly ILoginLockoutService _lockout;
     private readonly IRefreshTokenService _refresh;
     private readonly IJwtTokenService _jwt;
+    private readonly IPasswordResetService _passwordReset;
 
     /// <summary>Creates a new <see cref="AuthController"/>.</summary>
     public AuthController(
@@ -26,13 +27,15 @@ public class AuthController : ControllerBase
         ICurrentUser currentUser,
         ILoginLockoutService lockout,
         IRefreshTokenService refresh,
-        IJwtTokenService jwt)
+        IJwtTokenService jwt,
+        IPasswordResetService passwordReset)
     {
         _auth = auth;
         _currentUser = currentUser;
         _lockout = lockout;
         _refresh = refresh;
         _jwt = jwt;
+        _passwordReset = passwordReset;
     }
 
     /// <summary>Authenticates a user and issues a JWT access token; the refresh token is set as an HttpOnly cookie.</summary>
@@ -128,6 +131,35 @@ public class AuthController : ControllerBase
             return BadRequest(ApiResponse<object>.Fail("INVALID_PASSWORD", error));
         return Ok(ApiResponse<object>.Ok(new { changed = true }));
     }
+
+    /// <summary>Starts the forgot-password flow. Always returns 200 — never reveals whether the email exists.</summary>
+    [AllowAnonymous]
+    [HttpPost("forgot-password")]
+    [EnableRateLimiting("login")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest req, CancellationToken ct)
+    {
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+        await _passwordReset.RequestResetAsync(req, ip, ct);
+
+        // Generic message on purpose (no account enumeration).
+        return Ok(ApiResponse<object>.Ok(new
+        {
+            message = "If an account exists for that email, a reset link has been sent."
+        }));
+    }
+
+    /// <summary>Completes the forgot-password flow: consumes a reset token and sets the new password.</summary>
+    [AllowAnonymous]
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest req, CancellationToken ct)
+    {
+        var error = await _passwordReset.ResetPasswordAsync(req, ct);
+        if (error is not null)
+            return BadRequest(ApiResponse<object>.Fail("INVALID_RESET", error));
+
+        return Ok(ApiResponse<object>.Ok(new { reset = true }));
+    }
+
 
     // ── refresh-token cookie helpers ────────────────────────────────────────
     private void SetRefreshCookie(string rawToken, DateTime expiresAt)

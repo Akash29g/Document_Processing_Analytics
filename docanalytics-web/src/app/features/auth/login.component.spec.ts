@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { LoginComponent } from './login.component';
 import { AuthService } from '../../core/services/auth.service';
@@ -19,11 +19,13 @@ describe('LoginComponent', () => {
             login: loginSpy,
             ensureSession: vi.fn().mockResolvedValue(false),
             sites: () => [{ site_id: 's1', site_name: 'Plant One' }],
-            currentUser: () => ({ id: '1', email: 'a@org.com', role: 'Viewer' }), // ← added
-            logout: vi.fn(), // ← added
+            currentUser: () => ({ id: '1', email: 'a@org.com', role: 'Viewer' }),
+            logout: vi.fn(),
           },
         },
         { provide: Router, useValue: { navigate: navSpy, navigateByUrl: navSpy } },
+        // RouterLink (added for the "Forgot password?" link) needs ActivatedRoute.
+        { provide: ActivatedRoute, useValue: {} },
       ],
     });
     return TestBed.createComponent(LoginComponent).componentInstance;

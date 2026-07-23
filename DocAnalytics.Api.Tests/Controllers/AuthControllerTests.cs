@@ -12,16 +12,19 @@ namespace DocAnalytics.Api.Tests.Controllers;
 public class AuthControllerTests
 {
     // Login touches HttpContext.Connection / Response — give the controller a real context.
-    // refresh/jwt default to bare mocks so existing tests don't need to pass them.
+    // refresh/jwt/passwordReset default to bare mocks so existing tests don't need to pass them.
     private static AuthController NewController(
         IAuthService auth, ICurrentUser user, ILoginLockoutService lockout,
-        IRefreshTokenService? refresh = null, IJwtTokenService? jwt = null)
+        IRefreshTokenService? refresh = null, IJwtTokenService? jwt = null,
+        IPasswordResetService? passwordReset = null)
         => new(auth, user, lockout,
                refresh ?? Mock.Of<IRefreshTokenService>(),
-               jwt ?? Mock.Of<IJwtTokenService>())
+               jwt ?? Mock.Of<IJwtTokenService>(),
+               passwordReset ?? Mock.Of<IPasswordResetService>())
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
         };
+
 
     [Fact]
     public async Task Login_returns_200_with_envelope_on_success()
@@ -208,4 +211,50 @@ public class AuthControllerTests
         var body = Assert.IsType<ApiResponse<MeResponse>>(ok.Value);
         Assert.Equal("a@org.com", body.Data!.User.Email);
     }
+    [Fact]
+    public async Task ForgotPassword_returns_200_and_calls_service()
+    {
+        var reset = new Mock<IPasswordResetService>();
+        var controller = NewController(
+            Mock.Of<IAuthService>(), Mock.Of<ICurrentUser>(), Mock.Of<ILoginLockoutService>(),
+            null, null, reset.Object);
+
+        var result = await controller.ForgotPassword(new ForgotPasswordRequest("a@org.com"), default);
+
+        Assert.IsType<OkObjectResult>(result);
+        reset.Verify(r => r.RequestResetAsync(
+            It.IsAny<ForgotPasswordRequest>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ResetPassword_returns_400_on_error()
+    {
+        var reset = new Mock<IPasswordResetService>();
+        reset.Setup(r => r.ResetPasswordAsync(It.IsAny<ResetPasswordRequest>(), It.IsAny<CancellationToken>()))
+             .ReturnsAsync("Invalid or expired reset link.");
+        var controller = NewController(
+            Mock.Of<IAuthService>(), Mock.Of<ICurrentUser>(), Mock.Of<ILoginLockoutService>(),
+            null, null, reset.Object);
+
+        var result = await controller.ResetPassword(new ResetPasswordRequest("bad", "NewPass1!"), default);
+
+        var bad = Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Equal("INVALID_RESET", Assert.IsType<ApiResponse<object>>(bad.Value).Error!.Code);
+    }
+
+    [Fact]
+    public async Task ResetPassword_returns_200_on_success()
+    {
+        var reset = new Mock<IPasswordResetService>();
+        reset.Setup(r => r.ResetPasswordAsync(It.IsAny<ResetPasswordRequest>(), It.IsAny<CancellationToken>()))
+             .ReturnsAsync((string?)null);
+        var controller = NewController(
+            Mock.Of<IAuthService>(), Mock.Of<ICurrentUser>(), Mock.Of<ILoginLockoutService>(),
+            null, null, reset.Object);
+
+        var result = await controller.ResetPassword(new ResetPasswordRequest("good", "NewPass1!"), default);
+
+        Assert.IsType<OkObjectResult>(result);
+    }
+
 }

@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { Router } from '@angular/router';
 import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
 import { ErrorService } from './error.service';
 import { ErrorListItem, ErrorSortBy } from './errors.models';
@@ -27,6 +28,16 @@ import {
 export class ErrorsComponent {
   protected svc = inject(ErrorService);
   private site = inject(SiteContextService);
+
+  private readonly router = inject(Router);
+
+  // add method inside the class
+  navigateToFile(item: ErrorListItem): void {
+    const siteId = this.site.selectedSiteId();
+    if (!siteId || !item.batch_id) return;
+
+    this.router.navigate(['/site', siteId, 'batches', item.batch_id, 'files', item.file_id]);
+  }
 
   // ⚠️ VERIFY step tokens/casing accepted by backend `step` filter (seed shows Validate/Transform/Load)
   protected stepOptions: FilterOption[] = [

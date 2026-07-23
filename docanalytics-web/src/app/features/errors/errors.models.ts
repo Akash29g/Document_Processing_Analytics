@@ -16,6 +16,7 @@ export interface ErrorListItem {
   source: string; // S3_Bucket_Alpha | Manual_Upload | ...
   failed_at: string; // ISO timestamp
   suggested_fix: string;
+  batch_id: string | null;
 }
 
 // DataTable column keys MUST equal backend sort tokens. ⚠️ VERIFY vs backend ApplySorting whitelist

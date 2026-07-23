@@ -10,6 +10,7 @@ export interface ActivityLogItem {
   old_state: string | null; // null on BATCH_SUBMITTED
   new_state: string | null;
   actor: string; // TriggeredBy (e.g. "system")
+  batch_id: string | null;
 }
 
 // DataTable column keys MUST equal backend sort tokens (ApplySorting whitelist: ts|event_type|entity)

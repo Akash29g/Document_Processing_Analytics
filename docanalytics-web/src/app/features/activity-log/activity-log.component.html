@@ -45,9 +45,25 @@
       <span class="al-evt">{{ eventLabel(row.event_type) }}</span>
     </ng-template>
 
+    <!-- Entity column cell override -->
     <ng-template dtCell="entity" let-row>
-      <span class="al-entity">{{ row.entity ?? '—' }}</span>
-      <span class="al-tag">{{ row.entity_type }}</span>
+      <span class="entity-cell">
+        @if (isNavigable(row)) {
+          <button type="button" class="entity-link" (click)="navigateTo(row)">
+            {{ row.entity }}
+          </button>
+        } @else {
+          <span>{{ row.entity }}</span>
+        }
+
+        <span
+          class="entity-type-badge"
+          [class.badge-batch]="row.entity_type === 'Batch'"
+          [class.badge-file]="row.entity_type === 'File'"
+        >
+          {{ row.entity_type }}
+        </span>
+      </span>
     </ng-template>
 
     <ng-template dtCell="transition" let-row>

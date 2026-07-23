@@ -26,6 +26,25 @@ public sealed class ErrorService : IErrorService
             .Take(pageSize)
             .ToListAsync(ct);
 
+        // ── NEW: resolve BatchId so the frontend can deep-link to the file ──
+        var fileIds = items.Select(i => i.FileId).Distinct().ToList();
+
+        if (fileIds.Count > 0 && _db.Files is not null)
+        {
+            var batchMap = await _db.Files
+                .Where(f => fileIds.Contains(f.Id))
+                .Select(f => new { f.Id, f.TransactionId })
+                .ToDictionaryAsync(f => f.Id, f => f.TransactionId, ct);
+
+            for (var i = 0; i < items.Count; i++)
+            {
+                if (!batchMap.TryGetValue(items[i].FileId, out var txnId)) continue;
+                items[i] = items[i] with { BatchId = txnId };
+            }
+        }
+        // ─────────────────────────────────────────────────────────────────────
+
+
         return new PagedResult<ErrorListItemDto>
         {
             Items = items,

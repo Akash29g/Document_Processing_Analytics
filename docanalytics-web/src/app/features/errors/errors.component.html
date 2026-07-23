@@ -84,5 +84,15 @@
     <ng-template dtCell="error_code" let-row
       ><span class="err-chip">{{ row.error_code }}</span></ng-template
     >
+
+    <ng-template dtCell="file_name" let-row>
+      @if (row.batch_id) {
+        <button type="button" class="file-link" (click)="navigateToFile(row)">
+          {{ row.file_name }}
+        </button>
+      } @else {
+        {{ row.file_name }}
+      }
+    </ng-template>
   </app-data-table>
 </section>

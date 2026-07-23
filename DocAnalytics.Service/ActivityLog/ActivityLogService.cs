@@ -2,7 +2,6 @@ using DocAnalytics.Data;                         // AppDbContext
 using DocAnalytics.Service.Common;               // PagedResult<T>
 using Microsoft.EntityFrameworkCore;
 using DomainActivityLog = DocAnalytics.Domain.Entities.ActivityLog;
-using DocAnalytics.Domain.Entities;
 
 namespace DocAnalytics.Service.ActivityLog;
 

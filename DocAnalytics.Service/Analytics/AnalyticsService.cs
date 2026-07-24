@@ -1,5 +1,4 @@
 using DocAnalytics.Data;
-using DocAnalytics.Domain.Entities;
 using DocAnalytics.Service.Common;
 using Microsoft.EntityFrameworkCore;
 
@@ -125,7 +124,7 @@ public sealed class AnalyticsService : IAnalyticsService
     {
         // Navigate through FileRecord (which carries the global tenant+site query filter)
         // so we only read steps belonging to the current tenant/site.
-        var stepData = await _db.Set<FileRecord>()
+        var stepData = await _db.Files
             .SelectMany(f => f.Steps, (_, s) => s)
             .Where(s => s.Status == "Success"
                      && s.StartedAt != null

@@ -1,4 +1,5 @@
 using DocAnalytics.Data;
+using DocAnalytics.Domain.Entities;
 using DocAnalytics.Service.Common;
 using Microsoft.EntityFrameworkCore;
 
@@ -120,24 +121,27 @@ public sealed class AnalyticsService : IAnalyticsService
     }
 
     /// <inheritdoc />
-    public async Task<List<StepPercentileDto>> GetStepPercentilesAsync(CancellationToken ct = default)
+    public async Task<List<StepPercentileDto>> GetStepPercentilesAsync(CancellationToken ct)
     {
-        // Drive from Files (ITenantScoped → tenant_id + site_id auto-applied),
-        // navigate out to its steps → isolation guaranteed without touching FileStepHistory directly.
-        var raw = await _db.Files
-            .AsNoTracking()
-            .SelectMany(f => f.Steps)
-            .Where(s => s.StartedAt != null && s.CompletedAt != null)   // only completed steps
+        // Navigate through FileRecord (which carries the global tenant+site query filter)
+        // so we only read steps belonging to the current tenant/site.
+        var stepData = await _db.Set<FileRecord>()
+            .SelectMany(f => f.Steps, (_, s) => s)
+            .Where(s => s.Status == "Success"
+                     && s.StartedAt != null
+                     && s.CompletedAt != null)
             .Select(s => new { s.StepName, s.StartedAt, s.CompletedAt })
             .ToListAsync(ct);
 
-        return raw
-            .GroupBy(x => x.StepName)
+        if (!stepData.Any())
+            return new List<StepPercentileDto>();
+
+        return stepData
+            .GroupBy(s => s.StepName)
             .Select(g =>
             {
                 var durations = g
-                    .Select(x => (x.CompletedAt!.Value - x.StartedAt!.Value).TotalSeconds)
-                    .Where(d => d >= 0)
+                    .Select(s => (s.CompletedAt!.Value - s.StartedAt!.Value).TotalSeconds)
                     .OrderBy(d => d)
                     .ToList();
 
@@ -150,20 +154,23 @@ public sealed class AnalyticsService : IAnalyticsService
                     P99Seconds = Math.Round(Percentile(durations, 0.99), 1),
                 };
             })
-            .OrderBy(r => StepOrder(r.Step))   // Upload → Validate → Transform → Load
+            .OrderBy(s => StepOrder(s.Step))
             .ToList();
     }
 
-    // Linear-interpolation percentile (same method Postgres percentile_cont uses).
-    private static double Percentile(IReadOnlyList<double> sorted, double p)
+    // Linear interpolation (same as numpy/Excel PERCENTILE.INC)
+    private static double Percentile(List<double> sorted, double p)
     {
         if (sorted.Count == 0) return 0;
         if (sorted.Count == 1) return sorted[0];
-        var rank = p * (sorted.Count - 1);
-        var lo = (int)Math.Floor(rank);
-        var hi = (int)Math.Ceiling(rank);
+
+        double idx = p * (sorted.Count - 1);
+        int lo = (int)Math.Floor(idx);
+        int hi = (int)Math.Ceiling(idx);
         if (lo == hi) return sorted[lo];
-        return sorted[lo] + (sorted[hi] - sorted[lo]) * (rank - lo);
+
+        double frac = idx - lo;
+        return sorted[lo] * (1 - frac) + sorted[hi] * frac;
     }
 
     private static int StepOrder(string step) => step switch
@@ -172,8 +179,9 @@ public sealed class AnalyticsService : IAnalyticsService
         "Validate" => 1,
         "Transform" => 2,
         "Load" => 3,
-        _ => 99
+        _ => 99,
     };
+
 
 
 }

@@ -86,7 +86,7 @@ public class AnalyticsServiceTests
                 new FileStepHistory { Id = Guid.NewGuid(), StepName = "Upload", Status = "Success", StartedAt = start, CompletedAt = start.AddSeconds(10) },
                 new FileStepHistory { Id = Guid.NewGuid(), StepName = "Upload", Status = "Success", StartedAt = start, CompletedAt = start.AddSeconds(20) }),
         };
-        var result = await Sut(files).GetStepPercentilesAsync();
+        var result = await Sut(files).GetStepPercentilesAsync(CancellationToken.None);
         var upload = result.Single(r => r.Step == "Upload");
         Assert.Equal(2, upload.SampleCount);
         Assert.InRange(upload.P50Seconds, 10, 20);

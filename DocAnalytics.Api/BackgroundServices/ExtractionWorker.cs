@@ -74,6 +74,9 @@ public sealed class ExtractionWorker : BackgroundService
 
         try
         {
+
+            var validateStart = DateTime.UtcNow;
+
             // ── SECURITY GATE 1: GuardDuty malware verdict FIRST ──
             // Runs BEFORE download/extraction so we never spend Bedrock cost on an unscanned/malicious file.
             // GuardDuty writes the tag asynchronously after upload, so poll briefly.
@@ -133,9 +136,16 @@ public sealed class ExtractionWorker : BackgroundService
             }
             // ─────────────────────────────────────────────────────────────────────────────
 
+            var validateEnd = DateTime.UtcNow;
+            var extractStart = DateTime.UtcNow;
+
+
             var result = await extractor.ExtractAsync(bytes, detectedType, ct);
 
             var v = validator.Validate(result);
+
+            var extractEnd = DateTime.UtcNow;
+            var loadStart = DateTime.UtcNow;
 
             // ⚠️ GOTCHA #2: idempotent → clear existing line items first
             var old = await db.InvoiceLineItems.Where(i => i.FileId == file.Id).ToListAsync(ct);
@@ -220,12 +230,32 @@ public sealed class ExtractionWorker : BackgroundService
                 Id = Guid.NewGuid(),
                 FileId = file.Id,
                 DocumentTypeId = file.DocumentTypeId,
+                StepName = "Validate",
+                Status = "Success",
+                StartedAt = validateStart,
+                CompletedAt = validateEnd
+            });
+            db.Add(new FileStepHistory
+            {
+                Id = Guid.NewGuid(),
+                FileId = file.Id,
+                DocumentTypeId = file.DocumentTypeId,
                 StepName = "Extract",
                 Status = failed ? "Failed" : "Success",
-                StartedAt = now,
-                CompletedAt = done,
+                StartedAt = extractStart,
+                CompletedAt = extractEnd,
                 ErrorCode = failed ? v.ErrorCode : null,
                 ErrorMessage = failed ? "Extraction confidence too low." : null
+            });
+            db.Add(new FileStepHistory
+            {
+                Id = Guid.NewGuid(),
+                FileId = file.Id,
+                DocumentTypeId = file.DocumentTypeId,
+                StepName = "Load",
+                Status = failed ? "Failed" : "Success",
+                StartedAt = loadStart,
+                CompletedAt = done
             });
 
             txn.ProcessingCount = Math.Max(0, txn.ProcessingCount - 1);

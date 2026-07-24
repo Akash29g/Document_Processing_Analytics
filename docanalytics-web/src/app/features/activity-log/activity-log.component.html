@@ -22,6 +22,7 @@
 
   <app-data-table
     [columns]="columns"
+    [rowClass]="rowClass"
     [rows]="svc.rows()"
     [loading]="svc.loading()"
     [error]="svc.error()"
@@ -42,7 +43,12 @@
     </ng-template>
 
     <ng-template dtCell="event_type" let-row>
-      <span class="al-evt">{{ eventLabel(row.event_type) }}</span>
+      <span class="al-evt" [class.al-evt-deleted]="row.event_type === 'BATCH_DELETED'">
+        {{ eventLabel(row.event_type) }}
+      </span>
+      @if (row.event_type === 'BATCH_DELETED') {
+        <span class="al-deleted-badge">🗑️ Deleted</span>
+      }
     </ng-template>
 
     <!-- Entity column cell override -->

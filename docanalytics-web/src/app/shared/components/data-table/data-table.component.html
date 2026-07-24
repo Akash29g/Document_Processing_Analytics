@@ -40,7 +40,11 @@
         </tr>
       } @else {
         @for (row of rows(); track key(row, $index)) {
-          <tr (click)="rowClick.emit(row)" [class.clickable]="clickable()">
+          <tr
+            (click)="rowClick.emit(row)"
+            [class.clickable]="clickable()"
+            [ngClass]="rowClass() ? rowClass()!(row) : ''"
+          >
             @for (col of columns(); track col.key) {
               <td [style.text-align]="col.align || 'left'">
                 @if (cellTemplates().get(col.key); as tpl) {

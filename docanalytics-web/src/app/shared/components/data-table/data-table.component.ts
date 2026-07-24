@@ -8,7 +8,7 @@ import {
   input,
   output,
 } from '@angular/core';
-import { NgTemplateOutlet } from '@angular/common';
+import { NgClass, NgTemplateOutlet } from '@angular/common';
 
 export type SortDir = 'asc' | 'desc';
 export interface SortState {
@@ -34,7 +34,7 @@ export class DtCellDirective {
 
 @Component({
   selector: 'app-data-table',
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, NgClass],
 
   templateUrl: './data-table.component.html',
   styleUrl: './data-table.component.css',
@@ -57,6 +57,8 @@ export class DataTableComponent<T = any> {
 
   readonly clickable = input(false);
   readonly rowId = input<((row: T) => string | number) | null>(null);
+
+  readonly rowClass = input<((row: T) => string) | null>(null);
 
   readonly sortChange = output<SortState>();
   readonly pageChange = output<number>();

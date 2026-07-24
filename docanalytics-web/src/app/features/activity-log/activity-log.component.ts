@@ -66,10 +66,7 @@ export class ActivityLogComponent {
   }
 
   protected readonly rowClass = (row: ActivityLogItem): string =>
-    row.entity_type === 'File' && !row.batch_id
-      ? 'row-orphaned'
-      : '';
-
+    row.entity_type === 'File' && !row.batch_id ? 'row-orphaned' : '';
 
   protected readonly eventTypeOptions: FilterOption[] = [
     { value: 'all', label: 'All events' },

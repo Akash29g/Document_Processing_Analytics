@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
@@ -59,7 +59,7 @@ export class BatchDetailComponent {
     effect(() => {
       const id = this.batchId();
       const site = this.site.selectedSiteId();
-      if (id && site) this.batch.load(id);
+      if (id && site) untracked(() => this.batch.load(id));
     });
   }
 

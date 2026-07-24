@@ -65,12 +65,19 @@ export class ActivityLogComponent {
     return false;
   }
 
+  protected readonly rowClass = (row: ActivityLogItem): string =>
+    row.entity_type === 'File' && !row.batch_id
+      ? 'row-orphaned'
+      : '';
+
+
   protected readonly eventTypeOptions: FilterOption[] = [
     { value: 'all', label: 'All events' },
     { value: 'FILE_STATE_CHANGED', label: 'File state changed' },
     { value: 'BATCH_SUBMITTED', label: 'Batch submitted' },
     { value: 'BATCH_COMPLETED', label: 'Batch completed' },
     { value: 'BATCH_FAILED', label: 'Batch failed' },
+    { value: 'BATCH_DELETED', label: 'Batch deleted' },
   ];
 
   // 'transition' has no backing field → rendered via the dtCell template (not sortable)
@@ -87,6 +94,7 @@ export class ActivityLogComponent {
     BATCH_SUBMITTED: 'Batch submitted',
     BATCH_COMPLETED: 'Batch completed',
     BATCH_FAILED: 'Batch failed',
+    BATCH_DELETED: 'Batch Deleted',
   };
 
   constructor() {

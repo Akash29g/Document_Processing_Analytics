@@ -20,47 +20,50 @@
     (changed)="onFilters($event)"
   />
 
-  <app-data-table
-    [columns]="columns"
-    [rows]="svc.rows()"
-    [loading]="svc.loading()"
-    [error]="svc.error()"
-    emptyMessage="No activity for this site yet."
-    [sortBy]="svc.query.sortBy"
-    [sortDir]="svc.query.sortDir"
-    [page]="svc.meta()?.page ?? 1"
-    [pageSize]="svc.meta()?.page_size ?? 20"
-    [totalCount]="svc.meta()?.total_count ?? 0"
-    [totalPages]="svc.meta()?.total_pages ?? 1"
-    (sortChange)="onSort($event)"
-    (pageChange)="svc.setPage($event)"
-    (pageSizeChange)="svc.setPageSize($event)"
-    (retry)="svc.load()"
-  >
+  <app-data-table [columns]="columns"
+                  [rowClass]="rowClass"
+                  [rows]="svc.rows()"
+                  [loading]="svc.loading()"
+                  [error]="svc.error()"
+                  emptyMessage="No activity for this site yet."
+                  [sortBy]="svc.query.sortBy"
+                  [sortDir]="svc.query.sortDir"
+                  [page]="svc.meta()?.page ?? 1"
+                  [pageSize]="svc.meta()?.page_size ?? 20"
+                  [totalCount]="svc.meta()?.total_count ?? 0"
+                  [totalPages]="svc.meta()?.total_pages ?? 1"
+                  (sortChange)="onSort($event)"
+                  (pageChange)="svc.setPage($event)"
+                  (pageSizeChange)="svc.setPageSize($event)"
+                  (retry)="svc.load()">
     <ng-template dtCell="ts" let-row>
       {{ row.ts | date: 'medium' }}
     </ng-template>
 
     <ng-template dtCell="event_type" let-row>
-      <span class="al-evt">{{ eventLabel(row.event_type) }}</span>
+      <span class="al-evt" [class.al-evt-deleted]="row.event_type === 'BATCH_DELETED'">
+        {{ eventLabel(row.event_type) }}
+      </span>
+      @if (row.event_type === 'BATCH_DELETED') {
+      <span class="al-deleted-badge">🗑️ Deleted</span>
+      }
     </ng-template>
+
 
     <!-- Entity column cell override -->
     <ng-template dtCell="entity" let-row>
       <span class="entity-cell">
         @if (isNavigable(row)) {
-          <button type="button" class="entity-link" (click)="navigateTo(row)">
-            {{ row.entity }}
-          </button>
+        <button type="button" class="entity-link" (click)="navigateTo(row)">
+          {{ row.entity }}
+        </button>
         } @else {
-          <span>{{ row.entity }}</span>
+        <span>{{ row.entity }}</span>
         }
 
-        <span
-          class="entity-type-badge"
-          [class.badge-batch]="row.entity_type === 'Batch'"
-          [class.badge-file]="row.entity_type === 'File'"
-        >
+        <span class="entity-type-badge"
+              [class.badge-batch]="row.entity_type === 'Batch'"
+              [class.badge-file]="row.entity_type === 'File'">
           {{ row.entity_type }}
         </span>
       </span>
@@ -68,15 +71,15 @@
 
     <ng-template dtCell="transition" let-row>
       @if (row.old_state && row.new_state) {
-        <span class="al-transition">
-          <app-status-badge [status]="row.old_state" />
-          <span class="al-arrow">→</span>
-          <app-status-badge [status]="row.new_state" />
-        </span>
-      } @else if (row.new_state) {
+      <span class="al-transition">
+        <app-status-badge [status]="row.old_state" />
+        <span class="al-arrow">→</span>
         <app-status-badge [status]="row.new_state" />
+      </span>
+      } @else if (row.new_state) {
+      <app-status-badge [status]="row.new_state" />
       } @else {
-        <span class="al-muted">—</span>
+      <span class="al-muted">—</span>
       }
     </ng-template>
 

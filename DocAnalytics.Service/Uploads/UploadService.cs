@@ -208,10 +208,29 @@ public sealed class UploadService : IUploadService
             await _storage.DeleteAsync(f.StorageKey!, ct);
 
         // 2) DB: files cascade to headers/line-items/errors; then the batch itself
+        // 2) DB: files cascade to headers/line-items/errors; then the batch itself
         _db.Files.RemoveRange(files);
         _db.Remove(txn);
+
+        // ── audit trail: write BEFORE SaveChanges so it commits in the same transaction ──
+        _db.Add(new DocAnalytics.Domain.Entities.ActivityLog
+        {
+            Id = Guid.NewGuid(),
+            TenantId = txn.TenantId,
+            SiteId = txn.SiteId,
+            EventType = "BATCH_DELETED",
+            EntityType = "Batch",
+            EntityId = txn.Id,
+            EntityName = txn.SourceSystem,
+            OldState = txn.State,
+            NewState = "Deleted",
+            TriggeredBy = _me.UserId.ToString(),
+            CreatedAt = DateTime.UtcNow
+        });
+
         await _db.SaveChangesAsync(ct);
         return true;
+
     }
 
 

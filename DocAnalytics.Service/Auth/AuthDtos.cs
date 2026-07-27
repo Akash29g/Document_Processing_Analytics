@@ -58,3 +58,27 @@ public record ForgotPasswordRequest(string Email);
 /// <summary>Reset-password request — the raw token from the email link + the new password.</summary>
 public record ResetPasswordRequest(string Token, string NewPassword);
 
+/// <summary>Result of a login attempt: either a full login payload, or a 2FA challenge to complete.</summary>
+public record LoginResult(bool RequiresTwoFactor, string? ChallengeToken, LoginResponse? Login);
+
+/// <summary>What POST /auth/login returns when the account has 2FA enabled.</summary>
+public record TwoFactorChallengeResponse(bool RequiresTwoFactor, string ChallengeToken);
+
+/// <summary>Request body for POST /auth/login/2fa.</summary>
+public record TwoFactorLoginRequest(string ChallengeToken, string Code);
+
+/// <summary>Response for POST /auth/2fa/setup.</summary>
+public record TwoFactorSetupResponse(string Secret, string OtpAuthUri, string ManualKey);
+
+/// <summary>Request body for POST /auth/2fa/confirm.</summary>
+public record TwoFactorConfirmRequest(string Code);
+
+/// <summary>Response for POST /auth/2fa/confirm — recovery codes are shown exactly once.</summary>
+public record TwoFactorConfirmResponse(IReadOnlyList<string> RecoveryCodes);
+
+/// <summary>Request body for POST /auth/2fa/disable — requires password re-verification.</summary>
+public record TwoFactorDisableRequest(string Password);
+
+/// <summary>One active session, as shown in the "Manage devices" settings page.</summary>
+public record SessionDto(Guid Id, string DeviceLabel, string? IpAddress, DateTime CreatedAt, DateTime? LastUsedAt, bool IsCurrent);
+

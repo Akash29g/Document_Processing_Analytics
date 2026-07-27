@@ -133,6 +133,9 @@
                 <span class="me-role" [class.admin]="isAdmin()">{{ user()?.role }}</span>
               </div>
             </div>
+            <a class="me-card-security" [routerLink]="['/security']" (click)="menuOpen.set(false)">
+              Security
+            </a>
             <button class="me-card-logout" (click)="menuOpen.set(false); askLogout()">
               Log out
             </button>

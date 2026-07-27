@@ -13,6 +13,9 @@ public static class RateLimitingExtensions
     public const string ReadsPolicy = "reads";
     /// <summary>Policy name for export endpoints (tight, partitioned by user).</summary>
     public const string ExportPolicy = "export";
+    /// <summary>Policy name for 2FA verification endpoints (partitioned by user, else IP).</summary>
+    public const string MfaPolicy = "mfa";
+
 
     /// <summary>Configures the rate limiter, its policies, and the 429 rejection response.</summary>
     /// <param name="services">The service collection.</param>
@@ -60,6 +63,18 @@ public static class RateLimitingExtensions
                     QueueLimit = opts.Export.QueueLimit,
                     QueueProcessingOrder = QueueProcessingOrder.OldestFirst
                 }));
+
+            // mfa: 2FA code attempts — per authenticated user where available, else per IP
+            // (UserKey already falls back to IP, exactly what "partitioned by user/IP" means here).
+            options.AddPolicy(MfaPolicy, httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(UserKey(httpContext), _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = opts.Mfa.PermitLimit,
+                    Window = TimeSpan.FromSeconds(opts.Mfa.WindowSeconds),
+                    QueueLimit = opts.Mfa.QueueLimit,
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+                }));
+
 
             // 429 body in the standard ApiResponse envelope + Retry-After (your R1 code, generic message)
             options.OnRejected = async (context, token) =>

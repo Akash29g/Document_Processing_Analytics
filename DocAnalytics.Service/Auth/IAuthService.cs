@@ -7,7 +7,8 @@ public interface IAuthService
     /// <param name="req">Login request with email and password.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The login response, or <c>null</c> if the credentials are invalid.</returns>
-    Task<LoginResponse?> LoginAsync(LoginRequest req, CancellationToken ct);
+    Task<LoginResult?> LoginAsync(LoginRequest req, CancellationToken ct);
+
 
     /// <summary>Returns the current user's profile and authorized sites for session rehydration.</summary>
     /// <param name="userId">The current user id.</param>
@@ -28,6 +29,19 @@ public interface IAuthService
     /// <returns>null on success; otherwise a human-readable failure reason..</returns>
     Task<string?> ChangePasswordAsync(Guid userId, ChangePasswordRequest req, CancellationToken ct);
     // null = success; non-null = human-readable failure reason
+
+
+    /// <summary>Starts 2FA setup for an authenticated user: generates + stores an encrypted secret, returns the QR payload.</summary>
+    Task<TwoFactorSetupResponse> SetupTwoFactorAsync(Guid userId, CancellationToken ct);
+
+    /// <summary>Confirms 2FA setup with a valid TOTP code: flips TwoFactorEnabled, returns one-time recovery codes.</summary>
+    Task<(string? Error, TwoFactorConfirmResponse? Result)> ConfirmTwoFactorAsync(Guid userId, string code, CancellationToken ct);
+
+    /// <summary>Disables 2FA after re-verifying the password.</summary>
+    Task<string?> DisableTwoFactorAsync(Guid userId, string password, CancellationToken ct);
+
+    /// <summary>Completes a 2FA-gated login: validates the challenge token + TOTP/recovery code, issues the real login payload.</summary>
+    Task<LoginResponse?> LoginWithTwoFactorAsync(TwoFactorLoginRequest req, CancellationToken ct);
 
 
 }

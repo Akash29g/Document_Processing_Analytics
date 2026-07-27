@@ -6,9 +6,12 @@ import { ApiResponse } from '../models/api-response.model';
 import {
   AuthUser,
   LoginResponse,
+  LoginOrChallenge,
   MeResponse,
   RefreshResponse,
   SiteSummary,
+  TwoFactorSetupResponse,
+  TwoFactorConfirmResponse,
 } from '../models/auth.model';
 import { Router } from '@angular/router';
 
@@ -34,20 +37,56 @@ export class AuthService {
   readonly isAuthenticated = computed(() => !!this._token());
 
   /** POST /auth/login — stores access token + user + sites. The refresh token is set by the server as an HttpOnly cookie. */
-  login(email: string, password: string): Observable<ApiResponse<LoginResponse>> {
+  login(email: string, password: string): Observable<ApiResponse<LoginOrChallenge>> {
     return this.http
-      .post<ApiResponse<LoginResponse>>(
+      .post<ApiResponse<LoginOrChallenge>>(
         `${this.baseUrl}/login`,
         { email, password },
         { withCredentials: true }, // needed to receive the Set-Cookie
       )
       .pipe(
         tap((res) => {
-          if (res.data) {
-            this.setSession(res.data.token, res.data.user, res.data.sites);
+          const data = res.data;
+          // Only set the session on a FULL login — not on the requires_two_factor branch.
+          if (data && !('requires_two_factor' in data)) {
+            this.setSession(data.token, data.user, data.sites);
           }
         }),
       );
+  }
+
+  /** POST /auth/login/2fa — completes a 2FA-gated login using the challenge token + a 6-digit (or recovery) code. */
+  loginWithTwoFactor(challengeToken: string, code: string): Observable<ApiResponse<LoginResponse>> {
+    return this.http
+      .post<ApiResponse<LoginResponse>>(
+        `${this.baseUrl}/login/2fa`,
+        { challenge_token: challengeToken, code },
+        { withCredentials: true },
+      )
+      .pipe(
+        tap((res) => {
+          if (res.data) this.setSession(res.data.token, res.data.user, res.data.sites);
+        }),
+      );
+  }
+
+  /** POST /auth/2fa/setup — returns the secret + otpauth URI for client-side QR rendering. */
+  setupTwoFactor(): Observable<ApiResponse<TwoFactorSetupResponse>> {
+    return this.http.post<ApiResponse<TwoFactorSetupResponse>>(`${this.baseUrl}/2fa/setup`, {});
+  }
+
+  /** POST /auth/2fa/confirm — verifies the first code, enables 2FA, returns one-time recovery codes. */
+  confirmTwoFactor(code: string): Observable<ApiResponse<TwoFactorConfirmResponse>> {
+    return this.http.post<ApiResponse<TwoFactorConfirmResponse>>(`${this.baseUrl}/2fa/confirm`, {
+      code,
+    });
+  }
+
+  /** POST /auth/2fa/disable — re-verifies password, clears 2FA. */
+  disableTwoFactor(password: string): Observable<ApiResponse<{ disabled: boolean }>> {
+    return this.http.post<ApiResponse<{ disabled: boolean }>>(`${this.baseUrl}/2fa/disable`, {
+      password,
+    });
   }
 
   /** POST /auth/forgot-password — always resolves 200 (generic message, no enumeration). */

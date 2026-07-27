@@ -1,0 +1,54 @@
+<div class="tfa-card">
+  <button type="button" class="tfa-back" (click)="goBack()">← Back</button>
+  <h2>Two-factor authentication</h2>
+
+  @if (error()) {
+    <div class="alert" role="alert">{{ error() }}</div>
+  }
+
+  @if (step() === 'loading') {
+    <p>Setting up…</p>
+  }
+
+  @if (step() === 'scan') {
+    <p>1. Scan this QR code with Google Authenticator, Authy, or 1Password.</p>
+    @if (qrDataUrl()) {
+      <img [src]="qrDataUrl()" alt="2FA QR code" width="200" height="200" />
+    }
+    <p>Can't scan? Enter this key manually:</p>
+    <code class="manual-key">{{ manualKey() }}</code>
+
+    <p>2. Enter the 6-digit code it generates:</p>
+    <input
+      type="text"
+      inputmode="numeric"
+      maxlength="6"
+      [ngModel]="code()"
+      (ngModelChange)="code.set($event)"
+      name="tfaCode"
+      placeholder="123456"
+    />
+    <button type="button" class="btn-primary" [disabled]="loading()" (click)="confirm()">
+      @if (loading()) {
+        Verifying…
+      } @else {
+        Confirm & enable 2FA
+      }
+    </button>
+  }
+
+  @if (step() === 'confirmed') {
+    <div class="alert" role="status">2FA is now enabled on your account.</div>
+    <p>
+      <strong>Save these recovery codes now — they are shown only once.</strong> Each can be used
+      once if you lose your device.
+    </p>
+    <ul class="recovery-list">
+      @for (rc of recoveryCodes(); track rc) {
+        <li>
+          <code>{{ rc }}</code>
+        </li>
+      }
+    </ul>
+  }
+</div>

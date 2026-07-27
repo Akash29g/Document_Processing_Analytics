@@ -42,4 +42,59 @@ public class JwtTokenService : IJwtTokenService
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
+    /// <inheritdoc />
+    public string CreateTwoFactorChallengeToken(Guid userId)
+    {
+        var keyString = _config["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is not configured.");
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        // Deliberately NO role/tenantId claims — this token proves "who", not "what they can do".
+        var claims = new List<Claim>
+        {
+            new("userId", userId.ToString()),
+            new("purpose", "2fa_challenge"),
+        };
+
+        var token = new JwtSecurityToken(
+            issuer: _config["Jwt:Issuer"],
+            audience: _config["Jwt:Audience"],
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(5),
+            signingCredentials: creds);
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    /// <inheritdoc />
+    public Guid? ValidateTwoFactorChallengeToken(string token)
+    {
+        var keyString = _config["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is not configured.");
+        var issuer = _config["Jwt:Issuer"];
+        var audience = _config["Jwt:Audience"];
+
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var principal = handler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidateIssuer = !string.IsNullOrEmpty(issuer),
+                ValidIssuer = issuer,
+                ValidateAudience = !string.IsNullOrEmpty(audience),
+                ValidAudience = audience,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString)),
+            }, out _);
+
+            if (principal.FindFirst("purpose")?.Value != "2fa_challenge") return null;
+            var idStr = principal.FindFirst("userId")?.Value;
+            return Guid.TryParse(idStr, out var id) ? id : null;
+        }
+        catch
+        {
+            return null; // expired/tampered/wrong purpose — reject silently
+        }
+    }
 }

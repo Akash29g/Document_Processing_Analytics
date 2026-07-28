@@ -1,10 +1,13 @@
 using DocAnalytics.Domain.Common;
 using DocAnalytics.Domain.Entities;
+using ErrorCatalogEntry = DocAnalytics.Domain.Entities.ErrorCatalog;
 using DocAnalytics.Service.Extraction;
 using DocAnalytics.Service.Files;
 using DocAnalytics.Service.Tests.Support;
 using MockQueryable.Moq;
 using Moq;
+
+
 
 namespace DocAnalytics.Service.Tests.Files;
 
@@ -13,7 +16,7 @@ public class FileDetailsServiceTests
     // ── helpers ────────────────────────────────────────────────────────────
 
     private static Mock<DocAnalytics.Data.AppDbContext> Ctx(
-        FileRecord[] files, FileStepHistory[] steps, ErrorCatalog[] catalog)
+        FileRecord[] files, FileStepHistory[] steps, ErrorCatalogEntry[] catalog)
     {
         var ctx = MockDb.Create();
         ctx.Setup(c => c.Files).Returns(files.ToList().BuildMockDbSet().Object);
@@ -36,7 +39,7 @@ public class FileDetailsServiceTests
     {
         var sut = Svc(Ctx(Array.Empty<FileRecord>(),
                           Array.Empty<FileStepHistory>(),
-                          Array.Empty<ErrorCatalog>()));
+                          Array.Empty<ErrorCatalogEntry>()));
         Assert.Null(await sut.GetFileDetailsAsync(Guid.NewGuid()));
     }
 
@@ -66,7 +69,7 @@ public class FileDetailsServiceTests
                 StartedAt = DateTime.UtcNow.AddMinutes(-1),
             },
         };
-        var catalog = new[] { new ErrorCatalog { ErrorCode = "E1", RemediationMsg = "Fix it" } };
+        var catalog = new[] { new ErrorCatalogEntry { ErrorCode = "E1", RemediationMsg = "Fix it" } };
 
         var dto = await Svc(Ctx(files, steps, catalog)).GetFileDetailsAsync(fileId);
 
@@ -83,7 +86,7 @@ public class FileDetailsServiceTests
     {
         var sut = Svc(Ctx(Array.Empty<FileRecord>(),
                           Array.Empty<FileStepHistory>(),
-                          Array.Empty<ErrorCatalog>()));
+                          Array.Empty<ErrorCatalogEntry>()));
         Assert.Null(await sut.GetFileLogsAsync(Guid.NewGuid()));
     }
 
@@ -108,7 +111,7 @@ public class FileDetailsServiceTests
                 StartedAt = DateTime.UtcNow,
             },
         };
-        var catalog = new[] { new ErrorCatalog { ErrorCode = "E1", RemediationMsg = "Fix it" } };
+        var catalog = new[] { new ErrorCatalogEntry { ErrorCode = "E1", RemediationMsg = "Fix it" } };
 
         var log = await Svc(Ctx(files, steps, catalog)).GetFileLogsAsync(fileId);
 

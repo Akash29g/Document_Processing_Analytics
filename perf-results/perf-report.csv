@@ -1,7 +1,7 @@
 operation,samples,p50_ms,p90_ms,max_ms
-batch_list_page,10,0.9,3.2,23.3
-concurrent_dashboard_summary,10,1.1,12.9,23.9
-concurrent_total_wall_time,1,53.7,53.7,53.7
-dashboard_summary,10,1.4,21.8,103.0
-error_list_page,10,197.1,318.3,497.7
-recent_failures_page,10,62.9,189.4,230.4
+batch_list_page,10,0.8,3.0,30.8
+concurrent_dashboard_summary,10,1.1,12.7,25.1
+concurrent_total_wall_time,1,54.4,54.4,54.4
+dashboard_summary,10,1.2,21.8,101.1
+error_list_page,10,196.3,306.2,530.3
+recent_failures_page,10,58.8,191.4,228.5

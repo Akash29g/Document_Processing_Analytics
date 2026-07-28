@@ -86,17 +86,24 @@ public class AuthService : IAuthService
     }
 
     /// <inheritdoc />
-    public async Task<TwoFactorSetupResponse> SetupTwoFactorAsync(Guid userId, CancellationToken ct)
+    public async Task<(string? Error, TwoFactorSetupResponse? Result)> SetupTwoFactorAsync(Guid userId, CancellationToken ct)
     {
         var user = await _db.Users.FirstAsync(u => u.Id == userId, ct);
+
+        if (user.TwoFactorEnabled)
+        {
+            return ("Two-factor authentication is already enabled. Disable it first to re-configure.", null);
+        }
+
         var (secret, uri, manualKey) = _twoFactor.GenerateSetup(user.Email);
 
         // Store encrypted immediately so /confirm can validate against it; NOT enabled until confirmed.
         user.TwoFactorSecret = _protector.Protect(secret);
         await _db.SaveChangesAsync(ct);
 
-        return new TwoFactorSetupResponse(secret, uri, manualKey);
+        return (null, new TwoFactorSetupResponse(secret, uri, manualKey));
     }
+
 
     /// <inheritdoc />
     public async Task<(string? Error, TwoFactorConfirmResponse? Result)> ConfirmTwoFactorAsync(Guid userId, string code, CancellationToken ct)

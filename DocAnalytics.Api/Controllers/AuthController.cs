@@ -194,9 +194,13 @@ public class AuthController : ControllerBase
     [HttpPost("2fa/setup")]
     public async Task<IActionResult> SetupTwoFactor(CancellationToken ct)
     {
-        var result = await _auth.SetupTwoFactorAsync(_currentUser.UserId, ct);
-        return Ok(ApiResponse<TwoFactorSetupResponse>.Ok(result));
+        var (error, result) = await _auth.SetupTwoFactorAsync(_currentUser.UserId, ct);
+        if (error is not null)
+            return BadRequest(ApiResponse<object>.Fail("TWO_FACTOR_ALREADY_ENABLED", error));
+
+        return Ok(ApiResponse<TwoFactorSetupResponse>.Ok(result!));
     }
+
 
     /// <summary>Confirms 2FA setup with a valid code: enables 2FA, returns one-time recovery codes.</summary>
     [Authorize]

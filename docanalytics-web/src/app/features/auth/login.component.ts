@@ -45,6 +45,8 @@ export class LoginComponent {
   }
 
   submit(): void {
+    if (this.loading()) return; // ⬅️ guard against double/rapid submits
+
     this.errorMessage.set(null);
 
     if (this.form.invalid) {
@@ -70,7 +72,6 @@ export class LoginComponent {
           return;
         }
 
-        // Forced first-login password reset takes priority over everything.
         if (data.must_change_password) {
           this.router.navigate(['/change-password']);
           return;
@@ -81,10 +82,11 @@ export class LoginComponent {
           this.auth.logout();
         }
       },
-      // Login 401 is handled HERE locally (not via the global "Session expired" toast).
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
-        if (err.status === 401) {
+        if (err.status === 429) {
+          this.errorMessage.set(this.rateLimitMessage(err));
+        } else if (err.status === 401) {
           this.errorMessage.set('Invalid email or password.');
         } else if (err.status === 0) {
           this.errorMessage.set('Cannot reach the server. Check your connection and try again.');
@@ -118,12 +120,27 @@ export class LoginComponent {
           this.auth.logout();
         }
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.mfaLoading.set(false);
-        this.mfaError.set('Invalid or expired code. Try again or use a recovery code.');
+        if (err.status === 429) {
+          this.mfaError.set(this.rateLimitMessage(err));
+        } else {
+          this.mfaError.set('Invalid or expired code. Try again or use a recovery code.');
+        }
       },
     });
   }
+
+  /** Builds a friendly rate-limit message, using Retry-After header if the server sends one. */
+  private rateLimitMessage(err: HttpErrorResponse): string {
+    const retryAfter = err.headers?.get?.('Retry-After');
+    const seconds = retryAfter ? parseInt(retryAfter, 10) : null;
+    if (seconds && !isNaN(seconds) && seconds > 0) {
+      return `Too many attempts. Please wait ${seconds}s and try again.`;
+    }
+    return 'Too many attempts. Please wait a moment and try again.';
+  }
+
 
   backToCredentials(): void {
     this.step.set('credentials');

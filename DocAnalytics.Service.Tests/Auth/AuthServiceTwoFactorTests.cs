@@ -199,13 +199,29 @@ public class AuthServiceTwoFactorTests
             .Returns(("SECRETBASE32", "otpauth://totp/...", "SECR ETBA SE32"));
         var sut = NewSut(db);
 
-        var response = await sut.SetupTwoFactorAsync(user.Id, CancellationToken.None);
+        var (error, response) = await sut.SetupTwoFactorAsync(user.Id, CancellationToken.None);
 
-        Assert.Equal("SECRETBASE32", response.Secret);
+        Assert.Null(error);
+        Assert.Equal("SECRETBASE32", response!.Secret);
         var stored = await db.Users.SingleAsync();
         Assert.NotNull(stored.TwoFactorSecret);
         Assert.NotEqual("SECRETBASE32", stored.TwoFactorSecret); // must be encrypted
     }
+
+    [Fact]
+    public async Task SetupTwoFactorAsync_ReturnsError_WhenTwoFactorAlreadyEnabled()
+    {
+        using var db = NewDb();
+        var user = NewUser(db, twoFactorEnabled: true);
+        var sut = NewSut(db);
+
+        var (error, response) = await sut.SetupTwoFactorAsync(user.Id, CancellationToken.None);
+
+        Assert.NotNull(error);
+        Assert.Null(response);
+        _twoFactor.Verify(t => t.GenerateSetup(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
 
     [Fact]
     public async Task ConfirmTwoFactorAsync_EnablesTwoFactor_AndIssuesRecoveryCodes_OnValidCode()

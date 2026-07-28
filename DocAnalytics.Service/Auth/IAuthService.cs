@@ -32,7 +32,8 @@ public interface IAuthService
 
 
     /// <summary>Starts 2FA setup for an authenticated user: generates + stores an encrypted secret, returns the QR payload.</summary>
-    Task<TwoFactorSetupResponse> SetupTwoFactorAsync(Guid userId, CancellationToken ct);
+    Task<(string? Error, TwoFactorSetupResponse? Result)> SetupTwoFactorAsync(Guid userId, CancellationToken ct);
+
 
     /// <summary>Confirms 2FA setup with a valid TOTP code: flips TwoFactorEnabled, returns one-time recovery codes.</summary>
     Task<(string? Error, TwoFactorConfirmResponse? Result)> ConfirmTwoFactorAsync(Guid userId, string code, CancellationToken ct);

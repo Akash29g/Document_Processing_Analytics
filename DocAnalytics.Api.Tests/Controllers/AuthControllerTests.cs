@@ -163,7 +163,7 @@ public class AuthControllerTests
         var payload = new TwoFactorSetupResponse("SECRET", "otpauth://totp/x", "SECR ET");
         var userId = Guid.NewGuid();
         var auth = new Mock<IAuthService>();
-        auth.Setup(a => a.SetupTwoFactorAsync(userId, It.IsAny<CancellationToken>())).ReturnsAsync(payload);
+        auth.Setup(a => a.SetupTwoFactorAsync(userId, It.IsAny<CancellationToken>())).ReturnsAsync(((string?)null, payload));
         var currentUser = new Mock<ICurrentUser>();
         currentUser.SetupGet(c => c.UserId).Returns(userId);
 
@@ -172,6 +172,21 @@ public class AuthControllerTests
         var ok = Assert.IsType<OkObjectResult>(result);
         Assert.Equal("SECRET", Assert.IsType<ApiResponse<TwoFactorSetupResponse>>(ok.Value).Data!.Secret);
     }
+
+    [Fact]
+    public async Task SetupTwoFactor_returns_400_when_already_enabled()
+    {
+        var auth = new Mock<IAuthService>();
+        auth.Setup(a => a.SetupTwoFactorAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(("Two-factor authentication is already enabled. Disable it first to re-configure.", (TwoFactorSetupResponse?)null));
+
+        var result = await NewController(auth.Object, Mock.Of<ICurrentUser>(), Mock.Of<ILoginLockoutService>())
+            .SetupTwoFactor(default);
+
+        var bad = Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Equal("TWO_FACTOR_ALREADY_ENABLED", Assert.IsType<ApiResponse<object>>(bad.Value).Error!.Code);
+    }
+
 
     [Fact]
     public async Task ConfirmTwoFactor_returns_400_on_error()

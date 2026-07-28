@@ -183,13 +183,15 @@ public class AuthServiceTests
         var user = ActiveUser("a@org.com", "pw");
         var sut = NewSut(Ctx(new[] { user }, Array.Empty<UserSiteAccess>(), Array.Empty<Site>()));
 
-        var result = await sut.SetupTwoFactorAsync(user.Id, default);
+        var (error, result) = await sut.SetupTwoFactorAsync(user.Id, default);
 
-        Assert.False(string.IsNullOrWhiteSpace(result.Secret));
+        Assert.Null(error);
+        Assert.False(string.IsNullOrWhiteSpace(result!.Secret));
         Assert.StartsWith("otpauth://totp/", result.OtpAuthUri);
         Assert.NotNull(user.TwoFactorSecret);
         Assert.NotEqual(result.Secret, user.TwoFactorSecret); // stored value is encrypted, not plaintext
     }
+
 
     [Fact]
     public async Task ConfirmTwoFactorAsync_enables_2fa_and_returns_recovery_codes_on_valid_code()
@@ -198,8 +200,8 @@ public class AuthServiceTests
         var user = ActiveUser("a@org.com", "pw");
         var sut = NewSut(Ctx(new[] { user }, Array.Empty<UserSiteAccess>(), Array.Empty<Site>()), twoFactor: twoFactor);
 
-        var setup = await sut.SetupTwoFactorAsync(user.Id, default);
-        var code = new OtpNet.Totp(OtpNet.Base32Encoding.ToBytes(setup.Secret)).ComputeTotp();
+        var (setupError, setup) = await sut.SetupTwoFactorAsync(user.Id, default);
+        var code = new OtpNet.Totp(OtpNet.Base32Encoding.ToBytes(setup!.Secret)).ComputeTotp();
 
         var (error, result) = await sut.ConfirmTwoFactorAsync(user.Id, code, default);
 

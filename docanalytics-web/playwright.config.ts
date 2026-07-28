@@ -6,21 +6,18 @@ const BASE_URL = process.env.E2E_BASE_URL ?? 'http://localhost:4200';
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
-  forbidOnly: !!process.env.CI,     // fail CI if a stray .only is committed
+  forbidOnly: !!process.env.CI, // fail CI if a stray .only is committed
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   timeout: 30_000,
   expect: { timeout: 5_000 },
 
-  reporter: [
-    ['html', { outputFolder: 'playwright-report', open: 'never' }],
-    ['list'],
-  ],
+  reporter: [['html', { outputFolder: 'playwright-report', open: 'never' }], ['list']],
 
   use: {
     baseURL: BASE_URL,
-    trace: 'on-first-retry',        // trace on failure
-    screenshot: 'only-on-failure',  // screenshot on failure
+    trace: 'on-first-retry', // trace on failure
+    screenshot: 'only-on-failure', // screenshot on failure
     video: 'retain-on-failure',
   },
 

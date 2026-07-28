@@ -259,14 +259,14 @@
   border-color: color-mix(in srgb, var(--status-warning, #d97706) 50%, transparent);
 }
 
-  .fd-btn-retry:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--status-warning, #d97706) 12%, transparent);
-  }
+.fd-btn-retry:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--status-warning, #d97706) 12%, transparent);
+}
 
-  .fd-btn-retry:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
+.fd-btn-retry:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 
 /* Inline retry-error banner */
 .fd-retry-error {

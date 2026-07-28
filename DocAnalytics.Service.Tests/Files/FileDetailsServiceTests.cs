@@ -1,11 +1,11 @@
 using DocAnalytics.Domain.Common;
 using DocAnalytics.Domain.Entities;
-using ErrorCatalogEntry = DocAnalytics.Domain.Entities.ErrorCatalog;
 using DocAnalytics.Service.Extraction;
 using DocAnalytics.Service.Files;
 using DocAnalytics.Service.Tests.Support;
 using MockQueryable.Moq;
 using Moq;
+using ErrorCatalogEntry = DocAnalytics.Domain.Entities.ErrorCatalog;
 
 
 

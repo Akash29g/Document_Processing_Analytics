@@ -30,19 +30,16 @@ export class FileDetailsComponent {
   private readonly site = inject(SiteContextService);
   private readonly auth = inject(AuthService);
 
-  private readonly fileId = toSignal(
-    this.route.paramMap.pipe(map((p) => p.get('fileId'))),
-    { initialValue: this.route.snapshot.paramMap.get('fileId') },
-  );
+  private readonly fileId = toSignal(this.route.paramMap.pipe(map((p) => p.get('fileId'))), {
+    initialValue: this.route.snapshot.paramMap.get('fileId'),
+  });
 
   protected readonly info = computed(() => this.svc.detail()?.file_info ?? null);
   protected readonly history = computed<StepHistoryItem[]>(() => this.svc.detail()?.history ?? []);
   protected readonly items = computed<InvoiceLineItem[]>(() => this.svc.invoice()?.items ?? []);
 
   /** True when the logged-in user is an Admin. */
-  protected readonly isAdmin = computed(
-    () => this.auth.currentUser()?.role === 'Admin',
-  );
+  protected readonly isAdmin = computed(() => this.auth.currentUser()?.role === 'Admin');
 
   constructor() {
     // reload on file switch (param-only nav) AND on site switch — both tracked,

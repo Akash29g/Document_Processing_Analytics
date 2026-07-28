@@ -50,8 +50,7 @@ export class FileDetailsService {
     this._detailLoading.set(true);
     this._detailError.set(null);
     this.http
-      .get<ApiResponse<FileDetail>>(
-        `${this.base}/files/${this._fileId}/details`, this.silent)
+      .get<ApiResponse<FileDetail>>(`${this.base}/files/${this._fileId}/details`, this.silent)
       .pipe(finalize(() => this._detailLoading.set(false)))
       .subscribe({
         next: (res) => this._detail.set(res.data),
@@ -65,8 +64,7 @@ export class FileDetailsService {
     this._invoiceError.set(null);
     this._hasInvoice.set(true);
     this.http
-      .get<ApiResponse<InvoiceDetail>>(
-        `${this.base}/files/${this._fileId}/line-items`, this.silent)
+      .get<ApiResponse<InvoiceDetail>>(`${this.base}/files/${this._fileId}/line-items`, this.silent)
       .pipe(finalize(() => this._invoiceLoading.set(false)))
       .subscribe({
         next: (res) => this._invoice.set(res.data),
@@ -88,10 +86,13 @@ export class FileDetailsService {
     this._retryError.set(null);
     this.http
       .post<ApiResponse<RetryFileResponse>>(
-        `${this.base}/files/${this._fileId}/retry`, {}, this.silent)
+        `${this.base}/files/${this._fileId}/retry`,
+        {},
+        this.silent,
+      )
       .pipe(finalize(() => this._retrying.set(false)))
       .subscribe({
-        next: () => this.loadDetails(),   // refresh — badge will flip to Queued
+        next: () => this.loadDetails(), // refresh — badge will flip to Queued
         error: (err) => this._retryError.set(this.msg(err, 'Retry failed. Please try again.')),
       });
   }
@@ -123,9 +124,13 @@ export class FileDetailsService {
     if (!this._fileId) return;
     this.http
       .get<ApiResponse<{ url: string }>>(
-        `${this.base}/files/${this._fileId}/download-url`, this.silent)
+        `${this.base}/files/${this._fileId}/download-url`,
+        this.silent,
+      )
       .subscribe({
-        next: (res) => { if (res.data?.url) window.open(res.data.url, '_blank'); },
+        next: (res) => {
+          if (res.data?.url) window.open(res.data.url, '_blank');
+        },
       });
   }
 

@@ -173,5 +173,4 @@ export class AdminComponent {
     this.catalogFormError.set(err);
     if (!err) this.notice.set('Entry deleted.');
   }
-
 }

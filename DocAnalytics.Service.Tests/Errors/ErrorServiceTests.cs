@@ -1,8 +1,8 @@
 using DocAnalytics.Domain.Entities;
-using ErrorCatalogEntry = DocAnalytics.Domain.Entities.ErrorCatalog;
 using DocAnalytics.Service.Errors;
 using DocAnalytics.Service.Tests.Support;
 using MockQueryable.Moq;
+using ErrorCatalogEntry = DocAnalytics.Domain.Entities.ErrorCatalog;
 
 namespace DocAnalytics.Service.Tests.Errors;
 

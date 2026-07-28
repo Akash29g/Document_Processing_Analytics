@@ -1,5 +1,4 @@
 using DocAnalytics.Data;
-using DocAnalytics.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace DocAnalytics.Service.ErrorCatalog;

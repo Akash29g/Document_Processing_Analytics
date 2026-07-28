@@ -122,9 +122,7 @@ export class AdminService {
     }
   }
 
-  async createCatalogEntry(
-    payload: CreateErrorCatalogPayload,
-  ): Promise<string | null> {
+  async createCatalogEntry(payload: CreateErrorCatalogPayload): Promise<string | null> {
     try {
       await firstValueFrom(
         this.http.post<ApiResponse<ErrorCatalogEntry>>(this.catalogBase, payload),
@@ -136,10 +134,7 @@ export class AdminService {
     }
   }
 
-  async updateCatalogEntry(
-    id: string,
-    payload: UpdateErrorCatalogPayload,
-  ): Promise<string | null> {
+  async updateCatalogEntry(id: string, payload: UpdateErrorCatalogPayload): Promise<string | null> {
     try {
       await firstValueFrom(
         this.http.put<ApiResponse<ErrorCatalogEntry>>(`${this.catalogBase}/${id}`, payload),
@@ -152,16 +147,13 @@ export class AdminService {
   }
   async deleteCatalogEntry(id: string): Promise<string | null> {
     try {
-      await firstValueFrom(
-        this.http.delete<ApiResponse<unknown>>(`${this.catalogBase}/${id}`),
-      );
+      await firstValueFrom(this.http.delete<ApiResponse<unknown>>(`${this.catalogBase}/${id}`));
       await this.loadCatalog();
       return null;
     } catch (e: any) {
       return this.msg(e, 'Failed to delete entry.');
     }
   }
-
 
   private msg(e: any, fallback: string): string {
     return e?.error?.error?.message ?? fallback;

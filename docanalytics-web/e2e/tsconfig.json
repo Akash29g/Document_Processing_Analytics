@@ -1,9 +1,9 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "types": [ "node", "@playwright/test" ],
+    "types": ["node", "@playwright/test"],
     "noPropertyAccessFromIndexSignature": false,
     "outDir": "../out-tsc/e2e"
   },
-  "include": [ "**/*.ts", "../playwright.config.ts" ]
+  "include": ["**/*.ts", "../playwright.config.ts"]
 }

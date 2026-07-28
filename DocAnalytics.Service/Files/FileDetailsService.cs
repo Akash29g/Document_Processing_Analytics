@@ -2,9 +2,9 @@ using System.Text;
 using DocAnalytics.Data;
 using DocAnalytics.Domain.Common;    // ICurrentUser
 using DocAnalytics.Domain.Entities;  // ActivityLog, Transaction
-using ActivityLogEntry = DocAnalytics.Domain.Entities.ActivityLog;  // disambiguate from Service.ActivityLog namespace
 using DocAnalytics.Service.Extraction;
 using Microsoft.EntityFrameworkCore;
+using ActivityLogEntry = DocAnalytics.Domain.Entities.ActivityLog;  // disambiguate from Service.ActivityLog namespace
 
 namespace DocAnalytics.Service.Files;
 

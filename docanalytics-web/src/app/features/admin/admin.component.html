@@ -7,13 +7,13 @@
   </header>
 
   @if (notice()) {
-  <p class="notice">{{ notice() }}</p>
+    <p class="notice">{{ notice() }}</p>
   }
   @if (formError()) {
-  <p class="alert">{{ formError() }}</p>
+    <p class="alert">{{ formError() }}</p>
   }
   @if (svc.error()) {
-  <p class="alert">{{ svc.error() }}</p>
+    <p class="alert">{{ svc.error() }}</p>
   }
 
   <div class="panels">
@@ -21,39 +21,39 @@
     <div class="panel">
       <h3>Users</h3>
       @if (svc.loading()) {
-      <p class="muted">Loading…</p>
+        <p class="muted">Loading…</p>
       } @else {
-      <table class="tbl">
-        <thead>
-          <tr>
-            <th>Email</th>
-            <th>Sites</th>
-            <th>Status</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (u of svc.users(); track u.id) {
-          <tr [class.inactive]="!u.is_active">
-            <td>{{ u.email }}</td>
-            <td>
-              @for (sid of u.site_ids; track sid) {
-              <span class="chip">{{ siteName(sid) }}</span>
-              }
-            </td>
-            <td>{{ u.is_active ? 'Active' : 'Removed' }}</td>
-            <td class="actions">
-              @if (u.is_active) {
-              <button type="button" class="link-btn" (click)="startEdit(u)">
-                Edit sites
-              </button>
-              <button type="button" class="danger-btn" (click)="remove(u)">Remove</button>
-              }
-            </td>
-          </tr>
-          }
-        </tbody>
-      </table>
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Sites</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (u of svc.users(); track u.id) {
+              <tr [class.inactive]="!u.is_active">
+                <td>{{ u.email }}</td>
+                <td>
+                  @for (sid of u.site_ids; track sid) {
+                    <span class="chip">{{ siteName(sid) }}</span>
+                  }
+                </td>
+                <td>{{ u.is_active ? 'Active' : 'Removed' }}</td>
+                <td class="actions">
+                  @if (u.is_active) {
+                    <button type="button" class="link-btn" (click)="startEdit(u)">
+                      Edit sites
+                    </button>
+                    <button type="button" class="danger-btn" (click)="remove(u)">Remove</button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
       }
 
       <h4>Add a user</h4>
@@ -67,14 +67,16 @@
       </p>
       <div class="site-picks">
         @for (s of svc.sitesList(); track s.id) {
-        @if (s.is_active) {
-        <label class="pick">
-          <input type="checkbox"
-                 [checked]="uSites().has(s.id)"
-                 (change)="toggleNewUserSite(s.id)" />
-          {{ s.name }}
-        </label>
-        }
+          @if (s.is_active) {
+            <label class="pick">
+              <input
+                type="checkbox"
+                [checked]="uSites().has(s.id)"
+                (change)="toggleNewUserSite(s.id)"
+              />
+              {{ s.name }}
+            </label>
+          }
         }
       </div>
       <button type="button" class="btn" (click)="addUser()">Create user</button>
@@ -93,11 +95,11 @@
         </thead>
         <tbody>
           @for (s of svc.sitesList(); track s.id) {
-          <tr [class.inactive]="!s.is_active">
-            <td>{{ s.name }}</td>
-            <td>{{ s.location ?? '—' }}</td>
-            <td>{{ s.is_active ? 'Active' : 'Removed' }}</td>
-          </tr>
+            <tr [class.inactive]="!s.is_active">
+              <td>{{ s.name }}</td>
+              <td>{{ s.location ?? '—' }}</td>
+              <td>{{ s.is_active ? 'Active' : 'Removed' }}</td>
+            </tr>
           }
         </tbody>
       </table>
@@ -113,88 +115,104 @@
 
   <!-- edit-sites modal -->
   @if (editingUser(); as u) {
-  <div class="modal-backdrop" (click)="cancelEdit()">
-    <div class="modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
-      <h2 class="modal-title">Site access — {{ u.email }}</h2>
-      <div class="site-picks">
-        @for (s of svc.sitesList(); track s.id) {
-        @if (s.is_active) {
-        <label class="pick">
-          <input type="checkbox"
-                 [checked]="editSites().has(s.id)"
-                 (change)="toggleEditSite(s.id)" />
-          {{ s.name }}
-        </label>
-        }
-        }
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="btn-cancel" (click)="cancelEdit()">Cancel</button>
-        <button type="button" class="btn-confirm-primary" (click)="saveEdit()">Save</button>
+    <div class="modal-backdrop" (click)="cancelEdit()">
+      <div class="modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <h2 class="modal-title">Site access — {{ u.email }}</h2>
+        <div class="site-picks">
+          @for (s of svc.sitesList(); track s.id) {
+            @if (s.is_active) {
+              <label class="pick">
+                <input
+                  type="checkbox"
+                  [checked]="editSites().has(s.id)"
+                  (change)="toggleEditSite(s.id)"
+                />
+                {{ s.name }}
+              </label>
+            }
+          }
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="cancelEdit()">Cancel</button>
+          <button type="button" class="btn-confirm-primary" (click)="saveEdit()">Save</button>
+        </div>
       </div>
     </div>
-  </div>
   }
   <!-- ── Error Catalog ─────────────────────────────────────────── -->
-  <div class="panel" style="grid-column: 1 / -1;">
+  <div class="panel" style="grid-column: 1 / -1">
     <h3>Error Catalog</h3>
 
     @if (svc.catalogLoading()) {
-    <p class="muted">Loading…</p>
+      <p class="muted">Loading…</p>
     } @else if (svc.catalogError()) {
-    <p class="alert">{{ svc.catalogError() }}</p>
+      <p class="alert">{{ svc.catalogError() }}</p>
     } @else {
-    <table class="tbl">
-      <thead>
-        <tr>
-          <th>Code</th>
-          <th>Description</th>
-          <th>Remediation</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (e of svc.catalog(); track e.id) {
-        <tr>
-          @if (editingEntry()?.id === e.id) {
-          <!-- inline edit row -->
-          <td><code>{{ e.error_code }}</code></td>
-          <td>
-            <input class="ec-input" [(ngModel)]="ecEditDesc" placeholder="Description" />
-          </td>
-          <td>
-            <input class="ec-input" [(ngModel)]="ecEditRemediation" placeholder="Remediation (optional)" />
-          </td>
-          <td class="actions">
-            <button type="button" class="link-btn" (click)="saveEditEntry()">Save</button>
-            <button type="button" class="link-btn" (click)="cancelEditEntry()">Cancel</button>
-          </td>
-          } @else {
-          <td><code>{{ e.error_code }}</code></td>
-          <td>{{ e.description }}</td>
-          <td>{{ e.remediation_msg ?? '—' }}</td>
-          <td class="actions">
-            <button type="button" class="link-btn" (click)="startEditEntry(e)">Edit</button>
-            <button type="button" class="danger-btn" (click)="removeCatalogEntry(e)">Delete</button>
-          </td>
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Description</th>
+            <th>Remediation</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (e of svc.catalog(); track e.id) {
+            <tr>
+              @if (editingEntry()?.id === e.id) {
+                <!-- inline edit row -->
+                <td>
+                  <code>{{ e.error_code }}</code>
+                </td>
+                <td>
+                  <input class="ec-input" [(ngModel)]="ecEditDesc" placeholder="Description" />
+                </td>
+                <td>
+                  <input
+                    class="ec-input"
+                    [(ngModel)]="ecEditRemediation"
+                    placeholder="Remediation (optional)"
+                  />
+                </td>
+                <td class="actions">
+                  <button type="button" class="link-btn" (click)="saveEditEntry()">Save</button>
+                  <button type="button" class="link-btn" (click)="cancelEditEntry()">Cancel</button>
+                </td>
+              } @else {
+                <td>
+                  <code>{{ e.error_code }}</code>
+                </td>
+                <td>{{ e.description }}</td>
+                <td>{{ e.remediation_msg ?? '—' }}</td>
+                <td class="actions">
+                  <button type="button" class="link-btn" (click)="startEditEntry(e)">Edit</button>
+                  <button type="button" class="danger-btn" (click)="removeCatalogEntry(e)">
+                    Delete
+                  </button>
+                </td>
+              }
+            </tr>
           }
-        </tr>
-        }
-      </tbody>
-    </table>
+        </tbody>
+      </table>
     }
 
     @if (catalogFormError()) {
-    <p class="alert" style="margin-top: 10px;">{{ catalogFormError() }}</p>
+      <p class="alert" style="margin-top: 10px">{{ catalogFormError() }}</p>
     }
 
     <h4>Add entry</h4>
     <div class="row-form">
       <input [(ngModel)]="ecCode" placeholder="ERROR_CODE" class="ec-input" />
-      <input [(ngModel)]="ecDesc" placeholder="Description" class="ec-input" style="flex:2" />
-      <input [(ngModel)]="ecRemediation" placeholder="Remediation (optional)" class="ec-input" style="flex:2" />
+      <input [(ngModel)]="ecDesc" placeholder="Description" class="ec-input" style="flex: 2" />
+      <input
+        [(ngModel)]="ecRemediation"
+        placeholder="Remediation (optional)"
+        class="ec-input"
+        style="flex: 2"
+      />
       <button type="button" class="btn" (click)="addCatalogEntry()">Add</button>
     </div>
   </div>
-
 </section>

@@ -47,7 +47,6 @@ export class TwoFactorSetupComponent {
     });
   }
 
-
   protected confirm(): void {
     if (this.code().length !== 6) return;
     this.loading.set(true);

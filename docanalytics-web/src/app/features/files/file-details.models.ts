@@ -55,3 +55,11 @@ export interface InvoiceDetail {
   grand_total: number;
   items: InvoiceLineItem[];
 }
+
+// ── POST /api/v1/files/{id}/retry ──
+export interface RetryFileResponse {
+  file_id: string;
+  new_status: string;
+  transaction_id: string;
+  transaction_state: string;
+}

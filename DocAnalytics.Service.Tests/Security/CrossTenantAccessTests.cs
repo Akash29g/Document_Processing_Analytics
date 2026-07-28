@@ -1,7 +1,9 @@
 using DocAnalytics.Domain.Entities;
+using DocAnalytics.Service.Extraction;
 using DocAnalytics.Service.Files;
 using DocAnalytics.Service.Invoices;
 using DocAnalytics.Service.Tests.Support;
+using Moq;
 
 namespace DocAnalytics.Service.Tests.Security;
 
@@ -13,16 +15,17 @@ public sealed class CrossTenantAccessTests
         // ── Arrange ──
         var tenantA = Guid.NewGuid();
         var siteA = Guid.NewGuid();
-
         var tenantB = Guid.NewGuid();
         var siteB = Guid.NewGuid();
 
-        using var db = InMemoryDb.Create(new TestCurrentUser
+        // Extract so we can pass the same instance to FileDetailsService
+        var currentUser = new TestCurrentUser
         {
             TenantId = tenantA,
             SiteId = siteA,
             Role = "Viewer",
-        });
+        };
+        using var db = InMemoryDb.Create(currentUser);
 
         var txnB = new Transaction
         {
@@ -38,7 +41,6 @@ public sealed class CrossTenantAccessTests
             CompletedCount = 0,
             SubmittedAt = DateTime.UtcNow.AddMinutes(-10),
             LastUpdatedAt = DateTime.UtcNow,
-            CompletedAt = null,
         };
 
         var fileB = new FileRecord
@@ -52,8 +54,6 @@ public sealed class CrossTenantAccessTests
             Status = "Failed",
             CurrentStep = "Validate",
             FileSizeBytes = 1234,
-            ExtractionStatus = null,
-            ExtractionConfidence = null,
             StorageKey = "s3/key",
             CreatedAt = DateTime.UtcNow.AddMinutes(-9),
             LastUpdatedAt = DateTime.UtcNow.AddMinutes(-1),
@@ -62,12 +62,10 @@ public sealed class CrossTenantAccessTests
         db.Transactions.Add(txnB);
         db.Files.Add(fileB);
 
-        // Risky table: NOT tenant-scoped (no tenant_id/site_id columns)
         db.FileStepHistory.Add(new FileStepHistory
         {
             Id = Guid.NewGuid(),
             FileId = fileB.Id,
-            DocumentTypeId = null,
             StepName = "Validate",
             Status = "Failed",
             StartedAt = DateTime.UtcNow.AddMinutes(-5),
@@ -78,13 +76,16 @@ public sealed class CrossTenantAccessTests
 
         await db.SaveChangesAsync();
 
-        var svc = new FileDetailsService(db);
+        // Pass currentUser + a no-op queue mock to the updated constructor
+        var svc = new FileDetailsService(
+            db,
+            new Mock<IExtractionQueue>().Object,
+            currentUser);
 
         // ── Act ──
         var result = await svc.GetFileDetailsAsync(fileB.Id);
 
-        // ── Assert ──
-        // Service returns null => controller returns 404. This proves "no existence leak".
+        // ── Assert ── no existence leak → 404 at controller
         Assert.Null(result);
     }
 
@@ -92,11 +93,8 @@ public sealed class CrossTenantAccessTests
     public async Task GetInvoiceForFileAsync_returns_null_for_other_tenant_file_id()
     {
         // ── Arrange ──
-        var tenantA = Guid.NewGuid();
-        var siteA = Guid.NewGuid();
-
-        var tenantB = Guid.NewGuid();
-        var siteB = Guid.NewGuid();
+        var tenantA = Guid.NewGuid(); var siteA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid(); var siteB = Guid.NewGuid();
 
         using var db = InMemoryDb.Create(new TestCurrentUser
         {
@@ -143,8 +141,6 @@ public sealed class CrossTenantAccessTests
         db.Transactions.Add(txnB);
         db.Files.Add(fileB);
 
-        // Risky table: InvoiceHeader (in your repo it DOES implement ITenantScoped per repomix,
-        // but we still prove "can't be reached cross-tenant").
         db.InvoiceHeaders.Add(new InvoiceHeader
         {
             Id = Guid.NewGuid(),
@@ -170,7 +166,6 @@ public sealed class CrossTenantAccessTests
             FileId = fileB.Id,
             TenantId = tenantB,
             SiteId = siteB,
-            ItemCategoryId = null,
             LineNumber = 1,
             Description = "Should not leak",
             Quantity = 1,

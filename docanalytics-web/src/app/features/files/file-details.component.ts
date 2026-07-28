@@ -12,6 +12,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { FileDetailsService } from './file-details.service';
 import { SiteContextService } from '../../core/services/site-context.service';
+import { AuthService } from '../../core/services/auth.service';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { InvoiceLineItem, StepHistoryItem } from './file-details.models';
 
@@ -20,7 +21,6 @@ import { InvoiceLineItem, StepHistoryItem } from './file-details.models';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [DatePipe, RouterLink, StatusBadgeComponent],
-
   templateUrl: './file-details.component.html',
   styleUrl: './file-details.component.css',
 })
@@ -28,18 +28,25 @@ export class FileDetailsComponent {
   protected readonly svc = inject(FileDetailsService);
   private readonly route = inject(ActivatedRoute);
   private readonly site = inject(SiteContextService);
+  private readonly auth = inject(AuthService);
 
-  private readonly fileId = toSignal(this.route.paramMap.pipe(map((p) => p.get('fileId'))), {
-    initialValue: this.route.snapshot.paramMap.get('fileId'),
-  });
+  private readonly fileId = toSignal(
+    this.route.paramMap.pipe(map((p) => p.get('fileId'))),
+    { initialValue: this.route.snapshot.paramMap.get('fileId') },
+  );
 
   protected readonly info = computed(() => this.svc.detail()?.file_info ?? null);
   protected readonly history = computed<StepHistoryItem[]>(() => this.svc.detail()?.history ?? []);
   protected readonly items = computed<InvoiceLineItem[]>(() => this.svc.invoice()?.items ?? []);
 
+  /** True when the logged-in user is an Admin. */
+  protected readonly isAdmin = computed(
+    () => this.auth.currentUser()?.role === 'Admin',
+  );
+
   constructor() {
     // reload on file switch (param-only nav) AND on site switch — both tracked,
-    // loads run in untracked so query reads inside don't re-fire the effect (R3 lesson).
+    // loads run in untracked so query reads inside don't re-fire the effect (R3 lesson)
     effect(() => {
       const id = this.fileId();
       this.site.selectedSiteId();

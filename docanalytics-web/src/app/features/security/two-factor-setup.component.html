@@ -2,6 +2,10 @@
   <button type="button" class="tfa-back" (click)="goBack()">← Back</button>
   <h2>Two-factor authentication</h2>
 
+  @if (error() && step() !== 'already-enabled') {
+    <div class="alert" role="alert">{{ error() }}</div>
+  }
+
   @if (step() === 'loading') {
     <p>Setting up…</p>
   }
@@ -43,9 +47,6 @@
   }
 
   @if (step() === 'scan') {
-    @if (error()) {
-      <div class="alert" role="alert">{{ error() }}</div>
-    }
     <p>1. Scan this QR code with Google Authenticator, Authy, or 1Password.</p>
     @if (qrDataUrl()) {
       <img [src]="qrDataUrl()" alt="2FA QR code" width="200" height="200" />

@@ -12,6 +12,7 @@ describe('TwoFactorSetupComponent', () => {
   let authServiceMock: {
     setupTwoFactor: ReturnType<typeof vi.fn>;
     confirmTwoFactor: ReturnType<typeof vi.fn>;
+    disableTwoFactor: ReturnType<typeof vi.fn>;
   };
   let locationMock: { back: ReturnType<typeof vi.fn> };
 
@@ -42,6 +43,7 @@ describe('TwoFactorSetupComponent', () => {
     authServiceMock = {
       setupTwoFactor: vi.fn().mockReturnValue(of(setupResponse)),
       confirmTwoFactor: vi.fn(),
+      disableTwoFactor: vi.fn(),
     };
     locationMock = { back: vi.fn() };
 
@@ -88,6 +90,116 @@ describe('TwoFactorSetupComponent', () => {
     expect(fixture.nativeElement.querySelector('.alert')?.textContent).toContain(
       'Could not start 2FA setup.',
     );
+  });
+
+  it('shows the already-enabled state with the disable form when setup fails with TWO_FACTOR_ALREADY_ENABLED', async () => {
+    authServiceMock.setupTwoFactor.mockReturnValue(
+      throwError(() => ({
+        error: {
+          error: {
+            code: 'TWO_FACTOR_ALREADY_ENABLED',
+            message:
+              'Two-factor authentication is already enabled. Disable it first to re-configure.',
+          },
+        },
+      })),
+    );
+    const { fixture, component } = createFixture();
+    fixture.detectChanges();
+    await Promise.resolve();
+    fixture.detectChanges();
+
+    expect((component as any).step()).toBe('already-enabled');
+    expect(fixture.nativeElement.textContent).toContain(
+      'Two-factor authentication is already enabled',
+    );
+  });
+
+  describe('disableTwoFactor()', () => {
+    async function renderAtAlreadyEnabled() {
+      authServiceMock.setupTwoFactor.mockReturnValue(
+        throwError(() => ({
+          error: {
+            error: {
+              code: 'TWO_FACTOR_ALREADY_ENABLED',
+              message: 'Two-factor authentication is already enabled.',
+            },
+          },
+        })),
+      );
+      const { fixture, component } = createFixture();
+      fixture.detectChanges();
+      await Promise.resolve();
+      fixture.detectChanges();
+      return { fixture, component };
+    }
+
+    it('does nothing if the password field is empty', async () => {
+      const { component } = await renderAtAlreadyEnabled();
+      (component as any).disablePassword.set('   ');
+
+      (component as any).disableTwoFactor();
+
+      expect(authServiceMock.disableTwoFactor).not.toHaveBeenCalled();
+    });
+
+    it('disables 2FA and shows the disabled confirmation', async () => {
+      authServiceMock.disableTwoFactor.mockReturnValue(
+        of({ data: { disabled: true }, error: null }),
+      );
+      const { fixture, component } = await renderAtAlreadyEnabled();
+      (component as any).disablePassword.set('correct-password');
+
+      (component as any).disableTwoFactor();
+      fixture.detectChanges();
+
+      expect((component as any).disabled()).toBe(true);
+      expect(fixture.nativeElement.textContent).toContain(
+        'Two-factor authentication has been disabled',
+      );
+    });
+
+    it('shows an error when the password is incorrect', async () => {
+      authServiceMock.disableTwoFactor.mockReturnValue(of({ data: null, error: 'bad password' }));
+      const { fixture, component } = await renderAtAlreadyEnabled();
+      (component as any).disablePassword.set('wrong-password');
+
+      (component as any).disableTwoFactor();
+      fixture.detectChanges();
+
+      expect((component as any).disableError()).toBe('Incorrect password. Try again.');
+    });
+
+    it('shows an error when the disable request itself fails', async () => {
+      authServiceMock.disableTwoFactor.mockReturnValue(throwError(() => new Error('network')));
+      const { fixture, component } = await renderAtAlreadyEnabled();
+      (component as any).disablePassword.set('correct-password');
+
+      (component as any).disableTwoFactor();
+      fixture.detectChanges();
+
+      expect((component as any).disableError()).toBe('Incorrect password. Try again.');
+      expect((component as any).disableLoading()).toBe(false);
+    });
+
+    it('restartSetup() resets disabled state and re-triggers setup', async () => {
+      authServiceMock.disableTwoFactor.mockReturnValue(
+        of({ data: { disabled: true }, error: null }),
+      );
+      const { fixture, component } = await renderAtAlreadyEnabled();
+      (component as any).disablePassword.set('correct-password');
+      (component as any).disableTwoFactor();
+      fixture.detectChanges();
+
+      authServiceMock.setupTwoFactor.mockReturnValue(of(setupResponse));
+      (component as any).restartSetup();
+      await Promise.resolve();
+      await Promise.resolve();
+      fixture.detectChanges();
+
+      expect((component as any).disabled()).toBe(false);
+      expect((component as any).step()).toBe('scan');
+    });
   });
 
   it('goBack() delegates to Location.back()', () => {

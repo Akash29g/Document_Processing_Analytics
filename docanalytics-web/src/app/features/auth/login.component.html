@@ -1,55 +1,87 @@
 <div class="login-wrap">
-  <form class="login-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
-    <h1 class="brand">DocAnalytics</h1>
-    <p class="subtitle">Sign in to your monitoring dashboard</p>
+  @if (step() === 'credentials') {
+    <form class="login-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <h1 class="brand">DocAnalytics</h1>
+      <p class="subtitle">Sign in to your monitoring dashboard</p>
 
-    <!-- top-level error (bad creds / server / network) -->
-    @if (errorMessage()) {
-      <div class="alert" role="alert">{{ errorMessage() }}</div>
-    }
-
-    <label class="field">
-      <span class="label">Email</span>
-      <input
-        type="email"
-        formControlName="email"
-        autocomplete="username"
-        placeholder="you@company.com"
-        [class.invalid]="isInvalid('email')"
-      />
-      @if (isInvalid('email')) {
-        <span class="hint">
-          @if (form.controls.email.hasError('required')) {
-            Email is required.
-          } @else {
-            Enter a valid email address.
-          }
-        </span>
+      @if (errorMessage()) {
+        <div class="alert" role="alert">{{ errorMessage() }}</div>
       }
-    </label>
 
-    <label class="field">
-      <span class="label">Password</span>
-      <input
-        type="password"
-        formControlName="password"
-        autocomplete="current-password"
-        placeholder="••••••••"
-        [class.invalid]="isInvalid('password')"
-      />
-      @if (isInvalid('password')) {
-        <span class="hint">Password is required.</span>
-      }
-    </label>
+      <label class="field">
+        <span class="label">Email</span>
+        <input
+          type="email"
+          formControlName="email"
+          autocomplete="username"
+          placeholder="you@company.com"
+          [class.invalid]="isInvalid('email')"
+        />
+        @if (isInvalid('email')) {
+          <span class="hint">
+            @if (form.controls.email.hasError('required')) {
+              Email is required.
+            } @else {
+              Enter a valid email address.
+            }
+          </span>
+        }
+      </label>
 
-    <!-- Swap this for Shubh's <app-button> once the Round-1 atom merges. -->
-    <button type="submit" class="btn" [disabled]="loading()">
-      @if (loading()) {
-        <span class="spinner" aria-hidden="true"></span> Signing in…
-      } @else {
-        Sign in
+      <label class="field">
+        <span class="label">Password</span>
+        <input
+          type="password"
+          formControlName="password"
+          autocomplete="current-password"
+          placeholder="••••••••"
+          [class.invalid]="isInvalid('password')"
+        />
+        @if (isInvalid('password')) {
+          <span class="hint">Password is required.</span>
+        }
+      </label>
+
+      <button type="submit" class="btn" [disabled]="loading()">
+        @if (loading()) {
+          <span class="spinner" aria-hidden="true"></span> Signing in…
+        } @else {
+          Sign in
+        }
+      </button>
+      <a class="link forgot-link" routerLink="/forgot-password">Forgot password?</a>
+    </form>
+  } @else {
+    <div class="login-card">
+      <h1 class="brand">DocAnalytics</h1>
+      <p class="subtitle">Enter the 6-digit code from your authenticator app</p>
+
+      @if (mfaError()) {
+        <div class="alert" role="alert">{{ mfaError() }}</div>
       }
-    </button>
-    <a class="link forgot-link" routerLink="/forgot-password">Forgot password?</a>
-  </form>
+
+      <label class="field">
+        <span class="label">Authentication code</span>
+        <input
+          type="text"
+          maxlength="12"
+          autocomplete="one-time-code"
+          placeholder="123456 or recovery code"
+          [ngModel]="mfaCode()"
+          (ngModelChange)="mfaCode.set($event)"
+          name="mfaCode"
+        />
+      </label>
+
+      <button type="button" class="btn" [disabled]="mfaLoading()" (click)="submitMfa()">
+        @if (mfaLoading()) {
+          <span class="spinner" aria-hidden="true"></span> Verifying…
+        } @else {
+          Verify
+        }
+      </button>
+
+      <a class="link" (click)="backToCredentials()">Back to sign in</a>
+    </div>
+  }
 </div>

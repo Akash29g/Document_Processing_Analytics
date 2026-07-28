@@ -23,6 +23,16 @@ public class RefreshToken
     /// <summary>The IP that created the token, if captured.</summary>
     public string? CreatedByIp { get; set; }
 
+    /// <summary>Raw User-Agent header captured at issuance/rotation time.</summary>
+    public string? UserAgent { get; set; }
+
+    /// <summary>Last-known client IP (updated on each rotation). CreatedByIp stays as the ORIGINAL issuance IP.</summary>
+    public string? IpAddress { get; set; }
+
+    /// <summary>When this token was last used (issued or rotated). Drives the "last active" column in the sessions UI.</summary>
+    public DateTime? LastUsedAt { get; set; }
+
+
     /// <summary>When the token was revoked (UTC) — set on logout, rotation, or reuse detection.</summary>
     public DateTime? RevokedAt { get; set; }          // set on logout / rotation / reuse-detected
     /// <summary>Hash of the token that replaced this one (rotation chain for audit / reuse detection).</summary>

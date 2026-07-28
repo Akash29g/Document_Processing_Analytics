@@ -109,6 +109,21 @@ export const routes: Routes = [
       import('./features/auth/change-password.component').then((m) => m.ChangePasswordComponent),
   },
   {
+    path: 'security',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/security/sessions.component').then((m) => m.SessionsComponent),
+  },
+  {
+    path: 'security/2fa',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/security/two-factor-setup.component').then(
+        (m) => m.TwoFactorSetupComponent,
+      ),
+  },
+
+  {
     path: 'provision',
     canActivate: [roleGuard(['Developer'])],
     loadComponent: () =>

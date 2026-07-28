@@ -380,6 +380,25 @@ nav a.active {
   background: color-mix(in srgb, currentColor 8%, transparent);
 }
 
+.me-card-security {
+  display: block;
+  margin-top: 14px;
+  width: 100%;
+  padding: 9px 0;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  font-weight: 600;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--cool-gray, rgba(128, 128, 128, 0.35));
+  text-decoration: none;
+}
+
+.me-card-security:hover {
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+
 /* bell wrapper is the positioning anchor */
 .al-dd {
   position: relative;

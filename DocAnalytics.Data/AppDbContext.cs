@@ -39,6 +39,8 @@ public class AppDbContext : DbContext, IDataProtectionKeyContext
     public virtual DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
     public virtual DbSet<InvoiceHeader> InvoiceHeaders => Set<InvoiceHeader>();
+    public virtual DbSet<TwoFactorRecoveryCode> TwoFactorRecoveryCodes => Set<TwoFactorRecoveryCode>();
+
 
 
     protected override void OnModelCreating(ModelBuilder b)
@@ -157,10 +159,13 @@ public class AppDbContext : DbContext, IDataProtectionKeyContext
             e.Property(x => x.TokenHash).HasMaxLength(88).IsRequired();   // base64 SHA-256 = 44 chars; pad room
             e.Property(x => x.CreatedByIp).HasMaxLength(64);
             e.Property(x => x.ReplacedByTokenHash).HasMaxLength(88);
+            e.Property(x => x.UserAgent).HasMaxLength(500);               // NEW
+            e.Property(x => x.IpAddress).HasMaxLength(64);                // NEW
             e.HasIndex(x => x.TokenHash).IsUnique();                      // fast lookup on refresh
             e.HasIndex(x => x.UserId);                                    // revoke-all-for-user
             e.Ignore(x => x.IsActive);
         });
+
 
         b.Entity<PasswordResetToken>(e =>
         {
@@ -172,6 +177,15 @@ public class AppDbContext : DbContext, IDataProtectionKeyContext
             e.HasIndex(x => x.UserId);                                    // invalidate-all-for-user
             e.Ignore(x => x.IsActive);
         });
+
+        b.Entity<TwoFactorRecoveryCode>(e =>
+        {
+            e.ToTable("two_factor_recovery_codes");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.CodeHash).HasMaxLength(100).IsRequired();
+            e.HasIndex(x => x.UserId);
+        });
+
 
 
 

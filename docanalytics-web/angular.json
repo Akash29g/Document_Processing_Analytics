@@ -76,8 +76,16 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "coverage": true,
-            "coverageExclude": ["src/main.ts", "src/environments/**", "src/**/*.models.ts"],
-            "coverageReporters": ["text-summary", "cobertura"],
+            "coverageExclude": [
+              "src/main.ts",
+              "src/environments/**",
+              "src/**/*.models.ts"
+            ],
+            "coverageReporters": [
+              "text-summary",
+              "text",
+              "cobertura"
+            ],
             "coverageThresholds": {
               "lines": 73,
               "branches": 68

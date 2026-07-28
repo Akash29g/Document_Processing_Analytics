@@ -14,4 +14,11 @@ public interface IFileDetailsService
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The log content, or <c>null</c> if the file does not exist.</returns>
     Task<FileLogDto?> GetFileLogsAsync(Guid fileId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Resets a Failed file back to Queued, adjusts Transaction counters, writes an
+    /// audit log entry, and re-enqueues the file for processing. Admin-only operation.
+    /// </summary>
+    /// <returns>The updated state, or <c>null</c> if the file was not found.</returns>
+    Task<RetryFileResponseDto?> RetryFileAsync(Guid fileId, CancellationToken ct = default);
 }

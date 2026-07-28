@@ -64,6 +64,7 @@ builder.Services.AddAuthFeature();
 builder.Services.AddDashboardFeature();
 builder.Services.AddInvoiceFeature();
 builder.Services.AddFileDetailsFeature();
+builder.Services.AddErrorCatalogFeature();
 builder.Services.AddAnalyticsFeature();
 builder.Services.AddErrorListFeature();
 builder.Services.AddActivityLogFeature();

@@ -15,8 +15,7 @@ test.describe('Site-access guard', () => {
     // OFF the no-access site to a real dashboard (not the fake one, not /login).
     await page.waitForURL(
       (url) =>
-        /\/site\/[^/]+\/dashboard$/.test(url.pathname) &&
-        !url.pathname.includes(noAccessSite),
+        /\/site\/[^/]+\/dashboard$/.test(url.pathname) && !url.pathname.includes(noAccessSite),
       { timeout: 15_000 },
     );
 

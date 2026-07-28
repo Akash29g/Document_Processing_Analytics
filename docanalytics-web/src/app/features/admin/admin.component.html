@@ -139,4 +139,80 @@
       </div>
     </div>
   }
+  <!-- ── Error Catalog ─────────────────────────────────────────── -->
+  <div class="panel" style="grid-column: 1 / -1">
+    <h3>Error Catalog</h3>
+
+    @if (svc.catalogLoading()) {
+      <p class="muted">Loading…</p>
+    } @else if (svc.catalogError()) {
+      <p class="alert">{{ svc.catalogError() }}</p>
+    } @else {
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Description</th>
+            <th>Remediation</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (e of svc.catalog(); track e.id) {
+            <tr>
+              @if (editingEntry()?.id === e.id) {
+                <!-- inline edit row -->
+                <td>
+                  <code>{{ e.error_code }}</code>
+                </td>
+                <td>
+                  <input class="ec-input" [(ngModel)]="ecEditDesc" placeholder="Description" />
+                </td>
+                <td>
+                  <input
+                    class="ec-input"
+                    [(ngModel)]="ecEditRemediation"
+                    placeholder="Remediation (optional)"
+                  />
+                </td>
+                <td class="actions">
+                  <button type="button" class="link-btn" (click)="saveEditEntry()">Save</button>
+                  <button type="button" class="link-btn" (click)="cancelEditEntry()">Cancel</button>
+                </td>
+              } @else {
+                <td>
+                  <code>{{ e.error_code }}</code>
+                </td>
+                <td>{{ e.description }}</td>
+                <td>{{ e.remediation_msg ?? '—' }}</td>
+                <td class="actions">
+                  <button type="button" class="link-btn" (click)="startEditEntry(e)">Edit</button>
+                  <button type="button" class="danger-btn" (click)="removeCatalogEntry(e)">
+                    Delete
+                  </button>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+
+    @if (catalogFormError()) {
+      <p class="alert" style="margin-top: 10px">{{ catalogFormError() }}</p>
+    }
+
+    <h4>Add entry</h4>
+    <div class="row-form">
+      <input [(ngModel)]="ecCode" placeholder="ERROR_CODE" class="ec-input" />
+      <input [(ngModel)]="ecDesc" placeholder="Description" class="ec-input" style="flex: 2" />
+      <input
+        [(ngModel)]="ecRemediation"
+        placeholder="Remediation (optional)"
+        class="ec-input"
+        style="flex: 2"
+      />
+      <button type="button" class="btn" (click)="addCatalogEntry()">Add</button>
+    </div>
+  </div>
 </section>

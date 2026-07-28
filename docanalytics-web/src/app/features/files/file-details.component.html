@@ -1,8 +1,6 @@
 <section class="fd">
-  <!-- back link -->
   <a class="fd-back" routerLink="../..">← Back to batch</a>
 
-  <!-- ─────────── File info header (FR-2.5) ─────────── -->
   @if (svc.detailLoading()) {
     <div class="fd-card fd-state"><span class="spinner"></span> Loading file…</div>
   } @else if (svc.detailError()) {
@@ -19,8 +17,22 @@
           Current step: <strong>{{ fi.current_step }}</strong>
         </p>
       </div>
+
       <div class="fd-header-right">
         <app-status-badge [status]="fi.current_status" />
+
+        <!-- Retry — visible to Admins when file is Failed -->
+        @if (isAdmin() && fi.current_status === 'Failed') {
+          <button
+            type="button"
+            class="fd-btn fd-btn-retry"
+            [disabled]="svc.retrying()"
+            (click)="svc.retryFile()"
+          >
+            {{ svc.retrying() ? 'Retrying…' : '↺ Retry' }}
+          </button>
+        }
+
         <button class="fd-btn" (click)="svc.downloadLogs()">Download Logs</button>
         <button type="button" class="fd-btn fd-btn-invoice" (click)="svc.downloadOriginal()">
           Download Invoice
@@ -28,7 +40,12 @@
       </div>
     </header>
 
-    <!-- ─────────── Step timeline (FR-2.5) ─────────── -->
+    <!-- Retry error banner -->
+    @if (svc.retryError()) {
+      <p class="fd-card fd-retry-error">⚠ {{ svc.retryError() }}</p>
+    }
+
+    <!-- Step timeline -->
     <div class="fd-card">
       <h2 class="fd-h2">Processing timeline</h2>
       @if (history().length === 0) {
@@ -63,7 +80,7 @@
     </div>
   }
 
-  <!-- ─────────── Invoice ─────────── -->
+  <!-- Invoice section (unchanged) -->
   <div class="fd-card">
     <h2 class="fd-h2">Invoice</h2>
     @if (svc.invoiceLoading()) {
@@ -76,7 +93,6 @@
         <button class="fd-btn" (click)="svc.loadLineItems()">Retry</button>
       </div>
     } @else {
-      <!-- header info strip -->
       @if (svc.invoice()?.header; as h) {
         <div class="fd-inv-head">
           <div>
@@ -96,9 +112,8 @@
           </div>
         </div>
       }
-
       @if (items().length === 0) {
-        <div class="fd-state">No line items — this file has no extracted invoice items.</div>
+        <div class="fd-state">No line items extracted.</div>
       } @else {
         <div class="fd-scroll">
           <table class="tbl">

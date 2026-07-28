@@ -53,5 +53,32 @@ public sealed class FilesController : ControllerBase
         return File(Encoding.UTF8.GetBytes(log.Content), "text/plain", log.FileName);
     }
 
+    /// <summary>
+    /// Resets a Failed file to Queued and re-enqueues it for processing.
+    /// Admin-only — stacks with the class-level DataAccess policy.
+    /// </summary>
+    // POST /api/v1/files/{id}/retry
+    [HttpPost("{id:guid}/retry")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> RetryFile(Guid id, CancellationToken ct)
+    {
+        try
+        {
+            var result = await _service.RetryFileAsync(id, ct);
+
+            if (result is null)
+                return NotFound(
+                    ApiResponse<RetryFileResponseDto>.Fail(
+                        "NOT_FOUND", "File not found or access denied."));
+
+            return Ok(ApiResponse<RetryFileResponseDto>.Ok(result));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(
+                ApiResponse<RetryFileResponseDto>.Fail("INVALID_STATE", ex.Message));
+        }
+    }
+
 
 }

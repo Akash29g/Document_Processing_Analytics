@@ -2,6 +2,7 @@ using DocAnalytics.Domain.Entities;
 using DocAnalytics.Service.Errors;
 using DocAnalytics.Service.Tests.Support;
 using MockQueryable.Moq;
+using ErrorCatalogEntry = DocAnalytics.Domain.Entities.ErrorCatalog;
 
 namespace DocAnalytics.Service.Tests.Errors;
 
@@ -9,7 +10,7 @@ public class ErrorServiceTests
 {
     private static ErrorService BuildSut(
         IEnumerable<FileRecord> files, IEnumerable<FileStepHistory> steps,
-        IEnumerable<Transaction> txns, IEnumerable<ErrorCatalog> catalog)
+        IEnumerable<Transaction> txns, IEnumerable<ErrorCatalogEntry> catalog)
     {
         var ctx = MockDb.Create();
         ctx.Setup(c => c.Files).Returns(files.ToList().BuildMockDbSet().Object);
@@ -31,7 +32,7 @@ public class ErrorServiceTests
             new FileStepHistory { Id = Guid.NewGuid(), FileId = fileId, StepName = "Upload", Status = "Success" },
         };
         var txns = new[] { new Transaction { Id = txnId, SourceSystem = "SAP" } };
-        var catalog = new[] { new ErrorCatalog { ErrorCode = "ERR1", RemediationMsg = "Retry the upload" } };
+        var catalog = new[] { new ErrorCatalogEntry { ErrorCode = "ERR1", RemediationMsg = "Retry the upload" } };
 
         var sut = BuildSut(files, steps, txns, catalog);
 
@@ -53,7 +54,7 @@ public class ErrorServiceTests
         };
         var txns = new[] { new Transaction { Id = txnId, SourceSystem = "SAP" } };
 
-        var sut = BuildSut(files, steps, txns, Array.Empty<ErrorCatalog>());
+        var sut = BuildSut(files, steps, txns, Array.Empty<ErrorCatalogEntry>());
 
         var result = await sut.GetErrorsAsync(new ErrorListQuery { Step = "Transform" });
 
@@ -68,7 +69,7 @@ public class ErrorServiceTests
         var files = new[] { new FileRecord { Id = fileId, FileName = "a.pdf", TransactionId = txnId } };
         var steps = new[] { new FileStepHistory { Id = Guid.NewGuid(), FileId = fileId, StepName = "Validate", Status = "Failed", ErrorCode = "E1" } };
         var txns = new[] { new Transaction { Id = txnId, SourceSystem = "SAP" } };
-        var sut = BuildSut(files, steps, txns, Array.Empty<ErrorCatalog>());
+        var sut = BuildSut(files, steps, txns, Array.Empty<ErrorCatalogEntry>());
 
         Assert.Equal(1, (await sut.GetErrorsAsync(new ErrorListQuery { Source = "SAP" })).TotalCount);
         Assert.Equal(0, (await sut.GetErrorsAsync(new ErrorListQuery { Source = "CSV" })).TotalCount);
@@ -85,7 +86,7 @@ public class ErrorServiceTests
         new FileStepHistory { Id = Guid.NewGuid(), FileId = fileId, StepName = "Load", Status = "Failed", ErrorCode = "E2", CompletedAt = new DateTime(2026,6,1,0,0,0,DateTimeKind.Utc) },
     };
         var txns = new[] { new Transaction { Id = txnId, SourceSystem = "SAP" } };
-        var sut = BuildSut(files, steps, txns, Array.Empty<ErrorCatalog>());
+        var sut = BuildSut(files, steps, txns, Array.Empty<ErrorCatalogEntry>());
 
         var result = await sut.GetErrorsAsync(new ErrorListQuery { From = new DateTime(2026, 5, 1), To = new DateTime(2026, 7, 1) });
         Assert.Equal(1, result.TotalCount);
@@ -102,7 +103,7 @@ public class ErrorServiceTests
         new FileStepHistory { Id = Guid.NewGuid(), FileId = fileId, StepName = "Load", Status = "Failed", ErrorCode = "E9" },
     };
         var txns = new[] { new Transaction { Id = txnId, SourceSystem = "SAP" } };
-        var sut = BuildSut(files, steps, txns, Array.Empty<ErrorCatalog>());
+        var sut = BuildSut(files, steps, txns, Array.Empty<ErrorCatalogEntry>());
 
         var result = await sut.GetErrorsAsync(new ErrorListQuery { SortBy = "error_code", SortDir = "desc" });
         Assert.Equal("E9", result.Items[0].ErrorCode);
@@ -119,7 +120,7 @@ public class ErrorServiceTests
         new FileStepHistory { Id = Guid.NewGuid(), FileId = fileId, StepName = "Load", Status = "Failed", ErrorCode = "E2" },
     };
         var txns = new[] { new Transaction { Id = txnId, SourceSystem = "SAP" } };
-        var sut = BuildSut(files, steps, txns, Array.Empty<ErrorCatalog>());
+        var sut = BuildSut(files, steps, txns, Array.Empty<ErrorCatalogEntry>());
 
         Assert.Equal(2, (await sut.GetErrorsForExportAsync(new ErrorListQuery())).Count);
     }

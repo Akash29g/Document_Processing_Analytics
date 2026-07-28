@@ -4,18 +4,17 @@ import { finalize } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../core/models/api-response.model';
 import { SKIP_ERROR_TOAST } from '../../core/interceptors/error.interceptor';
-import { FileDetail, InvoiceDetail } from './file-details.models';
+import { FileDetail, InvoiceDetail, RetryFileResponse } from './file-details.models';
 
 @Injectable({ providedIn: 'root' })
 export class FileDetailsService {
   private readonly http = inject(HttpClient);
   private readonly base = environment.apiBase;
-  // widgets render their own errors → opt out of the global toast
   private readonly silent = { context: new HttpContext().set(SKIP_ERROR_TOAST, true) };
 
   private _fileId: string | null = null;
 
-  // ── details slice (FR-2.5) ──
+  // ── detail slice ──
   private _detail = signal<FileDetail | null>(null);
   private _detailLoading = signal(false);
   private _detailError = signal<string | null>(null);
@@ -23,19 +22,25 @@ export class FileDetailsService {
   readonly detailLoading = this._detailLoading.asReadonly();
   readonly detailError = this._detailError.asReadonly();
 
-  // ── invoice line-items slice ──
+  // ── invoice slice ──
   private _invoice = signal<InvoiceDetail | null>(null);
   private _invoiceLoading = signal(false);
   private _invoiceError = signal<string | null>(null);
-  private _hasInvoice = signal(true); // false on 404 (file has no invoice)
+  private _hasInvoice = signal(true);
   readonly invoice = this._invoice.asReadonly();
   readonly invoiceLoading = this._invoiceLoading.asReadonly();
   readonly invoiceError = this._invoiceError.asReadonly();
   readonly hasInvoice = this._hasInvoice.asReadonly();
 
-  /** Load both slices for a file. Called from the page effect on file/site switch. */
+  // ── retry slice ──
+  private _retrying = signal(false);
+  private _retryError = signal<string | null>(null);
+  readonly retrying = this._retrying.asReadonly();
+  readonly retryError = this._retryError.asReadonly();
+
   load(fileId: string): void {
     this._fileId = fileId;
+    this._retryError.set(null);
     this.loadDetails();
     this.loadLineItems();
   }
@@ -65,13 +70,30 @@ export class FileDetailsService {
         next: (res) => this._invoice.set(res.data),
         error: (err) => {
           if (err?.status === 404) {
-            // not an error — this file simply isn't an invoice
             this._hasInvoice.set(false);
             this._invoice.set(null);
           } else {
             this._invoiceError.set(this.msg(err, 'Could not load line items.'));
           }
         },
+      });
+  }
+
+  /** Re-queues a failed file. Admin only — server enforces the role. */
+  retryFile(): void {
+    if (!this._fileId) return;
+    this._retrying.set(true);
+    this._retryError.set(null);
+    this.http
+      .post<ApiResponse<RetryFileResponse>>(
+        `${this.base}/files/${this._fileId}/retry`,
+        {},
+        this.silent,
+      )
+      .pipe(finalize(() => this._retrying.set(false)))
+      .subscribe({
+        next: () => this.loadDetails(), // refresh — badge will flip to Queued
+        error: (err) => this._retryError.set(this.msg(err, 'Retry failed. Please try again.')),
       });
   }
 
@@ -119,6 +141,7 @@ export class FileDetailsService {
     this._invoice.set(null);
     this._invoiceError.set(null);
     this._hasInvoice.set(true);
+    this._retryError.set(null);
   }
 
   private msg(err: any, fallback: string): string {

@@ -221,3 +221,22 @@
   cursor: pointer;
   font-weight: 600;
 }
+
+/* Error catalog inline input */
+.ec-input {
+  flex: 1;
+  min-width: 120px;
+  padding: 6px 10px;
+  border: 1px solid var(--cool-gray, #ccc);
+  border-radius: 6px;
+  background: var(--white, #fff);
+  color: inherit;
+  font: inherit;
+}
+
+code {
+  font-size: 12px;
+  background: color-mix(in srgb, var(--aveva-purple, #3d1152) 10%, transparent);
+  padding: 2px 6px;
+  border-radius: 4px;
+}

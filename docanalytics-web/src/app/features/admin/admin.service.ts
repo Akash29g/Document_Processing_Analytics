@@ -3,17 +3,31 @@ import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../core/models/api-response.model';
-import { AdminCreatedUser, AdminSite, AdminUser } from './admin.models';
+import {
+  AdminCreatedUser,
+  AdminSite,
+  AdminUser,
+  CreateErrorCatalogPayload,
+  ErrorCatalogEntry,
+  UpdateErrorCatalogPayload,
+} from './admin.models';
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {
   private http = inject(HttpClient);
   private base = `${environment.apiBase}/admin`;
+  private catalogBase = `${environment.apiBase}/error-catalog`;
 
+  // ── users + sites ──
   readonly users = signal<AdminUser[]>([]);
   readonly sitesList = signal<AdminSite[]>([]);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+
+  // ── error catalog ──
+  readonly catalog = signal<ErrorCatalogEntry[]>([]);
+  readonly catalogLoading = signal(false);
+  readonly catalogError = signal<string | null>(null);
 
   async loadAll(): Promise<void> {
     this.loading.set(true);
@@ -88,6 +102,56 @@ export class AdminService {
       return null;
     } catch (e: any) {
       return this.msg(e, 'Failed to create site.');
+    }
+  }
+
+  // ── Error Catalog ────────────────────────────────────────────────────────
+
+  async loadCatalog(): Promise<void> {
+    this.catalogLoading.set(true);
+    this.catalogError.set(null);
+    try {
+      const res = await firstValueFrom(
+        this.http.get<ApiResponse<ErrorCatalogEntry[]>>(this.catalogBase),
+      );
+      this.catalog.set(res.data ?? []);
+    } catch (e: any) {
+      this.catalogError.set(this.msg(e, 'Failed to load error catalog.'));
+    } finally {
+      this.catalogLoading.set(false);
+    }
+  }
+
+  async createCatalogEntry(payload: CreateErrorCatalogPayload): Promise<string | null> {
+    try {
+      await firstValueFrom(
+        this.http.post<ApiResponse<ErrorCatalogEntry>>(this.catalogBase, payload),
+      );
+      await this.loadCatalog();
+      return null;
+    } catch (e: any) {
+      return this.msg(e, 'Failed to create error catalog entry.');
+    }
+  }
+
+  async updateCatalogEntry(id: string, payload: UpdateErrorCatalogPayload): Promise<string | null> {
+    try {
+      await firstValueFrom(
+        this.http.put<ApiResponse<ErrorCatalogEntry>>(`${this.catalogBase}/${id}`, payload),
+      );
+      await this.loadCatalog();
+      return null;
+    } catch (e: any) {
+      return this.msg(e, 'Failed to update error catalog entry.');
+    }
+  }
+  async deleteCatalogEntry(id: string): Promise<string | null> {
+    try {
+      await firstValueFrom(this.http.delete<ApiResponse<unknown>>(`${this.catalogBase}/${id}`));
+      await this.loadCatalog();
+      return null;
+    } catch (e: any) {
+      return this.msg(e, 'Failed to delete entry.');
     }
   }
 

@@ -56,3 +56,13 @@ public sealed class FileLogDto
     /// <summary>The plain-text step-by-step trace.</summary>
     public string Content { get; set; } = null!;    // plain-text trace
 }
+
+// ── POST /api/v1/files/{id}/retry ──
+/// <summary>Response returned after successfully re-queuing a failed file.</summary>
+public sealed class RetryFileResponseDto
+{
+    public Guid FileId { get; init; }
+    public string NewStatus { get; init; } = "Queued";
+    public Guid TransactionId { get; init; }
+    public string TransactionState { get; init; } = string.Empty;
+}

@@ -16,9 +16,7 @@ test.describe('Session rehydration', () => {
 
     // Reload wipes in-memory signals; the guard must call /auth/me to rehydrate.
     const [meResponse] = await Promise.all([
-      page.waitForResponse(
-        (r) => r.url().includes('/auth/me') && r.request().method() === 'GET',
-      ),
+      page.waitForResponse((r) => r.url().includes('/auth/me') && r.request().method() === 'GET'),
       page.reload(),
     ]);
     expect(meResponse.ok()).toBeTruthy();

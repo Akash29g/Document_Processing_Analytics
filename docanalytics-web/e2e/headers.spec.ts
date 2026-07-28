@@ -10,9 +10,7 @@ test.describe('Auth-site interceptor headers', () => {
 
     // Reload and capture a data API call (exclude /auth/* which fires before site is set).
     const [req] = await Promise.all([
-      page.waitForRequest(
-        (r) => r.url().includes('/api/v1/') && !r.url().includes('/auth/'),
-      ),
+      page.waitForRequest((r) => r.url().includes('/api/v1/') && !r.url().includes('/auth/')),
       page.reload(),
     ]);
 

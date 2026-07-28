@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
 import { toDataURL } from 'qrcode';
 import { Location } from '@angular/common';
@@ -15,13 +16,19 @@ import { Location } from '@angular/common';
 export class TwoFactorSetupComponent {
   private auth = inject(AuthService);
 
-  protected step = signal<'loading' | 'scan' | 'confirmed'>('loading');
+  protected step = signal<'loading' | 'scan' | 'confirmed' | 'already-enabled'>('loading');
   protected qrDataUrl = signal<string | null>(null);
   protected manualKey = signal('');
   protected code = signal('');
   protected error = signal<string | null>(null);
   protected loading = signal(false);
   protected recoveryCodes = signal<string[]>([]);
+
+  // ── disable-2FA sub-flow ──────────────────────────────────────
+  protected disablePassword = signal('');
+  protected disableError = signal<string | null>(null);
+  protected disableLoading = signal(false);
+  protected disabled = signal(false);
 
   constructor(private location: Location) {
     this.startSetup();
@@ -32,6 +39,7 @@ export class TwoFactorSetupComponent {
   }
 
   private startSetup(): void {
+    this.error.set(null);
     this.auth.setupTwoFactor().subscribe({
       next: async (res) => {
         if (!res.data) {
@@ -39,11 +47,20 @@ export class TwoFactorSetupComponent {
           return;
         }
         this.manualKey.set(res.data.manual_key);
-        // QR is rendered CLIENT-SIDE from the otpauth:// URI — never generated server-side.
         this.qrDataUrl.set(await toDataURL(res.data.otp_auth_uri));
         this.step.set('scan');
       },
-      error: () => this.error.set('Could not start 2FA setup.'),
+      error: (err: HttpErrorResponse) => {
+        const code = err.error?.error?.code;
+        const message = err.error?.error?.message;
+
+        if (code === 'TWO_FACTOR_ALREADY_ENABLED') {
+          this.error.set(message ?? 'Two-factor authentication is already enabled.');
+          this.step.set('already-enabled');
+          return;
+        }
+        this.error.set(message ?? 'Could not start 2FA setup.');
+      },
     });
   }
 
@@ -66,5 +83,35 @@ export class TwoFactorSetupComponent {
         this.error.set('Invalid code. Check your app and try again.');
       },
     });
+  }
+
+  protected disableTwoFactor(): void {
+    const password = this.disablePassword().trim();
+    if (!password) return;
+
+    this.disableLoading.set(true);
+    this.disableError.set(null);
+    this.auth.disableTwoFactor(password).subscribe({
+      next: (res) => {
+        this.disableLoading.set(false);
+        if (res.error || !res.data?.disabled) {
+          this.disableError.set('Incorrect password. Try again.');
+          return;
+        }
+        this.disabled.set(true);
+        this.disablePassword.set('');
+      },
+      error: () => {
+        this.disableLoading.set(false);
+        this.disableError.set('Incorrect password. Try again.');
+      },
+    });
+  }
+
+  /** After disabling, let the user immediately re-enable if they want to. */
+  protected restartSetup(): void {
+    this.disabled.set(false);
+    this.step.set('loading');
+    this.startSetup();
   }
 }

@@ -1,0 +1,54 @@
+<div class="sessions-card">
+  <button type="button" class="sessions-back" (click)="goBack()">← Back</button>
+  <div class="sessions-head">
+    <h2>Active sessions</h2>
+    <a [routerLink]="['/security/2fa']" class="link">Set up two-factor authentication -&gt;</a>
+  </div>
+
+  @if (sessions.error()) {
+    <div class="alert" role="alert">
+      {{ sessions.error() }}
+      <button type="button" (click)="sessions.load()">Retry</button>
+    </div>
+  }
+
+  @if (sessions.loading()) {
+    <p>Loading sessions…</p>
+  } @else {
+    <table class="sessions-table">
+      <thead>
+        <tr>
+          <th>Device</th>
+          <th>IP address</th>
+          <th>Signed in</th>
+          <th>Last active</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of sessions.sessions(); track s.id) {
+          <tr [class.current]="s.is_current">
+            <td>
+              {{ s.device_label }}
+              @if (s.is_current) {
+                <span class="badge">This device</span>
+              }
+            </td>
+            <td>{{ s.ip_address ?? '-' }}</td>
+            <td>{{ s.created_at | date: 'short' }}</td>
+            <td>{{ s.last_used_at ?? s.created_at | date: 'short' }}</td>
+            <td>
+              @if (!s.is_current) {
+                <button type="button" class="btn-revoke" (click)="revoke(s.id)">Log out</button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <button type="button" class="btn-revoke-all" (click)="revokeOthers()">
+      Log out all other devices
+    </button>
+  }
+</div>

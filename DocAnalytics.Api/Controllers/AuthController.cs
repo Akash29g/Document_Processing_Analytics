@@ -65,13 +65,22 @@ public class AuthController : ControllerBase
 
         await _lockout.ResetAsync(email, ct);
 
+        if (result.RequiresTwoFactor)
+        {
+            // No refresh cookie yet — the real session starts only after /auth/login/2fa succeeds.
+            return Ok(ApiResponse<TwoFactorChallengeResponse>.Ok(
+                new TwoFactorChallengeResponse(true, result.ChallengeToken!)));
+        }
+
         // Refresh token now lives ONLY in an HttpOnly cookie — never in the JSON body.
         var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString();
-        var (raw, refreshExpiresAt) = await _refresh.IssueAsync(result.User.Id, clientIp, ct);
+        var userAgent = Request.Headers["User-Agent"].ToString();
+        var (raw, refreshExpiresAt) = await _refresh.IssueAsync(result.Login!.User.Id, clientIp, userAgent, ct);
         SetRefreshCookie(raw, refreshExpiresAt);
 
-        return Ok(ApiResponse<LoginResponse>.Ok(result));
+        return Ok(ApiResponse<LoginResponse>.Ok(result.Login!));
     }
+
 
     /// <summary>Exchanges the refresh-token cookie for a fresh access token and rotates the cookie.</summary>
     [AllowAnonymous]
@@ -84,7 +93,9 @@ public class AuthController : ControllerBase
                 "INVALID_REFRESH_TOKEN", "Refresh token is missing."));
 
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-        var rotated = await _refresh.ValidateAndRotateAsync(presented, ip, ct);
+        var userAgent = Request.Headers["User-Agent"].ToString();
+        var rotated = await _refresh.ValidateAndRotateAsync(presented, ip, userAgent, ct);
+
         if (rotated is null)
         {
             DeleteRefreshCookie();   // clear the bad cookie
@@ -159,6 +170,92 @@ public class AuthController : ControllerBase
 
         return Ok(ApiResponse<object>.Ok(new { reset = true }));
     }
+
+    /// <summary>Completes a 2FA-gated login: exchanges the challenge token + a TOTP/recovery code for a real session.</summary>
+    [AllowAnonymous]
+    [HttpPost("login/2fa")]
+    [EnableRateLimiting("mfa")]
+    public async Task<IActionResult> LoginTwoFactor([FromBody] TwoFactorLoginRequest req, CancellationToken ct)
+    {
+        var result = await _auth.LoginWithTwoFactorAsync(req, ct);
+        if (result is null)
+            return Unauthorized(ApiResponse<object>.Fail("INVALID_2FA_CODE", "That code is invalid or expired."));
+
+        var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+        var userAgent = Request.Headers["User-Agent"].ToString();
+        var (raw, refreshExpiresAt) = await _refresh.IssueAsync(result.User.Id, clientIp, userAgent, ct);
+        SetRefreshCookie(raw, refreshExpiresAt);
+
+        return Ok(ApiResponse<LoginResponse>.Ok(result));
+    }
+
+    /// <summary>Begins 2FA setup for the current user: returns the secret + otpauth URI for client-side QR rendering.</summary>
+    [Authorize]
+    [HttpPost("2fa/setup")]
+    public async Task<IActionResult> SetupTwoFactor(CancellationToken ct)
+    {
+        var result = await _auth.SetupTwoFactorAsync(_currentUser.UserId, ct);
+        return Ok(ApiResponse<TwoFactorSetupResponse>.Ok(result));
+    }
+
+    /// <summary>Confirms 2FA setup with a valid code: enables 2FA, returns one-time recovery codes.</summary>
+    [Authorize]
+    [HttpPost("2fa/confirm")]
+    [EnableRateLimiting("mfa")]
+    public async Task<IActionResult> ConfirmTwoFactor([FromBody] TwoFactorConfirmRequest req, CancellationToken ct)
+    {
+        var (error, resultBody) = await _auth.ConfirmTwoFactorAsync(_currentUser.UserId, req.Code, ct);
+        if (error is not null)
+            return BadRequest(ApiResponse<object>.Fail("INVALID_2FA_CODE", error));
+
+        return Ok(ApiResponse<TwoFactorConfirmResponse>.Ok(resultBody!));
+    }
+
+    /// <summary>Disables 2FA after re-verifying the password.</summary>
+    [Authorize]
+    [HttpPost("2fa/disable")]
+    public async Task<IActionResult> DisableTwoFactor([FromBody] TwoFactorDisableRequest req, CancellationToken ct)
+    {
+        var error = await _auth.DisableTwoFactorAsync(_currentUser.UserId, req.Password, ct);
+        if (error is not null)
+            return BadRequest(ApiResponse<object>.Fail("INVALID_PASSWORD", error));
+
+        return Ok(ApiResponse<object>.Ok(new { disabled = true }));
+    }
+
+    /// <summary>Lists this user's active sessions/devices.</summary>
+    [Authorize]
+    [HttpGet("sessions")]
+    public async Task<IActionResult> GetSessions(CancellationToken ct)
+    {
+        var currentRaw = Request.Cookies["refresh_token"];
+        var sessions = await _refresh.ListActiveSessionsAsync(_currentUser.UserId, currentRaw, ct);
+        return Ok(ApiResponse<IReadOnlyList<SessionDto>>.Ok(sessions));
+    }
+
+    /// <summary>Revokes one session (log out that device).</summary>
+    [Authorize]
+    [HttpDelete("sessions/{id:guid}")]
+    public async Task<IActionResult> RevokeSession(Guid id, CancellationToken ct)
+    {
+        var ok = await _refresh.RevokeSessionAsync(_currentUser.UserId, id, ct);
+        if (!ok) return NotFound(ApiResponse<object>.Fail("SESSION_NOT_FOUND", "Session not found."));
+        return Ok(ApiResponse<object>.Ok(new { revoked = true }));
+    }
+
+    /// <summary>Logs out every OTHER device (keeps the current session active).</summary>
+    [Authorize]
+    [HttpPost("sessions/revoke-others")]
+    public async Task<IActionResult> RevokeOtherSessions(CancellationToken ct)
+    {
+        var currentRaw = Request.Cookies["refresh_token"];
+        if (string.IsNullOrEmpty(currentRaw))
+            return Unauthorized(ApiResponse<object>.Fail("INVALID_REFRESH_TOKEN", "No active session."));
+
+        var count = await _refresh.RevokeAllOtherSessionsAsync(_currentUser.UserId, currentRaw, ct);
+        return Ok(ApiResponse<object>.Ok(new { revoked_count = count }));
+    }
+
 
 
     // ── refresh-token cookie helpers ────────────────────────────────────────

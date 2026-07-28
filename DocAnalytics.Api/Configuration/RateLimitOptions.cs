@@ -14,6 +14,8 @@ public sealed class RateLimitOptions
     public RateLimitPolicySettings Reads { get; set; } = new() { PermitLimit = 100, WindowSeconds = 60 };
     /// <summary>Limits for export endpoints (tight, per user).</summary>
     public RateLimitPolicySettings Export { get; set; } = new() { PermitLimit = 3, WindowSeconds = 60 };
+    /// <summary>Limits for 2FA code-verification endpoints (per authenticated user, else per IP).</summary>
+    public RateLimitPolicySettings Mfa { get; set; } = new() { PermitLimit = 5, WindowSeconds = 300 };
 }
 
 /// <summary>Fixed-window limit settings for a single rate-limit policy.</summary>

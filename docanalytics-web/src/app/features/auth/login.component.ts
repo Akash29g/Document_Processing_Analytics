@@ -3,11 +3,12 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, FormsModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
 })
@@ -18,6 +19,12 @@ export class LoginComponent {
 
   readonly loading = signal(false);
   readonly errorMessage = signal<string | null>(null);
+
+  readonly step = signal<'credentials' | 'mfa'>('credentials');
+  readonly challengeToken = signal<string | null>(null);
+  readonly mfaCode = signal('');
+  readonly mfaError = signal<string | null>(null);
+  readonly mfaLoading = signal(false);
 
   readonly form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -51,13 +58,20 @@ export class LoginComponent {
     this.auth.login(email, password).subscribe({
       next: (res) => {
         this.loading.set(false);
-        if (res.error || !res.data) {
+        const data = res.data;
+        if (res.error || !data) {
           this.errorMessage.set('Invalid email or password.');
           return;
         }
 
+        if ('requires_two_factor' in data) {
+          this.challengeToken.set(data.challenge_token);
+          this.step.set('mfa');
+          return;
+        }
+
         // Forced first-login password reset takes priority over everything.
-        if (res.data.must_change_password) {
+        if (data.must_change_password) {
           this.router.navigate(['/change-password']);
           return;
         }
@@ -79,6 +93,43 @@ export class LoginComponent {
         }
       },
     });
+  }
+
+  submitMfa(): void {
+    const token = this.challengeToken();
+    const code = this.mfaCode().trim();
+    if (!token || code.length < 6) return;
+
+    this.mfaError.set(null);
+    this.mfaLoading.set(true);
+    this.auth.loginWithTwoFactor(token, code).subscribe({
+      next: (res) => {
+        this.mfaLoading.set(false);
+        if (res.error || !res.data) {
+          this.mfaError.set('Invalid or expired code. Try again or use a recovery code.');
+          return;
+        }
+        if (res.data.must_change_password) {
+          this.router.navigate(['/change-password']);
+          return;
+        }
+        if (!this.routeByRole()) {
+          this.mfaError.set('Your account has no site access. Contact your administrator.');
+          this.auth.logout();
+        }
+      },
+      error: () => {
+        this.mfaLoading.set(false);
+        this.mfaError.set('Invalid or expired code. Try again or use a recovery code.');
+      },
+    });
+  }
+
+  backToCredentials(): void {
+    this.step.set('credentials');
+    this.challengeToken.set(null);
+    this.mfaCode.set('');
+    this.mfaError.set(null);
   }
 
   /** Route by role: Developer → provisioning console; others → first site. Returns false if nowhere to go. */

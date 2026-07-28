@@ -35,7 +35,7 @@ public sealed class RefreshTokenService : IRefreshTokenService
 
     /// <inheritdoc />
     public async Task<(string RawToken, DateTime ExpiresAt)> IssueAsync(
-        Guid userId, string? ip, CancellationToken ct = default)
+        Guid userId, string? ip, string? userAgent = null, CancellationToken ct = default)
     {
         var raw = NewRawToken();
         var now = DateTime.UtcNow;
@@ -49,6 +49,9 @@ public sealed class RefreshTokenService : IRefreshTokenService
             CreatedAt = now,
             ExpiresAt = expiresAt,
             CreatedByIp = ip,
+            IpAddress = ip,
+            UserAgent = userAgent,
+            LastUsedAt = now,
         });
         await _db.SaveChangesAsync(ct);
 
@@ -57,7 +60,7 @@ public sealed class RefreshTokenService : IRefreshTokenService
 
     /// <inheritdoc />
     public async Task<(User User, string RawToken, DateTime ExpiresAt)?> ValidateAndRotateAsync(
-        string rawToken, string? ip, CancellationToken ct = default)
+        string rawToken, string? ip, string? userAgent = null, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(rawToken)) return null;
 
@@ -84,6 +87,8 @@ public sealed class RefreshTokenService : IRefreshTokenService
         var expiresAt = now.AddDays(_lifetimeDays);
         var newHash = Hash(raw);
 
+        existing.LastUsedAt = now; // record use before it's superseded
+
         _db.RefreshTokens.Add(new RefreshToken
         {
             Id = Guid.NewGuid(),
@@ -92,6 +97,9 @@ public sealed class RefreshTokenService : IRefreshTokenService
             CreatedAt = now,
             ExpiresAt = expiresAt,
             CreatedByIp = ip,
+            IpAddress = ip,
+            UserAgent = userAgent,
+            LastUsedAt = now,
         });
 
         existing.RevokedAt = now;
@@ -126,5 +134,54 @@ public sealed class RefreshTokenService : IRefreshTokenService
 
         foreach (var t in active) t.RevokedAt = now;
         if (active.Count > 0) await _db.SaveChangesAsync(ct);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<SessionDto>> ListActiveSessionsAsync(
+        Guid userId, string? currentRawToken, CancellationToken ct = default)
+    {
+        var currentHash = string.IsNullOrEmpty(currentRawToken) ? null : Hash(currentRawToken);
+        var now = DateTime.UtcNow;
+
+        var sessions = await _db.RefreshTokens
+            .Where(t => t.UserId == userId && t.RevokedAt == null && t.ExpiresAt > now)
+            .OrderByDescending(t => t.LastUsedAt ?? t.CreatedAt)
+            .ToListAsync(ct);
+
+        return sessions.Select(t => new SessionDto(
+            t.Id,
+            DeviceLabelParser.Parse(t.UserAgent),
+            t.IpAddress,
+            t.CreatedAt,
+            t.LastUsedAt,
+            currentHash != null && t.TokenHash == currentHash
+        )).ToList();
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> RevokeSessionAsync(Guid userId, Guid tokenId, CancellationToken ct = default)
+    {
+        // scoped by userId — this WHERE clause is the entire security guarantee here
+        var token = await _db.RefreshTokens.FirstOrDefaultAsync(t => t.Id == tokenId && t.UserId == userId, ct);
+        if (token is null || token.RevokedAt is not null) return false;
+
+        token.RevokedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
+
+    /// <inheritdoc />
+    public async Task<int> RevokeAllOtherSessionsAsync(Guid userId, string currentRawToken, CancellationToken ct = default)
+    {
+        var currentHash = Hash(currentRawToken);
+        var now = DateTime.UtcNow;
+
+        var others = await _db.RefreshTokens
+            .Where(t => t.UserId == userId && t.RevokedAt == null && t.TokenHash != currentHash)
+            .ToListAsync(ct);
+
+        foreach (var t in others) t.RevokedAt = now;
+        if (others.Count > 0) await _db.SaveChangesAsync(ct);
+        return others.Count;
     }
 }

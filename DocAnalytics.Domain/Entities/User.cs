@@ -30,6 +30,13 @@ public class User
     /// <summary>Creation timestamp (UTC).</summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    /// <summary>Whether TOTP two-factor authentication is enabled for this account.</summary>
+    public bool TwoFactorEnabled { get; set; } = false;
+
+    /// <summary>Base32 TOTP secret, encrypted at rest via IDataProtector. Null until 2FA setup starts.</summary>
+    public string? TwoFactorSecret { get; set; }
+
+
     /// <summary>The owning tenant navigation property; null to match <see cref="TenantId"/>.</summary>
     public Tenant? Tenant { get; set; }                    // nullable to match TenantId
     /// <summary>The sites this user has been granted access to.</summary>

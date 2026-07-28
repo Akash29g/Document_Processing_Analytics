@@ -66,4 +66,16 @@ public sealed class ErrorCatalogController : ControllerBase
 
         return Ok(ApiResponse<ErrorCatalogDto>.Ok(result));
     }
+
+    // DELETE /api/v1/error-catalog/{id}
+    [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    {
+        var deleted = await _service.DeleteAsync(id, ct);
+        if (!deleted)
+            return NotFound(ApiResponse<object>.Fail("NOT_FOUND", "Entry not found."));
+        return Ok(ApiResponse<object>.Ok(new { deleted = true }));
+    }
+
 }

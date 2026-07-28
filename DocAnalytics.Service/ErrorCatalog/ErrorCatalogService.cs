@@ -58,6 +58,16 @@ public sealed class ErrorCatalogService : IErrorCatalogService
         return ToDto(entry);
     }
 
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
+    {
+        var entry = await _db.ErrorCatalog.FindAsync(new object[] { id }, ct);
+        if (entry is null) return false;
+        _db.ErrorCatalog.Remove(entry);
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
+
+
     // ── projection helper ────────────────────────────────────────────────────
     private static ErrorCatalogDto ToDto(Domain.Entities.ErrorCatalog e) => new()
     {

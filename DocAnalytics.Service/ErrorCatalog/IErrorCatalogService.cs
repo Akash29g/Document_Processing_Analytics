@@ -16,4 +16,8 @@ public interface IErrorCatalogService
     /// Returns <c>null</c> if not found (404).
     /// </summary>
     Task<ErrorCatalogDto?> UpdateAsync(Guid id, UpdateErrorCatalogDto dto, CancellationToken ct = default);
+
+    /// <summary>Deletes an entry. Returns false if not found.</summary>
+    Task<bool> DeleteAsync(Guid id, CancellationToken ct = default);
+
 }

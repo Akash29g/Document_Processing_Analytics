@@ -19,3 +19,24 @@ export interface AdminCreatedUser {
   email: string;
   credentials_emailed: boolean;
 }
+
+// ── Error Catalog ──
+export interface ErrorCatalogEntry {
+  id: string;
+  error_code: string;
+  description: string;
+  remediation_msg: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateErrorCatalogPayload {
+  error_code: string;
+  description: string;
+  remediation_msg: string | null;
+}
+
+export interface UpdateErrorCatalogPayload {
+  description: string;
+  remediation_msg: string | null;
+}

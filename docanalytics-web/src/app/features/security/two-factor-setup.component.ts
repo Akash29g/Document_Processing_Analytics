@@ -34,12 +34,8 @@ export class TwoFactorSetupComponent {
   private startSetup(): void {
     this.auth.setupTwoFactor().subscribe({
       next: async (res) => {
-        if (res.error) {
-          this.error.set(res.error.message);
-          return;
-        }
         if (!res.data) {
-          this.error.set('Could not start 2FA setup.');
+          this.error.set(res.error?.message ?? 'Could not start 2FA setup.');
           return;
         }
         this.manualKey.set(res.data.manual_key);
@@ -50,6 +46,7 @@ export class TwoFactorSetupComponent {
       error: () => this.error.set('Could not start 2FA setup.'),
     });
   }
+
 
   protected confirm(): void {
     if (this.code().length !== 6) return;

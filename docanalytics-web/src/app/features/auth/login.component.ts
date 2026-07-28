@@ -141,7 +141,6 @@ export class LoginComponent {
     return 'Too many attempts. Please wait a moment and try again.';
   }
 
-
   backToCredentials(): void {
     this.step.set('credentials');
     this.challengeToken.set(null);

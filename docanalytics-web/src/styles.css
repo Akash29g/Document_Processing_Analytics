@@ -1,6 +1,6 @@
 :root {
-  /* ===== AVEVA Digital UI Palette (exact hex from style guide) ===== */
-  --aveva-purple: #3d1152; /* brand chrome ONLY: top bar, sidebar, active tab */
+  /* ===== Brand UI Palette (exact hex from style guide) ===== */
+  --brand-purple: #3d1152; /* brand chrome ONLY: top bar, sidebar, active tab */
   --purple: #6b04a8; /* marketing background fills only */
   --bright-purple: #c530ff;
   /* Neutrals / "furniture" */

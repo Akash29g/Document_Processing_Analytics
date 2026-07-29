@@ -64,7 +64,7 @@
   padding: 10px 12px;
   cursor: pointer;
 }
-/* AVEVA spec: hovered/active row = light gray */
+/* Design spec: hovered/active row = light gray */
 .dd-list li.active {
   background: var(--light-gray);
 }

@@ -65,7 +65,7 @@ import { SeriesPoint } from '../../../core/models/dashboard.model';
         color: var(--dark-gray-3);
         text-align: right;
       }
-      /* status colors = fills only (AVEVA rule) */
+      /* status colors = fills only (brand rule) */
       .st-completed {
         background: var(--status-confirmed);
       }

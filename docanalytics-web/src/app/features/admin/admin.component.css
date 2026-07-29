@@ -74,7 +74,7 @@
   font-size: 11px;
   padding: 2px 8px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--aveva-purple, #3d1152) 12%, transparent);
+  background: color-mix(in srgb, var(--brand-purple, #3d1152) 12%, transparent);
   margin: 1px 3px 1px 0;
 }
 
@@ -111,7 +111,7 @@
 }
 
 .btn {
-  background: var(--aveva-purple, #3d1152);
+  background: var(--brand-purple, #3d1152);
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -213,7 +213,7 @@
 }
 
 .btn-confirm-primary {
-  background: var(--aveva-purple, #3d1152);
+  background: var(--brand-purple, #3d1152);
   border: none;
   color: #fff;
   border-radius: 4px;
@@ -236,7 +236,7 @@
 
 code {
   font-size: 12px;
-  background: color-mix(in srgb, var(--aveva-purple, #3d1152) 10%, transparent);
+  background: color-mix(in srgb, var(--brand-purple, #3d1152) 10%, transparent);
   padding: 2px 6px;
   border-radius: 4px;
 }

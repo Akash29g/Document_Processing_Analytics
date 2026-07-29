@@ -78,7 +78,7 @@ The frontend is an **Angular 22** single-page app (standalone components + Signa
 | Routing | Lazy-loaded, nested/parameterized routes (`/site/:siteId/...`) |
 | State | Angular Signals inside injectable services (one service per feature) |
 | HTTP | `HttpClient` + functional interceptors (auth + site, global error) |
-| Styling | CSS variables (AVEVA purple/white theme), functional-first layout |
+| Styling | CSS variables, functional-first layout |
 
 ### Prerequisites
 

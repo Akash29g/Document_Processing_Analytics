@@ -4,9 +4,9 @@
   height: 100vh;
 }
 
-/* Sidebar = brand chrome → AVEVA purple is allowed here */
+/* Sidebar = brand chrome → brand purple is allowed here */
 .sidebar {
-  background: var(--aveva-purple);
+  background: var(--brand-purple);
   color: #fff;
   padding: 16px 12px;
 }

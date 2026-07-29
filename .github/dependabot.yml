@@ -14,17 +14,12 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+    groups:
+      angular:
+        patterns:
+          - "@angular/*"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
-
-  - package-ecosystem: "npm"
-    directory: "/docanalytics-web"
-    schedule:
-      interval: "weekly"
-    groups:
-      angular:
-        patterns:
-          - "@angular/*"

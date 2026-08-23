@@ -1,5 +1,16 @@
 resource "aws_ecs_cluster" "main" { name = "docanalytics-cluster" }
 
+resource "aws_ecs_cluster_capacity_providers" "main" {
+  cluster_name       = aws_ecs_cluster.main.name
+  capacity_providers = ["FARGATE_SPOT"]
+
+  default_capacity_provider_strategy {
+    capacity_provider = "FARGATE_SPOT"
+    weight            = 1
+    base              = 1
+  }
+}
+
 # Initial task defs — GH Actions registers new revisions per deploy,
 # so services ignore task_definition drift (see lifecycle blocks).
 resource "aws_ecs_task_definition" "api" {
@@ -59,7 +70,11 @@ resource "aws_ecs_service" "api" {
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.api.arn
   desired_count   = 1
-  launch_type     = "FARGATE"
+  capacity_provider_strategy {
+    capacity_provider = "FARGATE_SPOT"
+    weight            = 1
+    base              = 1
+  }
   network_configuration {
     subnets          = var.private_subnets
     security_groups  = [aws_security_group.task.id]
@@ -79,7 +94,11 @@ resource "aws_ecs_service" "web" {
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.web.arn
   desired_count   = 1
-  launch_type     = "FARGATE"
+  capacity_provider_strategy {
+    capacity_provider = "FARGATE_SPOT"
+    weight            = 1
+    base              = 1
+  }
   network_configuration {
     subnets          = var.private_subnets
     security_groups  = [aws_security_group.task.id]
